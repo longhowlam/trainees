@@ -1,0 +1,1151 @@
+---
+title: "Refresher data prep & interactive data visualiatie"
+author: "Longhow Lam"
+subtitle: "Trainee Sessie 01"
+output:
+  prettydoc::html_pretty:
+    highlight: github
+    number_sections: yes
+    theme: cayman
+    toc: yes
+    toc_depth: 2
+  html_notebook:
+    number_sections: yes
+    theme: sandstone
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+---
+
+---
+
+<br>
+
+
+# The tidyverse
+
+---
+
+
+Het `tidyverse` package is een verzameling R packages met 'dezelfde' gedachtegoed om data te bewerken / manipuleren. Installeer tidyverse en attach de library zodat je in 1 keer een aantal libraries laadt:
+
+* dplyr
+* tibble
+* ggplot2
+* purr
+* forcats
+* readr
+* readxl
+* stringr
+* tidyr
+
+```{r, eval=FALSE, include=FALSE}
+library(tidyverse)
+library(lubridate)
+library(anytime)
+library(stringr)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(plotly)
+library(readr)
+
+library(RColorBrewer)
+library(colorRamps)
+library(leaflet)
+library(rgeos)
+library(raster)
+library(sp)
+library(maptools)
+library(rgdal)
+
+```
+
+
+# De dplyr library
+
+---
+
+Dit package / library is ontzettend handig om data te bewerken in R. De syntax is elegant en dplyr code kan je in sommige gevallen ook gebruiken voor data die niet in R zit. Bijvoorbeeld, data in Spark kan je met dplyr code bewerken. Er zijn veel 'sleutel' woorden, maar de belangrijkste zijn `select`,  `filter`, `mutate`, `arrange`, `summarize`, `slice` en `rename`. 
+
+Het mooie is dat deze sleutel woorden ook achter elkaar gebruikt kunnen worden met de `%>%` chain operator. We gebruiken als voorbeeld data uit de datasets library. `mtcars` is een klein data set met wat auto gegevens en `iris` is de bekende data set met drie soorten bloemen.
+
+
+## kolommen selecteren met select
+
+```{r, eval=FALSE}
+## enkele kolommen selecteren
+my.cars = select(mtcars, hp, mpg, drat)
+
+## via de chain operator, dit is niet alleen handig maar zo kan je verschillende operaties achter elkaar plakken.
+my.cars = mtcars %>% 
+  select(
+    hp, 
+    mpg,
+    drat
+  )
+
+## meerdere kolommen selecteren
+test1 = iris %>% 
+  select(
+    starts_with("Petal")
+  )
+
+## bepaalde kolommen selecteren
+test2 = mtcars %>% 
+  select(
+    contains("pg"),
+    starts_with("c")
+  )
+
+my.cars = mtcars %>% .[2:6]
+```
+
+## kolom maken of wijzigen met mutate
+
+We zagen al dat je kolommen in een data frame kon maken of wijzigen met `$` 
+
+```{r, eval=FALSE}
+my.cars$kolom2  = rnorm(32)
+my.cars$kolom3  = my.cars$kolom2 + 9
+```
+
+Maar met `mutate` kan je dit veel eleganter doen
+
+```{r, eval=FALSE}
+mycars = mtcars %>%
+  select(
+    disp, 
+    mpg 
+  ) %>%
+  mutate(
+    displ_l = disp / 61.0237,
+    tmp = mpg *1000
+  )
+```
+
+Je kan nieuwe kolommen maken die afhankelijk zijn van kolommen die je net in mutate maakt
+
+```{r, eval=FALSE}
+mycars = mtcars %>%
+  mutate(
+    displ_l = disp / 61.0237,
+    tmp = mpg *1000,
+    tmp2 = tmp + 1
+  )
+```
+
+Je kan ook zelf gemaakte functies gebruiken. 
+
+```{r, eval=FALSE}
+normalize <- function(x){
+    return((x- mean(x))/(max(x)-min(x)))
+}
+
+mycars = mtcars %>%
+  mutate(
+    cyln = normalize(cyl)
+  )
+```
+
+Twee functies die ontzettend handig kunnen zijn: `mutate_at` en `mutate_if`
+
+```{r, eval=FALSE}
+ABT = data.frame(
+  matrix(round(100*runif(100)), ncol=10)
+)
+
+## maak eerst een kolom die de som is van de de 10 kolommen
+ABT = ABT %>% mutate(sum = rowSums(.[1:10]))
+
+## verander alleen kolom 4 t/m 8, ze worden door sum gedeeld
+ABT2 = ABT %>% 
+  mutate_at(
+    4:8, funs(. / sum)
+  )
+
+## deel alleen door de sum als de kolom som groter is dan 500
+LARGE = function(x) {sum(x) > 500}
+ABT3 = ABT %>% 
+  mutate_if(
+    LARGE, funs(. / sum)
+  )
+
+ABT
+ABT2
+ABT3
+```
+
+
+
+## distinct rows
+
+Soms wil je data ontdubbelen, dit kan je in R doen met de functie `distinct`
+
+```{r, eval=FALSE}
+distinct( select(mtcars, carb, gear))
+
+distinct(select(mtcars, 10,11))
+
+### pipe / chain operatie
+myset = mtcars %>% 
+  select(10,11) %>%
+  distinct
+```
+
+
+## data sets filteren
+
+Met `filter` en `slice` kan je rijen uit een data frame halen. 
+
+```{r, eval=FALSE, include=FALSE}
+filter(
+  mtcars, 
+  cyl == 8 & gear > 3
+)
+
+## meerdere filter expressie bekenen EN
+
+filter(
+  mtcars, 
+  cyl == 8,
+  gear > 3
+)
+
+## als je of wilt moet je | gebruiken
+
+filter(
+  mtcars, 
+  cyl == 8 | gear > 3
+)
+```
+
+Met `slice` kan je op basis van row numbers data selecteren. Als voorbeeld, de eerste 8 records, of record 8 tot en met de laatste record.
+
+```{r, eval=FALSE}
+slice(mtcars, 1:8)
+slice(mtcars, 8:n())
+```
+
+
+## data sets aggregeren
+
+Aggregeren met de functie `group_by` en `summarise` deze gaan vaak hand in hand samen.
+
+```{r, eval=FALSE}
+## apart aanroep van group_by en summarise... zo kan je zien wat group_by oplevert
+by_cyl = group_by(mtcars, cyl) 
+class(by_cyl)
+
+summarise(by_cyl, Naampje1 = mean(disp), Naampje2 = mean(hp))
+
+
+## maar vaak doe je de twee in 1 run samen
+out = mtcars %>%
+  group_by(
+    cyl
+  ) %>% 
+  summarise(
+    mdisp = mean(disp),
+    mhp = mean(hp)
+  )
+
+
+out = filter(
+  mtcars, mpg > 11
+  ) %>%
+  group_by(
+    cyl, 
+    carb
+  ) %>% 
+  summarise(
+    N = n(), 
+    MeanDisp = mean(disp),
+    SD_HP = sd(hp)
+  )
+```
+
+
+
+## joins
+
+Met dplyr kun je makkelijk tabellen joinen. Er zijn verschillende joins die ondersteunt worden. We geven hier een aantal voorbeelden.
+
+
+```{r, eval=FALSE}
+### maak twee data frames aan
+df1 = data.frame(
+  col1 = c(1,2,3,4,5), tt = rnorm(5)
+)
+
+df2 = data.frame(
+  col1 = c(3,4,5,6,7), xx = rnorm(5), zz = runif(5)
+)
+
+## selecteer rijen die zowel in df1 en df2 zitten 
+df3 = inner_join(
+  df1, 
+  df2,
+  by = c("col1" = "col1")
+)
+
+## alle rijen die in df1 zitten, geen match levert NA op
+df4 = left_join(
+  df1,
+  df2,
+  by = c("col1" = "col1")
+)
+
+## alle rijen die in df2 zitten
+df5 = df1 %>% right_join(
+  df2,
+  by = c("col1" = "col1")
+)
+
+## alleen de rijen van df1 die niet in df 2 zitten
+df6 = df1 %>% anti_join(
+  df2,
+  by = c("col1" = "col1")
+)
+
+## alle rijen van df1 en df2
+full_join(df1, df2, by = c("col1" = "col1"))
+```
+
+
+<br>
+
+## data frames stapelen of plakken
+
+Soms wil je twee tabellen op elkaar stappelen tot een nieuwe tabel, dat kan je doen met `bind_rows`. Als je twee tabellen naast elkaar wilt zetten tot een nieuwe tabel, gebruik dan `bind_rows`.
+
+```{r, eval=FALSE}
+## bind_rows
+A = data.frame(x=1:5, y = rnorm(5))
+B = data.frame(x=11:15, y = rnorm(5))
+C = bind_rows(A,B)
+
+## kolommen die niet in een van de data frames zitten worden aangevuld
+E = data.frame(x=21:25, y = rnorm(5), z = rnorm(5))
+
+bind_rows(A,E)
+```
+
+```{r, eval=FALSE}
+A = data.frame(x=1:5, y = rnorm(5))
+B = data.frame(q=11:15, q = rnorm(5))
+bind_cols(A,B)
+
+## als een van de data frames meer rijen heeft, dan wordt er NIET aangevuld
+A = data.frame(x=1:5, y = rnorm(5))
+B = data.frame(q=11:17, q = rnorm(7))
+bind_cols(A,B)
+```
+
+<br>
+
+# tidy data en wide data
+
+---
+
+Tidy data is wanneer data in de volgende vorm zit:
+
+* Elke variabele is in een kolom.
+* Elke observatie is een rij.
+* Elke waarde is een cel.
+
+Stel we hebben de volgende data set
+
+```{r, eval=FALSE}
+library(tidyr)
+stocks <- data.frame(
+  time = as.Date('2009-01-01') + 0:9,
+  X = rnorm(10, 0, 1),
+  Y = rnorm(10, 0, 2),
+  Z = rnorm(10, 0, 4)
+)
+stocks
+```
+
+Soms is het handig om data waarden in 1 kolom te hebben en een aparte variabele die de variabele weergeeft
+
+```{r, eval=FALSE}
+stocksm <- stocks %>% gather(stock, price, -time)
+stocksm
+```
+
+en spread is het omgekeerde proces
+
+```{r, eval=FALSE}
+stock2 = stocksm %>% spread(stock, price)
+stock2
+ 
+## als er niet even veel observaties zijn?
+
+test = data.frame(
+  T = c(1,2,3,1,2), 
+  V = c("A","A","A","B","B"),
+  price = c(4,5,6,7,8)
+)
+
+test2 = test %>% spread(V,price)
+test2
+```
+
+Een handige functie in tidyr is `separate`, dit kan je gebruiken om een kolom uit elkaar te trekken. Standaard worden niet alpha numerieke tekens als separator gebruikt.
+
+```{r, eval=FALSE}
+df = tibble(x = c("A.B", "C.P", "P.Q"))
+df %>% separate(x, c("Kol1", "Kol2"))
+
+## Er kunnen tw weinig of teveel kolommen zijn.
+df = tibble(x = c("A.B", "C.P", "P.Q", "pp", "P.2.4"))
+df %>% separate(x, c("Kol1", "Kol2"))
+
+
+df = tibble(x = c("A.B", "C.P", "P.Q", "pp", "P.2.4"))
+df %>% separate(x, c("Kol1", "Kol2", "Kol3"))
+```
+
+<br>
+
+
+# Character data bewerken met stringr
+
+---
+
+Character data in R kan je bewerken/manipuleren met het `stringr` package. Voordat we daar verder op in gaan is het handig om te weten wat reguliere expressies zijn.
+
+## Reguliere expressies
+
+Dit is een soort 'mini' taaltje om character patronen te specificeren om er vervolgens bijvoorbeeld op te zoeken. Eerst wat dummy character data.
+
+```{r, eval=FALSE}
+test = c("Mijn nummer is 06-12345678", "dit is .. een 1628EP postcode test", "foutje?:  0234XD", "dit is er nog een 1628 EP", "en nog een foute 126EP", "nog een 1234    XX", "1234eZ en nog 4567PK", "12345 Aabcde", "&yfy.")
+test
+```
+
+Een paar voorbeelden van reguliere expressies.
+
+```{r, eval=FALSE}
+library(stringr)
+
+## een digit, en precies 1 digit
+patroon = "\\d"
+str_extract(test, patroon)
+
+## 1 of meerdere digits
+patroon = "\\d+"
+str_extract(test, patroon)
+
+## precies twee letters
+patroon ="[[:alpha:]]{2}"
+str_extract(test, patroon)
+
+## Een postcode
+patroon = "\\d{4}\\s?[[:alpha:]]{2}"
+str_extract(test, patroon)
+
+## Maar een postcode begint niet met een 0
+patroon = "[1-9]\\d{3}\\s?[[:alpha:]]{2}"
+str_extract(test, patroon)
+
+## special punctuation characters !"#$%&’()*+,-./:;<=>?@[]^_`{|}~
+patroon = "[[:punct:]]"
+str_extract(test, patroon)
+```
+
+Sommige mensen zijn de wildcard notatie gewend om te zoeken in strings, deze wildcard notatie kan je vertalen naar reguliere expressies met `glob2rx`. Een paar voorbeelden zullen hieronder geven. 
+
+```{r, eval=FALSE}
+patroon = glob2rx("*23*")
+str_extract(test, patroon)
+```
+
+Voor een cheatsheet over reguliere expressies zie [regex cheatsheet](https://www.rstudio.com/wp-content/uploads/2016/09/RegExCheatsheet.pdf)
+
+## functies uit het package stringr
+
+In het package stringr zijn diverse functies om met characters te werken, een aantal zullen we laten zien
+
+```{r, eval=FALSE}
+testset = titanic::titanic_train %>% select(Name)
+## maak extra kolom aan in titanic die namen zoekt
+testset = testset %>%
+  mutate(
+    naamlengte = str_length(Name),
+    Ownes = str_detect(Name, 'Owen'),
+    Plek = str_locate(testset$Name, "Mr") %>% .[,1],
+    Name2 = str_replace(Name, "Mr", "")
+  )
+
+str_locate(testset$Name, "Mr")
+```
+
+<br>
+
+# forcats
+
+---
+
+In R kun je factor variabelen bewerken met functies uit het `forcats` package. We geven een aantal voorbeelden op random gegenereerde data
+
+```{r, eval=FALSE}
+library(forcats)
+
+x = rnorm(1000)
+y = sample(LETTERS[1:10], replace = TRUE, size = 1000, prob = (1:10)^2)
+
+test = tibble(gewicht = x, type = y)
+table(test$type)
+```
+
+Samenvoegen van levels: Op aantallen (Weinig voorkomende levels) of handmatig
+
+```{r, eval=FALSE}
+test = test %>% 
+  mutate(
+    z = fct_lump(type, n=5)
+  )
+
+table(test$z)
+
+test = test %>% 
+  mutate(
+    z2 = fct_other(type, keep = c("C","B")),
+    z3 = fct_other(type, drop = c("A","B"))
+  )
+
+table(test$z2)
+table(test$z3)
+```
+
+Hernoemen van factor levels
+
+```{r, eval=FALSE}
+test = test %>% 
+  mutate(
+    z2 = fct_recode(
+      type,
+      ZZ = "A",
+      ZZ = "B",
+      YY = "C", 
+      YY = "D"
+    ),
+    z3 = fct_collapse(
+      type,
+      missing = c("B", "C"),
+      other = "D",
+      rep = c("E", "F"),
+      ind = c("G","H"),
+      dem = c("I","J")
+    )
+  )
+table(test$z2)
+table(test$z3)
+```
+
+Herordenen van factor levels, factor levels kunnen een order bevatten, deze kan je maken of veranderen, kan soms nodig zijn bij plotten.
+
+```{r, eval=FALSE}
+test = test %>% 
+  mutate(
+    z2 = fct_reorder(type, gewicht, mean)
+  )
+
+table(test$type)
+table(test$z2)
+
+levels(test$type)
+levels(test$z2)
+```
+
+<br>
+
+
+# Dates in R
+
+---
+
+Voor datums (en tijden) in R zijn de packages `anytime` en `lubridate` heel handig. Laten we er van uitgaan dat we characters hebben met datums en daar mee willen rekenen. Dan kunnen we de functie `anydate` uit het anytime package gebruiken.
+
+```{r, eval=FALSE}
+y = c("1973-09-12", "1980-05-23", "1981-12-09")
+
+testdata = tibble(DoB = y)
+
+testdata = testdata %>%
+  mutate(
+    GeboorteDatum = anytime::anydate(DoB)
+  )
+```
+
+De functie `anydate` parsed diverse character notatie naar een date kolom, de gaat meestal goed :-)
+
+```{r, eval=FALSE}
+y = c("1973/09/12", "05/23/1980", "23/05/1980","1981-12-09")
+
+testdata = tibble(DoB = y)
+
+testdata = testdata %>%
+  mutate(
+    GeboorteDatum = anytime::anydate(DoB)
+  )
+```
+
+Nu we een datum echt als date column in een data frame of tibble hebben kunnen we er mee rekenen.
+
+```{r, eval=FALSE}
+testdata = testdata %>%
+  mutate(
+    leeftijd = today() - GeboorteDatum,
+    leeftijd2 = as.numeric(today() - GeboorteDatum)/365,
+    dag = wday(GeboorteDatum, label=TRUE)
+  )
+```
+
+*UNIX time stamps*....  Wat zeg je?
+
+Een Unix time stamps is het aantal seconden sinds 1-1-1970. Mocht je dit ooit tegen komen dan kan anytime er ook mee uit de voeten.
+
+```{r, eval=FALSE}
+tmp = read_csv("data/unixtimestamps.csv")
+tmp$datum = anydate(tmp$timestamp)
+tmp
+```
+
+
+## dplyr met externe data
+
+Je kan `dplyr` ook gebruiken op externe data in databases en, ook data in Spark. We geven hier het Spark voorbeeld 
+
+```{r}
+library(sparklyr)
+
+
+```
+
+
+
+
+# Interactive grafieken
+
+---
+Naast de statistische grafieken die we hierboven hebben gemaakt kan je in R ook interactieve grafieken maken. We geven in deze sectie een aantal voorbeelden.
+
+
+## Het plotly package
+
+Plotly is een zeer mooie library voor het maken van interactieve visualisaties. Zie voor meer info [plotly](https://plot.ly/r/). We zullen een aantal voorbeelden hieronder laten zien.
+
+### scatters
+
+```{r, eval=FALSE}
+library(plotly)
+mtcars = mtcars
+mtcars$naampjes = row.names(mtcars)
+
+plot_ly(data = mtcars, x=~mpg, y = ~wt)
+plot_ly(data = mtcars, x=~mpg, y = ~wt, color = ~cyl)
+plot_ly(data = mtcars, x=~mpg, y = ~wt, text = ~naampjes)
+
+
+```
+
+
+### barcharts
+
+We gebruiken de restaurants data set weer
+
+```{r,eval=FALSE}
+Restaurants <- readr::read_csv("data/Restaurants.csv")
+keuken = Restaurants %>% dplyr::group_by(keuken) %>% dplyr::summarise(n=n())
+
+p = plot_ly(data = keuken,
+  x = ~keuken,
+  y = ~n,
+  type = "bar"
+)
+
+p
+```
+
+Sorteren op volgorde van aantallen kan je doen door reorder factor
+
+```{r, eval=FALSE}
+keuken = keuken %>%
+  mutate(
+  keuken = forcats::fct_reorder(keuken,n, .desc=TRUE)
+)
+p = plot_ly(data = keuken,
+  x = ~keuken,
+  y = ~n,
+  type = "bar"
+)
+
+p
+```
+
+### boxplots
+
+```{r, eval=FALSE}
+p = plot_ly(data = Restaurants, y = ~aantalreviews, color = ~keuken,type = "box")
+p
+```
+
+### 3D plots
+
+If you have 3D data you can plot it in a 3D scatter plot 
+
+```{r, eval=FALSE}
+p = plot_ly(data = mtcars, x=~mpg, y=~cyl, z = ~disp) 
+p
+```
+A matrix with values can be plotted as a 3D surface plot
+
+```{r, eval=FALSE}
+volcano
+plot_ly(z = ~volcano) %>% add_surface()
+```
+
+
+### ggplot integratie
+
+Je kan een grafiek maken met ggplot en dan de functie ``ggplotly` gebruiken om de grafiek interactief te maken. Als de grafiek veel punten bevat kan het sloom over komen.  Vandaar dat onderstaande voorbeeldje alleen 3000 punten sampled.
+
+```{r, eval=FALSE}
+p = ggplot(
+  data = diamonds %>% dplyr::sample_n(3000),
+  aes(x = carat, y = price)
+) +
+  geom_point(
+    alpha = 0.05, 
+    aes(text = paste("Clarity:", clarity))
+  ) +
+  geom_smooth(aes(colour = cut, fill = cut)) + 
+  facet_wrap(~ cut)
+p
+
+ggplotly(p)
+```
+
+
+## leaflet
+
+Leaflets worden gebruikt om interactieve kaartjes te maken. By deault gebruiken open street maps als achtergrond.
+
+```{r, eval=FALSE}
+library(leaflet)
+
+m <- leaflet() %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addMarkers(lng=174.768, lat=-36.852, popup = "The birthplace of R")
+m  
+
+# kan geblokt worden door fire walls.
+```
+
+Plot de restaurants in Zwolle op een kaartje. Data van Iens gescraped.
+
+```{r, eval=FALSE}
+Restaurants <- readr::read_csv("data/Restaurants.csv")
+Zwolle = Restaurants %>% filter(plaats == "Zwolle")
+
+## tooltip teksten kunnen geplaatst worden
+ptekst = paste(Zwolle$restNamen, '<BR> aantal reviews: ', Zwolle$aantalreviews)
+
+m2 = leaflet(data = Zwolle)
+m2 = m2 %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addMarkers(lng = ~LONGs, lat = ~LATs, popup = ptekst)
+m2  
+```
+
+Je kan kleurtje gebruiken, gebruik dan `addCirclemarkers`
+
+```{r, eval=FALSE}
+reds = colorNumeric("Reds", domain = NULL)
+
+Zwolle = Zwolle %>% filter(!is.na(aantalreviews), aantalreviews < 80)
+ptekst = paste(Zwolle$restNamen, '<BR> aantal reviews: ', Zwolle$aantalreviews)
+
+m2 = leaflet(data = Zwolle)
+m2 = m2 %>%
+  addTiles() %>%
+  addCircleMarkers(
+    lng = ~LONGs,
+    lat = ~LATs, 
+    fillColor = ~reds(aantalreviews), 
+    fillOpacity = 1, popup = ptekst
+  )
+m2
+```
+
+
+### polygonen op een leaflet
+
+Je kan ook vormen/polygons op een leaflet kaart krijgen. Hieronder is een voorbeeld van provincies, eerst moet je de data van de polygonen hebben. Dit staat in zogenaamde shape files van de provincies, deze kan je downloaden van http://www.imergis.nl/asp/47.asp. Op deze site zie je provinciegrenzen_exact, download deze en pak deze uit. In mijn data directory is dat al gedaan. 
+
+Eerst is er een beetje voorbewerking nodig om de shape file te bewerken in R tot een zogenaamde SpatialPolygonsDataframe. Dan kan je dit met leaflet te kunnen plotten.
+
+```{r, eval = FALSE}
+#### inlezen shape file
+ProvNL <- readShapeSpatial("data/TopGrenzen-prov-actueel.shp")
+class(ProvNL)
+summary(ProvNL)
+
+#### Zet coordinatensysteem
+proj4string(ProvNL) <- CRS("+init=epsg:28992")
+
+#### transformeer naar long /lat
+ProvNL = spTransform(ProvNL, CRS("+proj=longlat +datum=WGS84"))
+
+#### Het object ProvNL is een zgn spatialpolygons object, daar zit een data frame in
+ProvNL@data
+
+#### maak een hele simpele plot
+plot(ProvNL)
+```
+
+Maar nu kun je het spatial polygons object ook op een leaflet plotten.
+
+```{r, eval = FALSE}
+leaflet(ProvNL) %>%
+  addTiles() %>%
+  addPolygons(
+    stroke = TRUE, weight = 1, fillOpacity = 0.15, smoothFactor = 0.15
+  )
+```
+
+Je kan de kleueren van de provincies ook veranderen
+
+```{r, eval=FALSE}
+ProvNL$Kleur = sample(c("red","blue"), 12, replace = TRUE)
+
+ProvNL@data
+
+leaflet(ProvNL) %>%
+  addTiles() %>%
+  addPolygons(
+    stroke = TRUE, weight = 1, fillOpacity = 0.25, smoothFactor = 0.15, fillColor = ~Kleur
+  )
+
+```
+
+** Kleuren Schemas **
+
+De kleuren kan je ook data gedreven met een kleuren schema bepalen. 
+
+```{r, eval = FALSE}
+#### maak eerst wat data voor de provincies
+ProvNL$Leeftijd = runif(12)
+
+### definieer een 3 niveau schema
+colpal <- colorQuantile(
+  palette = green2red(3), n=3,
+  domain = ProvNL$Leeftijd
+)
+
+### gebruik kleurtjes en een popup tekst
+leaflet(ProvNL) %>%
+  addTiles() %>%
+  addPolygons(
+    stroke = TRUE, 
+    weight = 1, 
+    fillOpacity = 0.25, 
+    smoothFactor = 0.15, 
+    fillColor = colpal(ProvNL$Leeftijd),
+    popup = as.character(ProvNL$Leeftijd)
+  )
+
+```
+
+
+Hieronder is een voorbeeld om op postcode 2 posities niveau een kaart te maken. We hebben eerst de data nodig die de contouren van een PC2 gebied definieert, en dan is er wat preparatie nodig om de data in polygoon objecten te krijgen. Deze gaat iets anders dan de provincies die in 1 shape file stonden.
+
+```{r, eval = FALSE}
+# importeer data uit een CSV file
+pc2_kaart <- read_csv("data/pc2_kaart.csv")
+PC2_data = dplyr::select(
+  pc2_kaart, 
+  Longitude,
+  Latitude, 
+  PC2CODE ) %>%
+  as.data.frame()
+
+# Het moet een lijst van gebieden zijn.
+Pc2_list = split(PC2_data, PC2_data$PC2CODE)
+Pc2_list = lapply(Pc2_list, function(x) { x["PC2CODE"] <- NULL; x })
+
+
+### Maak van elk lijst object een Polygon
+plg = sapply(Pc2_list, Polygon)
+
+plg[[1]]
+```
+
+Nu gaan we per PC2 gebied het aantal restaurants tellen en dit in een kaartje zetten.
+
+```{r, eval = FALSE}
+PC2 = Restaurants %>%
+  mutate(
+    PC2 = stringr::str_sub(PCs,1,2)
+  ) %>%
+  group_by(PC2) %>%
+  summarise(n=n()) %>% 
+  filter(PC2 >= "10")
+
+## initieer de leaflet en voeg PC2 polygon 1 voor 1 toe
+
+pc2_lf = leaflet() %>%  addTiles() 
+
+## definieer een kleuren schema
+colpal <- colorQuantile(
+  palette = green2red(7), n=7,
+  domain = PC2$n
+)
+
+## elk polygoontje krijgt nu op basis van zijn restaurant aantal het 'juiste' kleurtje
+
+### teken per polygon, dat is het makkelijkst
+for (i in 1:length(plg)){
+  ptxt = paste(
+    "PC2: ", as.character(PC2$PC2[i]),
+    "<br>",
+    "Aantal Restaurants",
+    as.character(PC2$n[i])
+  )
+  pc2_lf = pc2_lf %>%
+    addPolygons(
+      data = plg[[i]],
+      weight = 2,
+      smoothFactor = 1,
+      fillOpacity = 0.55,
+      fillColor= colpal(PC2$n[i]),
+      popup = ptxt
+    )
+}
+
+pc2_lf
+```
+
+
+
+## Netwerk grafieken, visnetwork
+
+Het package `visnetwork` kan worden gebruikt om interactieve netwerk grafieken te maken. Je hebt twee data frames nodig, een met de nodes en een met de edges. Laten we beginnen met een simpel voorbeeldje.
+
+```{r, eval=FALSE}
+library(visNetwork)
+
+nodes = data.frame(
+  id = c(1,2,3,4)
+)
+edges = data.frame(
+  from = c(1,3,4), 
+  to  = c(2,2,2)
+)
+
+visNetwork(nodes, edges)
+```
+
+
+Er zijn diverse opties die je kan meegeven. Een deel van de opties kan je via de data frames meegeven.
+
+```{r, eval=FALSE}
+nodes <- data.frame(
+  id = 1:10,
+  label = paste("Node", 1:10),                                   # labels
+  group = c("GrA", "GrB"),                                       # groups
+  value = 1:10,                                                  # size
+  shape = c("square", "triangle", "box", "circle", "dot", "star", "ellipse", "database", "text", "diamond"),    # shape
+  title = paste0("<p><b>", 1:10,"</b><br>Node !</p>"),           # tooltip
+  color = c("darkred", "grey", "orange", "darkblue", "purple"),  # color
+  shadow = c(FALSE, TRUE, FALSE, TRUE, TRUE))                    # shadow
+
+edges <- data.frame(from = sample(1:10,8), to = sample(1:10, 8),
+  label = paste("Edge", 1:8),                                 # labels
+  length = c(100,500),                                        # length
+  arrows = c("to", "from", "middle", "middle;to"),            # arrows
+  dashes = c(TRUE, FALSE),                                    # dashes
+  title = paste("Edge", 1:8),                                 # tooltip
+  smooth = c(FALSE, TRUE),                                    # smooth
+  shadow = c(FALSE, TRUE, FALSE, TRUE))                       # shadow
+
+visNetwork(nodes, edges)
+```
+
+
+Andere opties kan je via de functie `visnetwork` meegeven. Bijvoorbeeld highlight nearest
+
+```{r, eval=FALSE}
+nodes <- data.frame(
+  id = 1:15,
+  label = paste("Label", 1:15),
+  group = sample(LETTERS[1:3], 15, replace = TRUE)
+)
+
+edges <- data.frame(
+  from = trunc(runif(15)*(15-1))+1,
+  to = trunc(runif(15)*(15-1))+1
+)
+
+visNetwork(nodes, edges) %>% 
+  visOptions(
+    highlightNearest = TRUE,
+    nodesIdSelection = TRUE
+  )
+```
+
+Nog een netwerk voorbeeldje van restaurant bezoekers in het mooie stadje Hoorn. Vereist wat data gewroet.... maar dat is vaak zo :-)
+
+Lees eerst link data in.
+```{r, eval = FALSE}
+RestaurantLinks <- readRDS("data/RestaurantLinks.RDs")
+
+## bevat vanuit iens.nl per regel een restaurant link.
+## als 5 reviewers van restaurant A ook restaurant B gerievewd hebben: dan staat er A  B  5
+
+head(RestaurantLinks[,c(1,4,7)], n=10)
+```
+
+Focus nu alleen op het mooie stadje Hoorn
+
+```{r, eval = FALSE}
+stadje = "hoorn"
+
+### Filter hoorn er uit in de links en in de restaurant set
+fil1 = RestaurantLinks$IensLink %>% 
+  str_detect(stadje)
+fil2 = RestaurantLinks$IensLink1 %>% 
+  str_detect(stadje)
+
+Hoorn  = filter(RestaurantLinks, fil1 & fil2  )
+
+### Opschonen restaurant naam, dit moet je doen anders krijg je een error bij publiceren
+Hoorn$RestaurantNaam = iconv(Hoorn$RestaurantNaam, "latin1", "ASCII")
+Hoorn$RestaurantNaam1 = iconv(Hoorn$RestaurantNaam1, "latin1", "ASCII")
+
+strf2 = "\\bHoorn\\b"
+HoornR = Restaurants$plaats  %>% str_detect(strf2)
+HoornRes = filter(Restaurants, HoornR)
+HoornRes$keuken = iconv(HoornRes$keuken, "latin1", "ASCII")
+
+head(HoornRes)
+```
+
+destilleer de unieke nodes en edges uit de data en plot de netwerkgrafiek
+
+```{r, eval=FALSE}
+tmp  = data.frame(restNamen = unique( c(unique(Hoorn$RestaurantNaam), unique(Hoorn$RestaurantNaam1))))
+tmp2 = left_join (tmp, HoornRes, by="restNamen") %>% filter( !is.na(restNamen))
+
+Hoornnodes = data.frame(
+  id    = tmp2$restNamen,
+  label = tmp2$restNamen,
+  title = tmp2$restNamen,
+  group = tmp2$keuken
+)
+
+HoornEdges = data.frame(
+  from  = Hoorn$RestaurantNaam,
+  to    = Hoorn$RestaurantNaam1, 
+  value = Hoorn$COUNT_of_IensLink1
+)  
+
+#### zet bezoekers van restaurant A naar restaurant A op 1
+HoornEdges$value [Hoorn$RestaurantNaam == Hoorn$RestaurantNaam1] = 1
+
+visNetwork(Hoornnodes, HoornEdges) %>% 
+  visLegend() %>%
+  visOptions(
+    highlightNearest = TRUE, 
+    nodesIdSelection = TRUE
+  ) %>%
+  visInteraction(
+    navigationButtons = TRUE
+  ) %>%
+  visPhysics( maxVelocity = 25)
+
+```
+
+
+# Zoomable circle packing plots en sunburst plots
+
+Circle packings zijn een leuke manier om hierarchische data te visualiseren. Installeer eerst het package van Github.
+
+```{r, eval = FALSE}
+devtools::install_github("jeromefroe/circlepackeR")
+```
+
+Maak wat dummy data aan. Volgend voorbeeldje is een huerarchiesch lijst.
+
+```{r, eval= FALSE}
+hierarchical_list <- list(name = "World",
+                          children = list(
+                            list(name = "North America",
+                                 children = list(
+                                   list(name = "United States", size = 308865000),
+                                   list(name = "Mexico", size = 107550697),
+                                   list(name = "Canada", size = 34033000))),
+                            list(name = "South America", 
+                                 children = list(
+                                   list(name = "Brazil", size = 192612000),
+                                   list(name = "Colombia", size = 45349000),
+                                   list(name = "Argentina", size = 40134425))),
+                            list(name = "Europe",  
+                                 children = list(
+                                   list(name = "Germany", size = 81757600),
+                                   list(name = "France", size = 65447374),
+                                   list(name = "United Kingdom", size = 62041708))),
+                            list(name = "Africa",  
+                                 children = list(
+                                   list(name = "Nigeria", size = 154729000),
+                                   list(name = "Ethiopia", size = 79221000),
+                                   list(name = "Egypt", size = 77979000))),
+                            list(name = "Asia",  
+                                 children = list(
+                                   list(name = "China", size = 1336335000),
+                                   list(name = "India", size = 1178225000),
+                                   list(name = "Indonesia", size = 231369500)))
+                          )
+)
+```
+
+and plot it 
+
+```{r, eval=FALSE}
+circlepackeR::circlepackeR(hierarchical_list)
+```
+
+Interactieve sunburst plots kan je ook mooi gebruiken voor hierarchische data.
+
+```{r, eval=FALSE}
+library(sunburstR)
+
+sequences <- read.csv(
+  system.file("examples/visit-sequences.csv",package="sunburstR")
+  ,header = FALSE
+  ,stringsAsFactors = FALSE
+)[1:100,]
+
+sunburst(sequences)
+
+sunburst(
+  sequences
+  ,count = TRUE
+)
+
+## aangepaste text in het midden 
+sunburst(
+  sequences
+  # apply sort order to the legends
+  ,legendOrder = unique(unlist(strsplit(sequences[,1],"-")))
+  # just provide the name in the explanation in the center
+  ,explanation = "function(d){return d.data.name}"
+)
+```
+
+
+
+
