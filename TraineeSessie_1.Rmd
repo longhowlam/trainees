@@ -1057,7 +1057,7 @@ visNetwork(Hoornnodes, HoornEdges) %>%
 ```
 
 
-# Zoomable circle packing plots en sunburst plots
+# Zoomable circle packing plots, sunburst plots en chord diagrams
 
 Circle packings zijn een leuke manier om hierarchische data te visualiseren. Installeer eerst het package van Github.
 
@@ -1133,6 +1133,27 @@ sunburst(
 )
 ```
 
+Chord diagrams zijn een leuke manier om "A naar B" data weer te geven, relaties tussen entiteiten.
 
+```{r, eval=FALSE}
+#devtools::install_github("mattflor/chorddiag")
+library(chorddiag)
 
+# overgangsmatrix
+m <- matrix(
+  c(11975,  5871, 8916, 2868,
+    1951, 10048, 2060, 6171,
+    8010, 16145, 8090, 8045,
+    1013,   990,  940, 6907
+  ),
+  byrow = TRUE,
+  nrow = 4, ncol = 4
+)
 
+haircolors <- c("black", "blonde", "brown", "red")
+dimnames(m) <- list(have = haircolors, prefer = haircolors)
+m
+
+groupColors <- c("#000000", "#FFDD89", "#957244", "#F26223")
+chorddiag(m, groupColors = groupColors, groupnamePadding = 20)
+```
