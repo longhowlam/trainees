@@ -366,6 +366,11 @@ RFmodelGrid = h2o.grid(
 RFmodelGrid
 ```
 
+Geef resources terug door h2o af te sluiten als je het niet meer nodig hebt.
+
+```{r, eval = FALSE}
+h2o.shutdown(prompt = FALSE)
+```
 
 
 
