@@ -279,7 +279,7 @@ TTest %>%
 
 H2O is een schaalbaar machine learning platform die je vanuit R kan bedienen. Het bevat veel machine learning algoritmes, en voor grotere sets waar gewoon R moeite mee heeft kan h2o een uitkomst bieden. H2o heeft een eigen 'executie engine' geschreven in java. Bij het opstarten van h2o vanuit R wordt dan ook een apart h2o proces opgestart waar je data vanuit R naar toe moet uploaden om daar de algoritmes op los te laten.
 
-Als je h2o opstart is er ook een eigen GUI, daar kan je naar toe localhost:54321 (standard 54321 port)
+Als je h2o opstart is er ook een eigen GUI, daar kan je naar toe localhost:54321 (standard 54321 port).
 
 ```{r, eval = FALSE}
 library(h2o)
@@ -297,8 +297,8 @@ TTrain$Survived = as.factor(TTrain$Survived)
 TTest$Survived = as.factor(TTest$Survived)
 
 ttrain.h2o = as.h2o(TTrain) 
-ttest.h20 = as.h2o(TTest)
-### Je kan ook direct text files inlezen in h20 met 
+ttest.h2o = as.h2o(TTest)
+### Je kan ook direct text files inlezen in h2o met 
 #h2o.importFile(path="C:\een file.txt", sep=",")
 
 ### welke files zijn er in h2o
@@ -314,7 +314,7 @@ NNmodel = h2o.deeplearning(
   x = c(3,5:6),
   y = "Survived",
   training_frame  = ttrain.h2o,
-  validation_frame = ttest.h20,
+  validation_frame = ttest.h2o,
   hidden = 5,
   epochs = 250,
   variable_importances = TRUE
@@ -331,7 +331,7 @@ GBMmodel = h2o.gbm(
   x = c(3,5:6),
   y = "Survived",
   training_frame  = ttrain.h2o,
-  validation_frame = ttest.h20
+  validation_frame = ttest.h2o
   )
 GBMmodel
 
@@ -339,7 +339,7 @@ RFmodel = h2o.randomForest(
   x = c(3,5:6),
   y = "Survived",
   training_frame  = ttrain.h2o,
-  validation_frame = ttest.h20
+  validation_frame = ttest.h2o
   )
 RFmodel
 
@@ -355,7 +355,7 @@ RFmodelGrid = h2o.grid(
   x = c(3,5:6),
   y = "Survived",
   training_frame  = ttrain.h2o,
-  validation_frame = ttest.h20,
+  validation_frame = ttest.h2o,
   hyper_params = list(
     ntrees =c(50,100), 
     mtries = c(1,2,3)

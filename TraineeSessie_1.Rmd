@@ -317,7 +317,7 @@ full_join(df1, df2, by = c("col1" = "col1"))
 
 ## data frames stapelen of plakken
 
-Soms wil je twee tabellen op elkaar stappelen tot een nieuwe tabel, dat kan je doen met `bind_rows`. Als je twee tabellen naast elkaar wilt zetten tot een nieuwe tabel, gebruik dan `bind_rows`.
+Soms wil je twee tabellen op elkaar stapelen tot een nieuwe tabel, dat kan je doen met `bind_rows`. Als je twee tabellen naast elkaar wilt zetten tot een nieuwe tabel, gebruik dan `bind_rows`.
 
 ```{r, eval=FALSE}
 ## bind_rows
@@ -344,7 +344,7 @@ bind_cols(A,B)
 
 <br>
 
-# tidy data en wide data
+# Tidy data en wide data
 
 ---
 
@@ -392,7 +392,7 @@ test2 = test %>% spread(V,price)
 test2
 ```
 
-Een handige functie in tidyr is `separate`, dit kan je gebruiken om een kolom uit elkaar te trekken. Standaard worden niet alpha numerieke tekens als separator gebruikt.
+Een handige functie in tidyr is `separate`, dit kan je gebruiken om een kolom uit elkaar te trekken. Standaard worden niet alfa numerieke tekens als separator gebruikt.
 
 ```{r, eval=FALSE}
 df = tibble(x = c("A.B", "C.P", "P.Q"))
@@ -484,7 +484,7 @@ str_locate(testset$Name, "Mr")
 
 <br>
 
-# forcats
+# Factor maniuplatie met forcats
 
 ---
 
@@ -617,7 +617,7 @@ tmp
 
 # dplyr met externe data
 
-Je kan `dplyr` ook gebruiken op externe data in databases en, ook data in Spark. We geven hier eerst het Spark voorbeeld met het package `sparklyr`.
+Je kan `dplyr` ook gebruiken op externe data in databases en, ook data in Spark. We geven hier eerst het Spark voorbeeld met het package `sparklyr`, en dan een MySQL voorbeeldje.
 
 ```{r, eval=FALSE}
 library(sparklyr)
@@ -768,7 +768,7 @@ ggplotly(p)
 ```
 
 
-## leaflet
+## Kaartjes met leaflet
 
 Leaflets worden gebruikt om interactieve kaartjes te maken. By deault gebruiken open street maps als achtergrond.
 
@@ -855,7 +855,7 @@ leaflet(ProvNL) %>%
   )
 ```
 
-Je kan de kleueren van de provincies ook veranderen
+Je kan de kleuren van de provincies ook veranderen
 
 ```{r, eval=FALSE}
 ProvNL$Kleur = sample(c("red","blue"), 12, replace = TRUE)
@@ -1065,7 +1065,7 @@ Circle packings zijn een leuke manier om hierarchische data te visualiseren. Ins
 devtools::install_github("jeromefroe/circlepackeR")
 ```
 
-Maak wat dummy data aan. Volgend voorbeeldje is een huerarchiesch lijst.
+Maak wat dummy data aan. Volgend voorbeeldje is een hiërarchischer lijst.
 
 ```{r, eval= FALSE}
 hierarchical_list <- list(name = "World",
