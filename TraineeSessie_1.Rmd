@@ -3,18 +3,18 @@ title: "Refresher data prep & interactive data visualiatie"
 author: "Longhow Lam"
 subtitle: "Trainee Sessie 01"
 output:
-  html_notebook:
-    number_sections: yes
-    theme: sandstone
-    toc: yes
-    toc_depth: 2
-    toc_float: yes
   prettydoc::html_pretty:
     highlight: github
     number_sections: yes
     theme: cayman
     toc: yes
     toc_depth: 2
+  html_notebook:
+    number_sections: yes
+    theme: sandstone
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
 ---
 
 ---
@@ -58,7 +58,7 @@ library(raster)
 library(sp)
 library(maptools)
 library(rgdal)
-
+library(visNetwork)
 ```
 
 
@@ -1035,64 +1035,13 @@ visNetwork(nodes, edges) %>%
   )
 ```
 
-Nog een netwerk voorbeeldje van restaurant bezoekers in het mooie stadje Hoorn. Vereist wat data gewroet.... maar dat is vaak zo :-)
+Nog een netwerk voorbeeldje van restaurant bezoekers in het mooie stadje Hoorn. Bij het scrapen van Iens, kan je ook zien dat een reviewer eerst een bepaald restaurant heeft gereviewed en dan een ander, dat is in een netwerk graph te zetten. 
 
-Lees eerst link data in.
-```{r, eval = FALSE}
-RestaurantLinks <- readRDS("data/RestaurantLinks.RDs")
-
-## bevat vanuit iens.nl per regel een restaurant link.
-## als 5 reviewers van restaurant A ook restaurant B gerievewd hebben: dan staat er A  B  5
-
-head(RestaurantLinks[,c(1,4,7)], n=10)
-```
-
-Focus nu alleen op het mooie stadje Hoorn
-
-```{r, eval = FALSE}
-stadje = "hoorn"
-
-### Filter hoorn er uit in de links en in de restaurant set
-fil1 = RestaurantLinks$IensLink %>% 
-  str_detect(stadje)
-fil2 = RestaurantLinks$IensLink1 %>% 
-  str_detect(stadje)
-
-Hoorn  = filter(RestaurantLinks, fil1 & fil2  )
-
-### Opschonen restaurant naam, dit moet je doen anders krijg je een error bij publiceren
-Hoorn$RestaurantNaam = iconv(Hoorn$RestaurantNaam, "latin1", "ASCII")
-Hoorn$RestaurantNaam1 = iconv(Hoorn$RestaurantNaam1, "latin1", "ASCII")
-
-strf2 = "\\bHoorn\\b"
-HoornR = Restaurants$plaats  %>% str_detect(strf2)
-HoornRes = filter(Restaurants, HoornR)
-HoornRes$keuken = iconv(HoornRes$keuken, "latin1", "ASCII")
-
-head(HoornRes)
-```
-
-destilleer de unieke nodes en edges uit de data en plot de netwerkgrafiek
+Focus nu alleen op het mooie stadje Hoorn.
 
 ```{r, eval=FALSE}
-tmp  = data.frame(restNamen = unique( c(unique(Hoorn$RestaurantNaam), unique(Hoorn$RestaurantNaam1))))
-tmp2 = left_join (tmp, HoornRes, by="restNamen") %>% filter( !is.na(restNamen))
-
-Hoornnodes = data.frame(
-  id    = tmp2$restNamen,
-  label = tmp2$restNamen,
-  title = tmp2$restNamen,
-  group = tmp2$keuken
-)
-
-HoornEdges = data.frame(
-  from  = Hoorn$RestaurantNaam,
-  to    = Hoorn$RestaurantNaam1, 
-  value = Hoorn$COUNT_of_IensLink1
-)  
-
-#### zet bezoekers van restaurant A naar restaurant A op 1
-HoornEdges$value [Hoorn$RestaurantNaam == Hoorn$RestaurantNaam1] = 1
+Hoornnodes = readRDS("data/HoornNodes.RDs")
+HoornEdges = readRDS("data/HoornEdges.RDs")
 
 visNetwork(Hoornnodes, HoornEdges) %>% 
   visLegend() %>%

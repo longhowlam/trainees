@@ -3,17 +3,17 @@ title: 'Machine learning in R'
 author: "Longhow Lam"
 subtitle: "Trainee sessie 02"
 output:
-  html_notebook:
-    theme: sandstone
-    toc: true
-    toc_depth: 2
-    toc_float: true
-    number_sections: true
   prettydoc::html_pretty:
     highlight: github
     theme: cayman
     toc: true
     toc_depth: 2
+    number_sections: true
+  html_notebook:
+    theme: sandstone
+    toc: true
+    toc_depth: 2
+    toc_float: true
     number_sections: true
 ---
 
@@ -277,7 +277,9 @@ TTest %>%
 
 ---
 
-H2O is een schaalbaar machine learning platform die je vanuit R kan bedienen. Het bevat veel machine learning algoritmes, en voor grotere sets waar gewoon R moeite mee heeft kan h2o een uitkomst bieden. H2o heeft een eigen 'executie engine' geschreven in java. Bij het opstarten van h2o vanuit R wordt dan ook een apart h2o proces opgestart waar je data vanuit R naar toe moet uploaden. om daar de algoritmes op los te laten.
+H2O is een schaalbaar machine learning platform die je vanuit R kan bedienen. Het bevat veel machine learning algoritmes, en voor grotere sets waar gewoon R moeite mee heeft kan h2o een uitkomst bieden. H2o heeft een eigen 'executie engine' geschreven in java. Bij het opstarten van h2o vanuit R wordt dan ook een apart h2o proces opgestart waar je data vanuit R naar toe moet uploaden om daar de algoritmes op los te laten.
+
+Als je h2o opstart is er ook een eigen GUI, daar kan je naar toe localhost:54321 (standard 54321 port)
 
 ```{r, eval = FALSE}
 library(h2o)
@@ -304,7 +306,7 @@ h2o.ls()
 ```
 
 
-Er zijn diverse modellen die je kan trainen, we zullen hier een tweetal laten zien, neural netwerks en random forests.
+Er zijn diverse modellen die je kan trainen, we zullen hier een aantal laten zien, neural netwerks, boosting en random forests.
 
 ```{r, eval = FALSE}
 ## model op titanic
@@ -324,6 +326,15 @@ h2o.varimp(NNmodel)
 
 
 ```{r, eval = FALSE}
+
+GBMmodel = h2o.gbm(
+  x = c(3,5:6),
+  y = "Survived",
+  training_frame  = ttrain.h2o,
+  validation_frame = ttest.h20
+  )
+GBMmodel
+
 RFmodel = h2o.randomForest(
   x = c(3,5:6),
   y = "Survived",
@@ -336,18 +347,23 @@ h2o.varimp_plot(RFmodel)
 ```
 
 
-Grid search in h2o.
+Grid search in h2o. Je kan makkelijk modellen fine-tunen, in een grid kan je verschillende waarden van hyperparameters proberen.
 
 ```{r, eval = FALSE}
-RFmodel = h2o.grid(
-  "randomForest"
+RFmodelGrid = h2o.grid(
+  "randomForest",
   x = c(3,5:6),
   y = "Survived",
   training_frame  = ttrain.h2o,
   validation_frame = ttest.h20,
-  hyper_params(ntrees =c(50,100,150), mtries = c(3,4,5,6))
+  hyper_params = list(
+    ntrees =c(50,100), 
+    mtries = c(1,2,3)
   )
-RFmodel
+)
+
+#overzicht van het grid, gesorteerd op logloss
+RFmodelGrid
 ```
 
 
@@ -546,7 +562,16 @@ classify.task = mergeSmallFactorLevels (classify.task, min.perc = 0.02,  new.lev
 summarizeColumns(classify.task)
 ```
 
-Welke features hebben een effect op de target?
+Welke features hebben een effect op de target? Je kan de predictive power meten per input variable. Univariate, dus per feature kan je met mlr de relatie met de target berekenen. 
+
+Onderliggend heb je Rweka en Rjava dingen nodig daar kan je op linux wat issues mee krijgen. Dingen de je kan doen:
+
+* run in een shell: `sudo R CMD javareconf` en doe
++ sudo rstudio-server stop
++ export LD_LIBRARY_PATH=/usr/lib/jvm/jre/lib/amd64:/usr/lib/jvm/jre/lib/amd64/default
++ sudo rstudio-server start
+
+Zie ook [stack overflow](https://stackoverflow.com/questions/28462302/libjvm-so-cannot-open-shared-object-file-no-such-file-or-directory)
 
 ```{r, eval = FALSE}
 ## Feature selection 
@@ -660,7 +685,7 @@ plot(mycars$mpg, mycars$wt, col = cars.cluster$cluster )
 points(cars.cluster$centers, col = 1:5, pch = 8, cex = 2)
 ```
 
-Met het `h2o` package kan je ook k-means clustering doen, dit is niet alleen sneller maar kan ook meteen factor variabelen aan. Start indien nodig h20.
+Met het `h2o` package kan je ook k-means clustering doen, dit is niet alleen sneller maar kan ook meteen factor variabelen aan, in de `kmeans` van R kan dat niet. Start indien nodig h2o.
 
 ```{r, eval = FALSE}
 library(h2o)
@@ -668,7 +693,7 @@ library(h2o)
 h2o.init()
 ```
 
-Breng data naar h2o, we gebruiken nu de sample data set mtcars maar we maken 1 factor column aan
+Breng data naar h2o, we gebruiken nu de sample data set mtcars in R maar we maken nog 1 extra factor kolom aan.
 
 ```{r, eval = FALSE}
 # am is de transimssie: 0 is automat en 1 is handgeschakeld, is eig
