@@ -32,7 +32,7 @@ Het `tidyverse` package is een verzameling R packages met 'dezelfde' gedachtegoe
 * dplyr
 * tibble
 * ggplot2
-* purr
+* purrr
 * forcats
 * readr
 * readxl
@@ -98,6 +98,7 @@ test2 = mtcars %>%
     starts_with("c")
   )
 
+## kolommen selecteren op basis van positie
 my.cars = mtcars %>% .[2:6]
 ```
 
@@ -124,7 +125,7 @@ mycars = mtcars %>%
   )
 ```
 
-Je kan nieuwe kolommen maken die afhankelijk zijn van kolommen die je net in mutate maakt
+Je kan nieuwe kolommen maken die afhankelijk zijn van kolommen die je net in mutate maakt.
 
 ```{r, eval=FALSE}
 mycars = mtcars %>%
@@ -148,7 +149,7 @@ mycars = mtcars %>%
   )
 ```
 
-Twee functies die ontzettend handig kunnen zijn: `mutate_at` en `mutate_if`
+Twee functies die ontzettend handig kunnen zijn: `mutate_at` en `mutate_if`.
 
 ```{r, eval=FALSE}
 ABT = data.frame(
@@ -410,7 +411,7 @@ df %>% separate(x, c("Kol1", "Kol2", "Kol3"))
 <br>
 
 
-# Character data bewerken met stringr
+# Character data bewerken met het package `stringr`.
 
 ---
 
@@ -617,7 +618,7 @@ tmp
 
 # dplyr met externe data
 
-Je kan `dplyr` ook gebruiken op externe data in databases en, ook data in Spark. We geven hier eerst het Spark voorbeeld met het package `sparklyr`, en dan een MySQL voorbeeldje.
+Je kan `dplyr` niet alleen gebruiken op data frames in R, ook kan je `dplyr` gebruiken op externe data in databases en, ook data in Spark. We geven hier eerst het Spark voorbeeld met het package `sparklyr`, en dan een MySQL voorbeeldje.
 
 ```{r, eval=FALSE}
 library(sparklyr)
@@ -635,7 +636,6 @@ test = iris_tbl %>% filter(Sepal_Length >5)
 class(test)
 test %>% count()
 
-
 spark_disconnect(sc)
 ```
 
@@ -647,14 +647,20 @@ library(RMySQL)
 library(DBI)
 library(dplyr)
 
-# maak een connectie naar mySQL, zie ook connections tab
+## maak een connectie naar mySQL, zie ook connections tab
 con_sql <-  dbConnect(odbc::odbc(), "my-connector")
 
-## 
+## laat zien welek tabelllen er zijn 
 dbListTables(con_sql)
+
+## copier lokale R data frames naar MySQL
 dbWriteTable(conn = con_sql, name = 'mtcars', value = mtcars)
 
+## je hebt een'handle' nodig naar een tabel, daar kan je dplyr op gebruiken
 tbl_handle = tbl(con_sql, "mtcars")
+
+tbl_handle %>% count()
+
 
 zz = tbl_handle %>% filter(disp > 260) 
 class(zz)

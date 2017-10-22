@@ -86,20 +86,20 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li><a href="#joins"><span class="toc-section-number">2.6</span> joins</a></li>
 <li><a href="#data-frames-stapelen-of-plakken"><span class="toc-section-number">2.7</span> data frames stapelen of plakken</a></li>
 </ul></li>
-<li><a href="#tidy-data-en-wide-data"><span class="toc-section-number">3</span> tidy data en wide data</a></li>
-<li><a href="#character-data-bewerken-met-stringr"><span class="toc-section-number">4</span> Character data bewerken met stringr</a><ul>
+<li><a href="#tidy-data-en-wide-data"><span class="toc-section-number">3</span> Tidy data en wide data</a></li>
+<li><a href="#character-data-bewerken-met-het-package-stringr."><span class="toc-section-number">4</span> Character data bewerken met het package <code>stringr</code>.</a><ul>
 <li><a href="#reguliere-expressies"><span class="toc-section-number">4.1</span> Reguliere expressies</a></li>
 <li><a href="#functies-uit-het-package-stringr"><span class="toc-section-number">4.2</span> functies uit het package stringr</a></li>
 </ul></li>
-<li><a href="#forcats"><span class="toc-section-number">5</span> forcats</a></li>
+<li><a href="#factor-maniuplatie-met-forcats"><span class="toc-section-number">5</span> Factor maniuplatie met forcats</a></li>
 <li><a href="#dates-in-r"><span class="toc-section-number">6</span> Dates in R</a></li>
 <li><a href="#dplyr-met-externe-data"><span class="toc-section-number">7</span> dplyr met externe data</a></li>
 <li><a href="#interactive-grafieken"><span class="toc-section-number">8</span> Interactive grafieken</a><ul>
 <li><a href="#het-plotly-package"><span class="toc-section-number">8.1</span> Het plotly package</a></li>
-<li><a href="#leaflet"><span class="toc-section-number">8.2</span> leaflet</a></li>
+<li><a href="#kaartjes-met-leaflet"><span class="toc-section-number">8.2</span> Kaartjes met leaflet</a></li>
 <li><a href="#netwerk-grafieken-visnetwork"><span class="toc-section-number">8.3</span> Netwerk grafieken, visnetwork</a></li>
 </ul></li>
-<li><a href="#zoomable-circle-packing-plots-en-sunburst-plots"><span class="toc-section-number">9</span> Zoomable circle packing plots en sunburst plots</a></li>
+<li><a href="#zoomable-circle-packing-plots-sunburst-plots-en-chord-diagrams"><span class="toc-section-number">9</span> Zoomable circle packing plots, sunburst plots en chord diagrams</a></li>
 </ul>
 </div>
 
@@ -114,7 +114,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li>dplyr</li>
 <li>tibble</li>
 <li>ggplot2</li>
-<li>purr</li>
+<li>purrr</li>
 <li>forcats</li>
 <li>readr</li>
 <li>readxl</li>
@@ -153,6 +153,7 @@ test2 =<span class="st"> </span>mtcars <span class="op">%&gt;%</span><span class
     <span class="kw">starts_with</span>(<span class="st">&quot;c&quot;</span>)
   )
 
+## kolommen selecteren op basis van positie
 my.cars =<span class="st"> </span>mtcars <span class="op">%&gt;%</span><span class="st"> </span>.[<span class="dv">2</span><span class="op">:</span><span class="dv">6</span>]</code></pre></div>
 </div>
 <div id="kolom-maken-of-wijzigen-met-mutate" class="section level2">
@@ -170,7 +171,7 @@ my.cars<span class="op">$</span>kolom3  =<span class="st"> </span>my.cars<span c
     <span class="dt">displ_l =</span> disp <span class="op">/</span><span class="st"> </span><span class="fl">61.0237</span>,
     <span class="dt">tmp =</span> mpg <span class="op">*</span><span class="dv">1000</span>
   )</code></pre></div>
-<p>Je kan nieuwe kolommen maken die afhankelijk zijn van kolommen die je net in mutate maakt</p>
+<p>Je kan nieuwe kolommen maken die afhankelijk zijn van kolommen die je net in mutate maakt.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mycars =<span class="st"> </span>mtcars <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(
     <span class="dt">displ_l =</span> disp <span class="op">/</span><span class="st"> </span><span class="fl">61.0237</span>,
@@ -186,7 +187,7 @@ mycars =<span class="st"> </span>mtcars <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(
     <span class="dt">cyln =</span> <span class="kw">normalize</span>(cyl)
   )</code></pre></div>
-<p>Twee functies die ontzettend handig kunnen zijn: <code>mutate_at</code> en <code>mutate_if</code></p>
+<p>Twee functies die ontzettend handig kunnen zijn: <code>mutate_at</code> en <code>mutate_if</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ABT =<span class="st"> </span><span class="kw">data.frame</span>(
   <span class="kw">matrix</span>(<span class="kw">round</span>(<span class="dv">100</span><span class="op">*</span><span class="kw">runif</span>(<span class="dv">100</span>)), <span class="dt">ncol=</span><span class="dv">10</span>)
 )
@@ -308,7 +309,7 @@ df6 =<span class="st"> </span>df1 <span class="op">%&gt;%</span><span class="st"
 </div>
 <div id="data-frames-stapelen-of-plakken" class="section level2">
 <h2><span class="header-section-number">2.7</span> data frames stapelen of plakken</h2>
-<p>Soms wil je twee tabellen op elkaar stappelen tot een nieuwe tabel, dat kan je doen met <code>bind_rows</code>. Als je twee tabellen naast elkaar wilt zetten tot een nieuwe tabel, gebruik dan <code>bind_rows</code>.</p>
+<p>Soms wil je twee tabellen op elkaar stapelen tot een nieuwe tabel, dat kan je doen met <code>bind_rows</code>. Als je twee tabellen naast elkaar wilt zetten tot een nieuwe tabel, gebruik dan <code>bind_rows</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## bind_rows
 A =<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">y =</span> <span class="kw">rnorm</span>(<span class="dv">5</span>))
 B =<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x=</span><span class="dv">11</span><span class="op">:</span><span class="dv">15</span>, <span class="dt">y =</span> <span class="kw">rnorm</span>(<span class="dv">5</span>))
@@ -330,7 +331,7 @@ B =<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">
 </div>
 </div>
 <div id="tidy-data-en-wide-data" class="section level1">
-<h1><span class="header-section-number">3</span> tidy data en wide data</h1>
+<h1><span class="header-section-number">3</span> Tidy data en wide data</h1>
 <hr />
 <p>Tidy data is wanneer data in de volgende vorm zit:</p>
 <ul>
@@ -364,7 +365,7 @@ test =<span class="st"> </span><span class="kw">data.frame</span>(
 
 test2 =<span class="st"> </span>test <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">spread</span>(V,price)
 test2</code></pre></div>
-<p>Een handige functie in tidyr is <code>separate</code>, dit kan je gebruiken om een kolom uit elkaar te trekken. Standaard worden niet alpha numerieke tekens als separator gebruikt.</p>
+<p>Een handige functie in tidyr is <code>separate</code>, dit kan je gebruiken om een kolom uit elkaar te trekken. Standaard worden niet alfa numerieke tekens als separator gebruikt.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df =<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">x =</span> <span class="kw">c</span>(<span class="st">&quot;A.B&quot;</span>, <span class="st">&quot;C.P&quot;</span>, <span class="st">&quot;P.Q&quot;</span>))
 df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">separate</span>(x, <span class="kw">c</span>(<span class="st">&quot;Kol1&quot;</span>, <span class="st">&quot;Kol2&quot;</span>))
 
@@ -377,8 +378,8 @@ df =<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">x =
 df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">separate</span>(x, <span class="kw">c</span>(<span class="st">&quot;Kol1&quot;</span>, <span class="st">&quot;Kol2&quot;</span>, <span class="st">&quot;Kol3&quot;</span>))</code></pre></div>
 <p><br></p>
 </div>
-<div id="character-data-bewerken-met-stringr" class="section level1">
-<h1><span class="header-section-number">4</span> Character data bewerken met stringr</h1>
+<div id="character-data-bewerken-met-het-package-stringr." class="section level1">
+<h1><span class="header-section-number">4</span> Character data bewerken met het package <code>stringr</code>.</h1>
 <hr />
 <p>Character data in R kan je bewerken/manipuleren met het <code>stringr</code> package. Voordat we daar verder op in gaan is het handig om te weten wat reguliere expressies zijn.</p>
 <div id="reguliere-expressies" class="section level2">
@@ -434,8 +435,8 @@ testset =<span class="st"> </span>testset <span class="op">%&gt;%</span>
 <p><br></p>
 </div>
 </div>
-<div id="forcats" class="section level1">
-<h1><span class="header-section-number">5</span> forcats</h1>
+<div id="factor-maniuplatie-met-forcats" class="section level1">
+<h1><span class="header-section-number">5</span> Factor maniuplatie met forcats</h1>
 <hr />
 <p>In R kun je factor variabelen bewerken met functies uit het <code>forcats</code> package. We geven een aantal voorbeelden op random gegenereerde data</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(forcats)
@@ -531,7 +532,7 @@ tmp</code></pre></div>
 </div>
 <div id="dplyr-met-externe-data" class="section level1">
 <h1><span class="header-section-number">7</span> dplyr met externe data</h1>
-<p>Je kan <code>dplyr</code> ook gebruiken op externe data in databases en, ook data in Spark. We geven hier eerst het Spark voorbeeld met het package <code>sparklyr</code>.</p>
+<p>Je kan <code>dplyr</code> niet alleen gebruiken op data frames in R, ook kan je <code>dplyr</code> gebruiken op externe data in databases en, ook data in Spark. We geven hier eerst het Spark voorbeeld met het package <code>sparklyr</code>, en dan een MySQL voorbeeldje.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(sparklyr)
 <span class="kw">library</span>(dplyr)
 
@@ -547,7 +548,6 @@ test =<span class="st"> </span>iris_tbl <span class="op">%&gt;%</span><span clas
 <span class="kw">class</span>(test)
 test <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">count</span>()
 
-
 <span class="kw">spark_disconnect</span>(sc)</code></pre></div>
 <p>Als je MySQL hebt en een odbc connectie hebt opgezet kan je een link leggen naar MySQL. Zie bijvoorbeeld ook <a href="https://askubuntu.com/questions/800216/installing-ubuntu-16-04-lts-how-to-install-odbc">deze link</a></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(odbc)
@@ -555,14 +555,20 @@ test <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">cou
 <span class="kw">library</span>(DBI)
 <span class="kw">library</span>(dplyr)
 
-<span class="co"># maak een connectie naar mySQL, zie ook connections tab</span>
+## maak een connectie naar mySQL, zie ook connections tab
 con_sql &lt;-<span class="st">  </span><span class="kw">dbConnect</span>(odbc<span class="op">::</span><span class="kw">odbc</span>(), <span class="st">&quot;my-connector&quot;</span>)
 
-## 
+## laat zien welek tabelllen er zijn 
 <span class="kw">dbListTables</span>(con_sql)
+
+## copier lokale R data frames naar MySQL
 <span class="kw">dbWriteTable</span>(<span class="dt">conn =</span> con_sql, <span class="dt">name =</span> <span class="st">'mtcars'</span>, <span class="dt">value =</span> mtcars)
 
+## je hebt een'handle' nodig naar een tabel, daar kan je dplyr op gebruiken
 tbl_handle =<span class="st"> </span><span class="kw">tbl</span>(con_sql, <span class="st">&quot;mtcars&quot;</span>)
+
+tbl_handle <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">count</span>()
+
 
 zz =<span class="st"> </span>tbl_handle <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(disp <span class="op">&gt;</span><span class="st"> </span><span class="dv">260</span>) 
 <span class="kw">class</span>(zz)
@@ -646,8 +652,8 @@ p
 <span class="kw">ggplotly</span>(p)</code></pre></div>
 </div>
 </div>
-<div id="leaflet" class="section level2">
-<h2><span class="header-section-number">8.2</span> leaflet</h2>
+<div id="kaartjes-met-leaflet" class="section level2">
+<h2><span class="header-section-number">8.2</span> Kaartjes met leaflet</h2>
 <p>Leaflets worden gebruikt om interactieve kaartjes te maken. By deault gebruiken open street maps als achtergrond.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(leaflet)
 
@@ -711,7 +717,7 @@ ProvNL<span class="op">@</span>data
 <span class="st">  </span><span class="kw">addPolygons</span>(
     <span class="dt">stroke =</span> <span class="ot">TRUE</span>, <span class="dt">weight =</span> <span class="dv">1</span>, <span class="dt">fillOpacity =</span> <span class="fl">0.15</span>, <span class="dt">smoothFactor =</span> <span class="fl">0.15</span>
   )</code></pre></div>
-<p>Je kan de kleueren van de provincies ook veranderen</p>
+<p>Je kan de kleuren van de provincies ook veranderen</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ProvNL<span class="op">$</span>Kleur =<span class="st"> </span><span class="kw">sample</span>(<span class="kw">c</span>(<span class="st">&quot;red&quot;</span>,<span class="st">&quot;blue&quot;</span>), <span class="dv">12</span>, <span class="dt">replace =</span> <span class="ot">TRUE</span>)
 
 ProvNL<span class="op">@</span>data
@@ -874,11 +880,11 @@ HoornEdges =<span class="st"> </span><span class="kw">readRDS</span>(<span class
 <span class="st">  </span><span class="kw">visPhysics</span>( <span class="dt">maxVelocity =</span> <span class="dv">25</span>)</code></pre></div>
 </div>
 </div>
-<div id="zoomable-circle-packing-plots-en-sunburst-plots" class="section level1">
-<h1><span class="header-section-number">9</span> Zoomable circle packing plots en sunburst plots</h1>
+<div id="zoomable-circle-packing-plots-sunburst-plots-en-chord-diagrams" class="section level1">
+<h1><span class="header-section-number">9</span> Zoomable circle packing plots, sunburst plots en chord diagrams</h1>
 <p>Circle packings zijn een leuke manier om hierarchische data te visualiseren. Installeer eerst het package van Github.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">install_github</span>(<span class="st">&quot;jeromefroe/circlepackeR&quot;</span>)</code></pre></div>
-<p>Maak wat dummy data aan. Volgend voorbeeldje is een huerarchiesch lijst.</p>
+<p>Maak wat dummy data aan. Volgend voorbeeldje is een hiërarchischer lijst.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hierarchical_list &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;World&quot;</span>,
                           <span class="dt">children =</span> <span class="kw">list</span>(
                             <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;North America&quot;</span>,
@@ -934,6 +940,27 @@ sequences &lt;-<span class="st"> </span><span class="kw">read.csv</span>(
   <span class="co"># just provide the name in the explanation in the center</span>
   ,<span class="dt">explanation =</span> <span class="st">&quot;function(d){return d.data.name}&quot;</span>
 )</code></pre></div>
+<p>Chord diagrams zijn een leuke manier om “A naar B” data weer te geven, relaties tussen entiteiten.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#devtools::install_github(&quot;mattflor/chorddiag&quot;)</span>
+<span class="kw">library</span>(chorddiag)
+
+<span class="co"># overgangsmatrix</span>
+m &lt;-<span class="st"> </span><span class="kw">matrix</span>(
+  <span class="kw">c</span>(<span class="dv">11975</span>,  <span class="dv">5871</span>, <span class="dv">8916</span>, <span class="dv">2868</span>,
+    <span class="dv">1951</span>, <span class="dv">10048</span>, <span class="dv">2060</span>, <span class="dv">6171</span>,
+    <span class="dv">8010</span>, <span class="dv">16145</span>, <span class="dv">8090</span>, <span class="dv">8045</span>,
+    <span class="dv">1013</span>,   <span class="dv">990</span>,  <span class="dv">940</span>, <span class="dv">6907</span>
+  ),
+  <span class="dt">byrow =</span> <span class="ot">TRUE</span>,
+  <span class="dt">nrow =</span> <span class="dv">4</span>, <span class="dt">ncol =</span> <span class="dv">4</span>
+)
+
+haircolors &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;black&quot;</span>, <span class="st">&quot;blonde&quot;</span>, <span class="st">&quot;brown&quot;</span>, <span class="st">&quot;red&quot;</span>)
+<span class="kw">dimnames</span>(m) &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">have =</span> haircolors, <span class="dt">prefer =</span> haircolors)
+m
+
+groupColors &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;#000000&quot;</span>, <span class="st">&quot;#FFDD89&quot;</span>, <span class="st">&quot;#957244&quot;</span>, <span class="st">&quot;#F26223&quot;</span>)
+<span class="kw">chorddiag</span>(m, <span class="dt">groupColors =</span> groupColors, <span class="dt">groupnamePadding =</span> <span class="dv">20</span>)</code></pre></div>
 </div>
 </section>
 

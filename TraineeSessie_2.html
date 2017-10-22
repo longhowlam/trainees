@@ -108,7 +108,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="predictive-modeling-technieken" class="section level1">
 <h1><span class="header-section-number">1</span> predictive modeling technieken</h1>
 <hr />
-<p>In R kan je veel verschillende predictive modellen fitten. We behandelen alleen een paar in deze sessie. Lineaire regressie met de functie <code>lm</code>, logistische regressie met de functie <code>glm</code>, decision trees met de functie <code>rpart</code> en ensemble van trees met <code>ranger</code> en <code>xgboost</code>. Ik zal deze functies apart behandelen maar we zullen later in de sessie zien met het package <code>mlr</code> hoe je op een meer uniforme manier meerdere modellen kan proberen op een data set.</p>
+<p>In R kan je veel verschillende predictive modellen fitten. We behandelen een paar in deze sessie. Lineaire regressie met de functie <code>lm</code>, logistische regressie met de functie <code>glm</code>, decision trees met de functie <code>rpart</code> en ensemble van trees met <code>ranger</code> en <code>xgboost</code>. Ook <code>h2o</code> zullen we kort aanstippen. Ik zal deze functies apart behandelen maar we zullen later in de sessie zien met het package <code>mlr</code> hoe je op een meer uniforme manier meerdere modellen kan proberen op een data set.</p>
 <div id="lineare-regressie" class="section level2">
 <h2><span class="header-section-number">1.1</span> lineare regressie</h2>
 <p>We beginnen met simpele lineaire regressie, bruikbaar voor voorspel modellen waar de Target variable continu (numeric) is. We nemen als voorbeeld huizen prijs data die ik gescraped heb van jaap.nl. We willen de prijs van een huis voorspellen basis van een aantal input variabelen/kenmerken.</p>
@@ -280,7 +280,7 @@ TTest <span class="op">%&gt;%</span><span class="st"> </span>
 <h1><span class="header-section-number">2</span> The h2o package</h1>
 <hr />
 <p>H2O is een schaalbaar machine learning platform die je vanuit R kan bedienen. Het bevat veel machine learning algoritmes, en voor grotere sets waar gewoon R moeite mee heeft kan h2o een uitkomst bieden. H2o heeft een eigen ‘executie engine’ geschreven in java. Bij het opstarten van h2o vanuit R wordt dan ook een apart h2o proces opgestart waar je data vanuit R naar toe moet uploaden om daar de algoritmes op los te laten.</p>
-<p>Als je h2o opstart is er ook een eigen GUI, daar kan je naar toe localhost:54321 (standard 54321 port)</p>
+<p>Als je h2o opstart is er ook een eigen GUI, daar kan je naar toe localhost:54321 (standard 54321 port).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(h2o)
 
 <span class="co"># initialiseer h2o via R</span>
@@ -296,8 +296,8 @@ TTrain<span class="op">$</span>Survived =<span class="st"> </span><span class="k
 TTest<span class="op">$</span>Survived =<span class="st"> </span><span class="kw">as.factor</span>(TTest<span class="op">$</span>Survived)
 
 ttrain.h2o =<span class="st"> </span><span class="kw">as.h2o</span>(TTrain) 
-ttest.h20 =<span class="st"> </span><span class="kw">as.h2o</span>(TTest)
-### Je kan ook direct text files inlezen in h20 met 
+ttest.h2o =<span class="st"> </span><span class="kw">as.h2o</span>(TTest)
+### Je kan ook direct text files inlezen in h2o met 
 <span class="co">#h2o.importFile(path=&quot;C:\een file.txt&quot;, sep=&quot;,&quot;)</span>
 
 ### welke files zijn er in h2o
@@ -308,7 +308,7 @@ NNmodel =<span class="st"> </span><span class="kw">h2o.deeplearning</span>(
   <span class="dt">x =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">5</span><span class="op">:</span><span class="dv">6</span>),
   <span class="dt">y =</span> <span class="st">&quot;Survived&quot;</span>,
   <span class="dt">training_frame  =</span> ttrain.h2o,
-  <span class="dt">validation_frame =</span> ttest.h20,
+  <span class="dt">validation_frame =</span> ttest.h2o,
   <span class="dt">hidden =</span> <span class="dv">5</span>,
   <span class="dt">epochs =</span> <span class="dv">250</span>,
   <span class="dt">variable_importances =</span> <span class="ot">TRUE</span>
@@ -320,7 +320,7 @@ NNmodel =<span class="st"> </span><span class="kw">h2o.deeplearning</span>(
   <span class="dt">x =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">5</span><span class="op">:</span><span class="dv">6</span>),
   <span class="dt">y =</span> <span class="st">&quot;Survived&quot;</span>,
   <span class="dt">training_frame  =</span> ttrain.h2o,
-  <span class="dt">validation_frame =</span> ttest.h20
+  <span class="dt">validation_frame =</span> ttest.h2o
   )
 GBMmodel
 
@@ -328,7 +328,7 @@ RFmodel =<span class="st"> </span><span class="kw">h2o.randomForest</span>(
   <span class="dt">x =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">5</span><span class="op">:</span><span class="dv">6</span>),
   <span class="dt">y =</span> <span class="st">&quot;Survived&quot;</span>,
   <span class="dt">training_frame  =</span> ttrain.h2o,
-  <span class="dt">validation_frame =</span> ttest.h20
+  <span class="dt">validation_frame =</span> ttest.h2o
   )
 RFmodel
 
@@ -339,7 +339,7 @@ RFmodel
   <span class="dt">x =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">5</span><span class="op">:</span><span class="dv">6</span>),
   <span class="dt">y =</span> <span class="st">&quot;Survived&quot;</span>,
   <span class="dt">training_frame  =</span> ttrain.h2o,
-  <span class="dt">validation_frame =</span> ttest.h20,
+  <span class="dt">validation_frame =</span> ttest.h2o,
   <span class="dt">hyper_params =</span> <span class="kw">list</span>(
     <span class="dt">ntrees =</span><span class="kw">c</span>(<span class="dv">50</span>,<span class="dv">100</span>), 
     <span class="dt">mtries =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>)
@@ -348,6 +348,8 @@ RFmodel
 
 <span class="co">#overzicht van het grid, gesorteerd op logloss</span>
 RFmodelGrid</code></pre></div>
+<p>Geef resources terug door h2o af te sluiten als je het niet meer nodig hebt.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">h2o.shutdown</span>(<span class="dt">prompt =</span> <span class="ot">FALSE</span>)</code></pre></div>
 <p><br></p>
 </div>
 <div id="the-mlr-package" class="section level1">
