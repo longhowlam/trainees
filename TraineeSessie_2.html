@@ -623,23 +623,29 @@ cluster_membership =<span class="st"> </span><span class="kw">h2o.predict</span>
 </div>
 <div id="market-basket-analyse" class="section level1">
 <h1><span class="header-section-number">5</span> Market basket analyse</h1>
-<p>Met market basket analyse (ook wel association rules mining) genoemd kan je uit “transacties van klanten” vaak voorkomende combinaties of juiste hele “sterke combinaties” van producten bepalen. Hieronder volgt een voorbeeldje op een fictief grocery data setje</p>
+<p>Met market basket analyse (ook wel association rules mining genoemd) kan je uit “transacties van klanten” vaak voorkomende combinaties of juiste hele “sterke combinaties” van producten bepalen. Hieronder volgt een voorbeeldje op een fictief grocery data setje.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(arules)
 <span class="kw">library</span>(datasets)
 
+## voorbeeld R object Groceries, dit is een tranaction object
 <span class="kw">data</span>(Groceries)
 <span class="kw">summary</span>(Groceries)
+<span class="kw">class</span>(Groceries)
 
+## De producten die een klant zou kunnen kopen
 Groceries<span class="op">@</span>itemInfo
-### Klant 1 heeft gekocht:
-Groceries<span class="op">@</span>data[,<span class="dv">1</span>]</code></pre></div>
+
+### Klant 10 heeft gekocht:
+Groceries<span class="op">@</span>data[,<span class="dv">10</span>]</code></pre></div>
 <p>Met de functie <code>apriori</code> uit het arules package kan je nu vaak voorkomende combinaties van producten identificeren.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rules &lt;-<span class="st"> </span><span class="kw">apriori</span>(Groceries, <span class="dt">parameter =</span> <span class="kw">list</span>(<span class="dt">supp =</span> <span class="fl">0.001</span>, <span class="dt">conf =</span> <span class="fl">0.8</span>))
 rules =<span class="st"> </span><span class="kw">sort</span>(rules, <span class="dt">decreasing =</span> <span class="ot">TRUE</span>, <span class="dt">na.last =</span> <span class="ot">NA</span>, <span class="dt">by =</span> <span class="st">&quot;lift&quot;</span>)
-<span class="kw">inspect</span>(<span class="kw">head</span>(rules,<span class="dt">n =</span> <span class="dv">15</span>))</code></pre></div>
-<p>De data <code>Groeceries</code> is al in een zogenaamde transactions object, vaak zul je deze data vanuit een transactionele data frame moeten converteren naar een transaction object.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trxDF =<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;data/boodschappen.RDs&quot;</span>)
+<span class="kw">inspect</span>(<span class="kw">head</span>(rules, <span class="dt">n =</span> <span class="dv">15</span>))</code></pre></div>
+<p>De fictieve voorbeelddata <code>Groeceries</code> in R is al in een zogenaamde transactions object, normaal gesproken zal je data niet meteen zo hebben in R. Vanuit transactionele data moet je dit converteren naar een transaction object. Dit kan je ook doen met het <code>arules</code> package.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## De meest simpele transactionele data set
+trxDF =<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;data/boodschappen.RDs&quot;</span>)
 
+## Transormeer naar een transaction object
 Groceries2 =<span class="st"> </span><span class="kw">as</span>(
   <span class="kw">split</span>(
     trxDF<span class="op">$</span>item,
@@ -648,6 +654,10 @@ Groceries2 =<span class="st"> </span><span class="kw">as</span>(
   <span class="st">&quot;transactions&quot;</span>
 )
 Groceries2
+
+## Visuele Item informatie
+<span class="kw">itemFrequencyPlot</span>(Groceries2, <span class="dt">topN =</span> <span class="dv">35</span>, <span class="dt">cex.names =</span> <span class="fl">0.75</span>)
+
 rules2 &lt;-<span class="st"> </span><span class="kw">apriori</span>(Groceries2, <span class="dt">parameter =</span> <span class="kw">list</span>(<span class="dt">supp =</span> <span class="fl">0.001</span>, <span class="dt">conf =</span> <span class="fl">0.8</span>))</code></pre></div>
 <p>Nu je de regels hebt kan je filteren op regels. Welke regels bevatten bepaalde producten.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rules.subset2 &lt;-<span class="st"> </span><span class="kw">subset</span>(rules, lhs <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;cereals&quot;</span>, <span class="st">&quot;curd&quot;</span>))
@@ -673,6 +683,9 @@ rulesMatch &lt;-<span class="st"> </span><span class="kw">is.subset</span>(rules
 ## er zijn meerdere regels, je zou degene met de hoogste lift kunnen kiezen
 <span class="kw">inspect</span>(rules[rulesMatch[,<span class="dv">1</span>]])
 <span class="kw">inspect</span>(rules[rulesMatch[,<span class="dv">1</span>]]<span class="op">@</span>rhs)</code></pre></div>
+<p>Een ander manier om regels weer te geven is in een network graph, de verzameling regels vormen in feite een netwerk. A –&gt; B, B –&gt; C, D –&gt; B bijvoorbeeld.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(arulesViz)
+<span class="kw">plot</span>(<span class="kw">head</span>(<span class="kw">sort</span>(rules2, <span class="dt">by =</span> <span class="st">&quot;lift&quot;</span>), <span class="dt">n=</span><span class="dv">50</span>), <span class="dt">method =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">control=</span><span class="kw">list</span>(<span class="dt">cex=</span>.<span class="dv">8</span>))</code></pre></div>
 </div>
 </section>
 
