@@ -6,6 +6,7 @@ output:
   pdf_document:
     toc: yes
     toc_depth: '2'
+    number_sections: yes
   prettydoc::html_pretty:
     highlight: github
     number_sections: yes
