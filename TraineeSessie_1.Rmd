@@ -3,6 +3,9 @@ title: "Refresher data prep & interactive data visualiatie"
 author: "Longhow Lam"
 subtitle: "Trainee Sessie 01"
 output:
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
   prettydoc::html_pretty:
     highlight: github
     number_sections: yes

@@ -3,6 +3,9 @@ title: 'Machine learning in R'
 author: "Longhow Lam"
 subtitle: "Trainee sessie 02"
 output:
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
   prettydoc::html_pretty:
     highlight: github
     theme: cayman
@@ -41,7 +44,7 @@ library(ggplot2)
 
 
 
-# predictive modeling technieken
+# Predictive modeling technieken
 
 ---
 
