@@ -43,7 +43,7 @@ Het `tidyverse` package is een verzameling R packages met 'dezelfde' gedachtegoe
 * stringr
 * tidyr
 
-```{r, eval=FALSE, include=FALSE}
+```{r libraries, eval=FALSE, include=FALSE}
 library(tidyverse)
 library(lubridate)
 library(anytime)
@@ -432,7 +432,7 @@ test
 
 Een paar voorbeelden van reguliere expressies.
 
-```{r, eval=FALSE}
+```{r stringr, eval=FALSE}
 library(stringr)
 
 ## een digit, en precies 1 digit
