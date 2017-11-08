@@ -471,7 +471,7 @@ Voor een cheatsheet over reguliere expressies zie [regex cheatsheet](https://www
 
 ## functies uit het package stringr
 
-In het package stringr zijn diverse functies om met characters te werken, een aantal zullen we laten zien
+In het package `stringr` zijn diverse functies om met characters te werken, een aantal zullen we laten zien
 
 ```{r, eval=FALSE}
 testset = titanic::titanic_train %>% select(Name)
