@@ -1120,24 +1120,30 @@ Interactieve sunburst plots kan je ook mooi gebruiken voor hierarchische data.
 ```{r, eval=FALSE}
 library(sunburstR)
 
-sequences <- read.csv(
-  system.file("examples/visit-sequences.csv",package="sunburstR")
-  ,header = FALSE
+seqData = read.csv(
+  file = paste0(
+    "https://gist.githubusercontent.com/mkajava/",
+    "7515402/raw/9f80d28094dc9dfed7090f8fb3376ef1539f4fd2/",
+    "comment-sequences.csv"
+  )
+  ,header = TRUE
   ,stringsAsFactors = FALSE
-)[1:100,]
-
-sunburst(sequences)
+)
+  
+sunburst(
+  seqData
+)
 
 sunburst(
-  sequences
+  seqData
   ,count = TRUE
 )
 
 ## aangepaste text in het midden 
 sunburst(
-  sequences
+  seqData
   # apply sort order to the legends
-  ,legendOrder = unique(unlist(strsplit(sequences[,1],"-")))
+  ,legendOrder = unique(unlist(strsplit(seqData[,1],":")))
   # just provide the name in the explanation in the center
   ,explanation = "function(d){return d.data.name}"
 )
