@@ -979,6 +979,8 @@ load_mnist()
 show_digit(train$x[1816,])
 ```
 
+Nu kan je het model trainen, ik heb alleen 1 epoch gezet, dit model duurt een uur op dit laptopje om te fittenn.
+
 
 ```{r, eval=FALSE}
 
@@ -986,7 +988,7 @@ library(keras)
 
 batch_size <- 128
 num_classes <- 10
-epochs <- 12
+epochs <- 1
 
 # input image dimensions
 img_rows <- 28
