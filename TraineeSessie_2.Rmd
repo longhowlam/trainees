@@ -825,7 +825,7 @@ plot(head(sort(rules2, by = "lift"), n=50), method = "graph", control=list(cex=.
 
 # Deeplearning 
 
-In R kan je deeplearning modellen trainen met Keras met een Tensorflow back-end, we geven hier een simpel voorbeeld. Je kan vanuit het package keras tensorflow installeren.
+In R kan je deeplearning modellen trainen met Keras met een Tensorflow back-end, we geven hier een simpel voorbeeld. Je kan vanuit het `keras` package tensorflow installeren.
 
 
 ```{r, eval = FALSE}
@@ -837,7 +837,7 @@ library(keras)
 
 ## Een simpel model
 
-We maken eerst een simpel model, 1 hidden layer, niks fancy nog. Download en prepareer eerst de data.
+We maken met keras eerst een simpel model, 1 hidden layer, niks fancy nog. Download en prepareer eerst de data.
 
 ```{r, eval=FALSE}
 batch_size <- 128
@@ -917,6 +917,27 @@ score <- model %>% evaluate(
 cat('Test loss:', score[[1]], '\n')
 cat('Test accuracy:', score[[2]], '\n')
 ```
+
+
+
+We kunnen nu nog een tweede layer toevoegem
+
+```{r, eval=FALSE}
+model <- keras_model_sequential()
+model %>% 
+  layer_dense(units = 256, activation = 'relu', input_shape = c(784)) %>% 
+  layer_dense(units = 128, activation = 'relu', input_shape = c(784)) %>% 
+  layer_dense(units = 10, activation = 'softmax')
+
+summary(model)
+
+model %>% compile(
+  loss = 'categorical_crossentropy',
+  optimizer = optimizer_rmsprop(),
+  metrics = c('accuracy')
+)
+```
+
 
 
 
