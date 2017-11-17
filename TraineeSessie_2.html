@@ -76,7 +76,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <div id="TOC" class="toc">
 <ul>
-<li><a href="#predictive-modeling-technieken"><span class="toc-section-number">1</span> predictive modeling technieken</a><ul>
+<li><a href="#predictive-modeling-technieken"><span class="toc-section-number">1</span> Predictive modeling technieken</a><ul>
 <li><a href="#lineare-regressie"><span class="toc-section-number">1.1</span> lineare regressie</a></li>
 <li><a href="#splitsen-in-train-en-test"><span class="toc-section-number">1.2</span> Splitsen in train en test</a></li>
 <li><a href="#logistic-regression"><span class="toc-section-number">1.3</span> logistic regression</a></li>
@@ -99,6 +99,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li><a href="#k-means-clustering"><span class="toc-section-number">4.1</span> k-means Clustering</a></li>
 </ul></li>
 <li><a href="#market-basket-analyse"><span class="toc-section-number">5</span> Market basket analyse</a></li>
+<li><a href="#deeplearning"><span class="toc-section-number">6</span> Deeplearning</a><ul>
+<li><a href="#een-simpel-model"><span class="toc-section-number">6.1</span> Een simpel model</a></li>
+<li><a href="#convolutional-model."><span class="toc-section-number">6.2</span> Convolutional model.</a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -106,7 +110,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <hr />
 <p><br></p>
 <div id="predictive-modeling-technieken" class="section level1">
-<h1><span class="header-section-number">1</span> predictive modeling technieken</h1>
+<h1><span class="header-section-number">1</span> Predictive modeling technieken</h1>
 <hr />
 <p>In R kan je veel verschillende predictive modellen fitten. We behandelen een paar in deze sessie. Lineaire regressie met de functie <code>lm</code>, logistische regressie met de functie <code>glm</code>, decision trees met de functie <code>rpart</code> en ensemble van trees met <code>ranger</code> en <code>xgboost</code>. Ook <code>h2o</code> zullen we kort aanstippen. Ik zal deze functies apart behandelen maar we zullen later in de sessie zien met het package <code>mlr</code> hoe je op een meer uniforme manier meerdere modellen kan proberen op een data set.</p>
 <div id="lineare-regressie" class="section level2">
@@ -686,6 +690,227 @@ rulesMatch &lt;-<span class="st"> </span><span class="kw">is.subset</span>(rules
 <p>Een ander manier om regels weer te geven is in een network graph, de verzameling regels vormen in feite een netwerk. A –&gt; B, B –&gt; C, D –&gt; B bijvoorbeeld.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(arulesViz)
 <span class="kw">plot</span>(<span class="kw">head</span>(<span class="kw">sort</span>(rules2, <span class="dt">by =</span> <span class="st">&quot;lift&quot;</span>), <span class="dt">n=</span><span class="dv">50</span>), <span class="dt">method =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">control=</span><span class="kw">list</span>(<span class="dt">cex=</span>.<span class="dv">8</span>))</code></pre></div>
+</div>
+<div id="deeplearning" class="section level1">
+<h1><span class="header-section-number">6</span> Deeplearning</h1>
+<p>In R kan je deeplearning modellen trainen met Keras met een Tensorflow back-end, we geven hier een simpel voorbeeld. Je kan vanuit het package keras tensorflow installeren.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(keras)
+## dir werkt makkelijk op een linux machine en is noet ondersteunt op een windows machine!
+<span class="co">#keras::install_keras()</span></code></pre></div>
+<div id="een-simpel-model" class="section level2">
+<h2><span class="header-section-number">6.1</span> Een simpel model</h2>
+<p>We maken eerst een simpel model, 1 hidden layer, niks fancy nog. Download en prepareer eerst de data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">batch_size &lt;-<span class="st"> </span><span class="dv">128</span>
+num_classes &lt;-<span class="st"> </span><span class="dv">10</span>
+epochs &lt;-<span class="st"> </span><span class="dv">10</span>
+
+<span class="co"># The data, shuffled and split between train and test sets</span>
+<span class="kw">c</span>(<span class="kw">c</span>(x_train, y_train), <span class="kw">c</span>(x_test, y_test)) <span class="op">%&lt;-%</span><span class="st"> </span><span class="kw">dataset_mnist</span>()
+
+<span class="kw">dim</span>(x_train)
+
+<span class="co"># 60.000 plaatjes die 28 bij 28 zijn</span>
+x_train[<span class="dv">1</span>,,]
+
+<span class="co"># bekijk plaatje n</span>
+n =<span class="st"> </span><span class="dv">110</span>
+<span class="kw">image</span>(  x_train[n,,] )
+y_train[n]
+
+<span class="co"># We gaan nu de data wat reshapen voor het model</span>
+x_train &lt;-<span class="st"> </span><span class="kw">array_reshape</span>(x_train, <span class="kw">c</span>(<span class="kw">nrow</span>(x_train), <span class="dv">784</span>))
+x_test &lt;-<span class="st"> </span><span class="kw">array_reshape</span>(x_test, <span class="kw">c</span>(<span class="kw">nrow</span>(x_test), <span class="dv">784</span>))
+
+<span class="co"># Transform RGB values into [0,1] range</span>
+x_train &lt;-<span class="st"> </span>x_train <span class="op">/</span><span class="st"> </span><span class="dv">255</span>
+x_test &lt;-<span class="st"> </span>x_test <span class="op">/</span><span class="st"> </span><span class="dv">255</span>
+
+<span class="kw">cat</span>(<span class="kw">nrow</span>(x_train), <span class="st">'train samples</span><span class="ch">\n</span><span class="st">'</span>)
+<span class="kw">cat</span>(<span class="kw">nrow</span>(x_test), <span class="st">'test samples</span><span class="ch">\n</span><span class="st">'</span>)
+
+<span class="co"># Convert class vectors to binary class matrices</span>
+y_train &lt;-<span class="st"> </span><span class="kw">to_categorical</span>(y_train, num_classes)
+y_test &lt;-<span class="st"> </span><span class="kw">to_categorical</span>(y_test, num_classes)</code></pre></div>
+<p>Defineer het model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">keras_model_sequential</span>()
+model <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">256</span>, <span class="dt">activation =</span> <span class="st">'relu'</span>, <span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">784</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">10</span>, <span class="dt">activation =</span> <span class="st">'softmax'</span>)
+
+<span class="kw">summary</span>(model)
+
+model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">compile</span>(
+  <span class="dt">loss =</span> <span class="st">'categorical_crossentropy'</span>,
+  <span class="dt">optimizer =</span> <span class="kw">optimizer_rmsprop</span>(),
+  <span class="dt">metrics =</span> <span class="kw">c</span>(<span class="st">'accuracy'</span>)
+)</code></pre></div>
+<p>Train en evalueer het model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Fit model to data</span>
+history &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">fit</span>(
+  x_train, y_train,
+  <span class="dt">batch_size =</span> batch_size,
+  <span class="dt">epochs =</span> epochs,
+  <span class="dt">verbose =</span> <span class="dv">1</span>,
+  <span class="dt">view_metrics =</span> <span class="ot">FALSE</span>,
+  <span class="dt">validation_split =</span> <span class="fl">0.2</span>
+)
+
+<span class="kw">plot</span>(history)
+  
+score &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">evaluate</span>(
+  x_test, y_test,
+  <span class="dt">verbose =</span> <span class="dv">0</span>
+)
+
+<span class="co"># Output metrics</span>
+<span class="kw">cat</span>(<span class="st">'Test loss:'</span>, score[[<span class="dv">1</span>]], <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)
+<span class="kw">cat</span>(<span class="st">'Test accuracy:'</span>, score[[<span class="dv">2</span>]], <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</code></pre></div>
+</div>
+<div id="convolutional-model." class="section level2">
+<h2><span class="header-section-number">6.2</span> Convolutional model.</h2>
+<p>Maak nu een meer fancy convolutional deeplearning model, input is nu een array van getallen ipv een plat geslagen vector zoals in vorige voorbeeld. En laten we nu Fashion MNIST nemen, door zalando beschikbaar gesteld.</p>
+<p><a href="https://github.com/zalandoresearch/fashion-mnist">Fashion MNIST</a></p>
+<p>Data kan je krijgen door git repo te clonen. en in data dir zitten gz files die je moet uitpakken, dit zijn binaire files die je mer R kan inlezen, gebruikmakend van de functie <code>readBin</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">### MNIST FASHION
+
+
+<span class="co"># Load the (FASHION) MNIST digit recognition dataset into R</span>
+<span class="co"># http://yann.lecun.com/exdb/mnist/</span>
+<span class="co"># assume you have all 4 files and gunzip'd them</span>
+<span class="co"># creates train$n, train$x, train$y  and test$n, test$x, test$y</span>
+<span class="co"># e.g. train$x is a 60000 x 784 matrix, each row is one digit (28x28)</span>
+<span class="co"># call:  show_digit(train$x[5,])   to see a digit.</span>
+<span class="co"># brendan o'connor - gist.github.com/39760 - anyall.org</span>
+
+load_mnist &lt;-<span class="st"> </span><span class="cf">function</span>() {
+  load_image_file &lt;-<span class="st"> </span><span class="cf">function</span>(filename) {
+    ret =<span class="st"> </span><span class="kw">list</span>()
+    f =<span class="st"> </span><span class="kw">file</span>(filename,<span class="st">'rb'</span>)
+    <span class="kw">readBin</span>(f,<span class="st">'integer'</span>,<span class="dt">n=</span><span class="dv">1</span>,<span class="dt">size=</span><span class="dv">4</span>,<span class="dt">endian=</span><span class="st">'big'</span>)
+    ret<span class="op">$</span>n =<span class="st"> </span><span class="kw">readBin</span>(f,<span class="st">'integer'</span>,<span class="dt">n=</span><span class="dv">1</span>,<span class="dt">size=</span><span class="dv">4</span>,<span class="dt">endian=</span><span class="st">'big'</span>)
+    nrow =<span class="st"> </span><span class="kw">readBin</span>(f,<span class="st">'integer'</span>,<span class="dt">n=</span><span class="dv">1</span>,<span class="dt">size=</span><span class="dv">4</span>,<span class="dt">endian=</span><span class="st">'big'</span>)
+    ncol =<span class="st"> </span><span class="kw">readBin</span>(f,<span class="st">'integer'</span>,<span class="dt">n=</span><span class="dv">1</span>,<span class="dt">size=</span><span class="dv">4</span>,<span class="dt">endian=</span><span class="st">'big'</span>)
+    x =<span class="st"> </span><span class="kw">readBin</span>(f,<span class="st">'integer'</span>,<span class="dt">n=</span>ret<span class="op">$</span>n<span class="op">*</span>nrow<span class="op">*</span>ncol,<span class="dt">size=</span><span class="dv">1</span>,<span class="dt">signed=</span>F)
+    ret<span class="op">$</span>x =<span class="st"> </span><span class="kw">matrix</span>(x, <span class="dt">ncol=</span>nrow<span class="op">*</span>ncol, <span class="dt">byrow=</span>T)
+    <span class="kw">close</span>(f)
+    ret
+  }
+  load_label_file &lt;-<span class="st"> </span><span class="cf">function</span>(filename) {
+    f =<span class="st"> </span><span class="kw">file</span>(filename,<span class="st">'rb'</span>)
+    <span class="kw">readBin</span>(f,<span class="st">'integer'</span>,<span class="dt">n=</span><span class="dv">1</span>,<span class="dt">size=</span><span class="dv">4</span>,<span class="dt">endian=</span><span class="st">'big'</span>)
+    n =<span class="st"> </span><span class="kw">readBin</span>(f,<span class="st">'integer'</span>,<span class="dt">n=</span><span class="dv">1</span>,<span class="dt">size=</span><span class="dv">4</span>,<span class="dt">endian=</span><span class="st">'big'</span>)
+    y =<span class="st"> </span><span class="kw">readBin</span>(f,<span class="st">'integer'</span>,<span class="dt">n=</span>n,<span class="dt">size=</span><span class="dv">1</span>,<span class="dt">signed=</span>F)
+    <span class="kw">close</span>(f)
+    y
+  }
+  
+  train &lt;&lt;-<span class="st"> </span><span class="kw">load_image_file</span>(<span class="st">'/home/longhowlam/fashion-mnist/data/fashion/train-images-idx3-ubyte'</span>)
+  test &lt;&lt;-<span class="st"> </span><span class="kw">load_image_file</span>(<span class="st">'/home/longhowlam/fashion-mnist/data/fashion/t10k-images-idx3-ubyte'</span>)
+  
+  train<span class="op">$</span>y &lt;&lt;-<span class="st"> </span><span class="kw">load_label_file</span>(<span class="st">'/home/longhowlam/fashion-mnist/data/fashion/train-labels-idx1-ubyte'</span>)
+  test<span class="op">$</span>y &lt;&lt;-<span class="st"> </span><span class="kw">load_label_file</span>(<span class="st">'/home/longhowlam/fashion-mnist/data/fashion/t10k-labels-idx1-ubyte'</span>)  
+}
+
+show_digit &lt;-<span class="st"> </span><span class="cf">function</span>(arr784, <span class="dt">col=</span><span class="kw">gray</span>(<span class="dv">12</span><span class="op">:</span><span class="dv">1</span><span class="op">/</span><span class="dv">12</span>), ...) {
+  <span class="kw">image</span>(<span class="kw">matrix</span>(arr784, <span class="dt">nrow=</span><span class="dv">28</span>)[,<span class="dv">28</span><span class="op">:</span><span class="dv">1</span>], <span class="dt">col=</span>col, ...)
+}
+
+<span class="kw">load_mnist</span>()
+
+<span class="kw">show_digit</span>(train<span class="op">$</span>x[<span class="dv">1816</span>,])</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(keras)
+
+batch_size &lt;-<span class="st"> </span><span class="dv">128</span>
+num_classes &lt;-<span class="st"> </span><span class="dv">10</span>
+epochs &lt;-<span class="st"> </span><span class="dv">12</span>
+
+<span class="co"># input image dimensions</span>
+img_rows &lt;-<span class="st"> </span><span class="dv">28</span>
+img_cols &lt;-<span class="st"> </span><span class="dv">28</span>
+
+<span class="co"># the data, shuffled and split between train and test sets</span>
+
+x_train &lt;-<span class="st"> </span>train<span class="op">$</span>x
+y_train &lt;-<span class="st"> </span>train<span class="op">$</span>y
+x_test &lt;-<span class="st"> </span>test<span class="op">$</span>x
+y_test &lt;-<span class="st"> </span>test<span class="op">$</span>y
+
+<span class="kw">dim</span>(x_train) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">nrow</span>(x_train), img_rows, img_cols, <span class="dv">1</span>) 
+<span class="kw">dim</span>(x_test) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">nrow</span>(x_test), img_rows, img_cols, <span class="dv">1</span>)
+input_shape &lt;-<span class="st"> </span><span class="kw">c</span>(img_rows, img_cols, <span class="dv">1</span>)
+
+x_train &lt;-<span class="st"> </span>x_train <span class="op">/</span><span class="st"> </span><span class="dv">255</span>
+x_test &lt;-<span class="st"> </span>x_test <span class="op">/</span><span class="st"> </span><span class="dv">255</span>
+
+<span class="kw">cat</span>(<span class="st">'x_train_shape:'</span>, <span class="kw">dim</span>(x_train), <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)
+<span class="kw">cat</span>(<span class="kw">nrow</span>(x_train), <span class="st">'train samples</span><span class="ch">\n</span><span class="st">'</span>)
+<span class="kw">cat</span>(<span class="kw">nrow</span>(x_test), <span class="st">'test samples</span><span class="ch">\n</span><span class="st">'</span>)
+
+<span class="co"># convert class vectors to binary class matrices</span>
+y_train &lt;-<span class="st"> </span><span class="kw">to_categorical</span>(y_train, num_classes)
+y_test &lt;-<span class="st"> </span><span class="kw">to_categorical</span>(y_test, num_classes)
+
+<span class="co"># define a two layer conv with max pooling  model</span>
+model &lt;-<span class="st"> </span><span class="kw">keras_model_sequential</span>()
+model <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">layer_conv_2d</span>(
+    <span class="dt">filters     =</span> <span class="dv">32</span>, 
+    <span class="dt">kernel_size =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>),
+    <span class="dt">activation  =</span> <span class="st">'relu'</span>,
+    <span class="dt">input_shape =</span> input_shape
+  ) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_conv_2d</span>(
+    <span class="dt">filters     =</span> <span class="dv">64</span>,
+    <span class="dt">kernel_size =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>),
+    <span class="dt">activation  =</span> <span class="st">'relu'</span>
+  ) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_max_pooling_2d</span>(
+    <span class="dt">pool_size =</span> <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">2</span>)
+  ) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_dropout</span>(<span class="dt">rate =</span> <span class="fl">0.25</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">layer_conv_2d</span>(
+    <span class="dt">filters     =</span> <span class="dv">64</span>,
+    <span class="dt">kernel_size =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>),
+    <span class="dt">activation  =</span> <span class="st">'relu'</span>
+  ) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">layer_max_pooling_2d</span>(
+    <span class="dt">pool_size =</span> <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">2</span>)
+  ) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">layer_flatten</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_dense</span>(
+    <span class="dt">units      =</span> <span class="dv">256</span>, 
+    <span class="dt">activation =</span> <span class="st">'relu'</span>
+  ) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_dropout</span>(<span class="dt">rate =</span> <span class="fl">0.5</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_dense</span>(
+    <span class="dt">units =</span> num_classes,
+    <span class="dt">activation =</span> <span class="st">'softmax'</span>
+  )
+
+<span class="co"># compile model</span>
+model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">compile</span>(
+  <span class="dt">loss =</span> loss_categorical_crossentropy,
+  <span class="dt">optimizer =</span> <span class="kw">optimizer_adadelta</span>(),
+  <span class="dt">metrics =</span> <span class="kw">c</span>(<span class="st">'accuracy'</span>)
+)
+
+<span class="co"># train and evaluate</span>
+model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">fit</span>(
+  x_train, y_train,
+  <span class="dt">batch_size =</span> batch_size,
+  <span class="dt">epochs =</span> epochs,
+  <span class="dt">verbose =</span> <span class="dv">1</span>,
+  <span class="dt">validation_data =</span> <span class="kw">list</span>(x_test, y_test)
+)
+
+
+scores &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">evaluate</span>(
+  x_test, y_test, <span class="dt">verbose =</span> <span class="dv">0</span>
+)
+
+<span class="kw">cat</span>(<span class="st">'Test loss:'</span>, scores[[<span class="dv">1</span>]], <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)
+<span class="kw">cat</span>(<span class="st">'Test accuracy:'</span>, scores[[<span class="dv">2</span>]], <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</code></pre></div>
+</div>
 </div>
 </section>
 

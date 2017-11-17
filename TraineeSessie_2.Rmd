@@ -3,15 +3,15 @@ title: 'Machine learning in R'
 author: "Longhow Lam"
 subtitle: "Trainee sessie 02"
 output:
-  pdf_document:
-    toc: yes
-    toc_depth: '2'
-    number_sections: true
   prettydoc::html_pretty:
     highlight: github
     theme: cayman
     toc: true
     toc_depth: 2
+    number_sections: true
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
     number_sections: true
   html_notebook:
     theme: sandstone
@@ -823,5 +823,257 @@ plot(head(sort(rules2, by = "lift"), n=50), method = "graph", control=list(cex=.
 ```
 
 
+# Deeplearning 
 
+In R kan je deeplearning modellen trainen met Keras met een Tensorflow back-end, we geven hier een simpel voorbeeld. Je kan vanuit het package keras tensorflow installeren.
+
+
+```{r, eval = FALSE}
+library(keras)
+## dir werkt makkelijk op een linux machine en is noet ondersteunt op een windows machine!
+#keras::install_keras()
+
+```
+
+## Een simpel model
+
+We maken eerst een simpel model, 1 hidden layer, niks fancy nog. Download en prepareer eerst de data.
+
+```{r, eval=FALSE}
+batch_size <- 128
+num_classes <- 10
+epochs <- 10
+
+# The data, shuffled and split between train and test sets
+c(c(x_train, y_train), c(x_test, y_test)) %<-% dataset_mnist()
+
+dim(x_train)
+
+# 60.000 plaatjes die 28 bij 28 zijn
+x_train[1,,]
+
+# bekijk plaatje n
+n = 110
+image(  x_train[n,,] )
+y_train[n]
+
+# We gaan nu de data wat reshapen voor het model
+x_train <- array_reshape(x_train, c(nrow(x_train), 784))
+x_test <- array_reshape(x_test, c(nrow(x_test), 784))
+
+# Transform RGB values into [0,1] range
+x_train <- x_train / 255
+x_test <- x_test / 255
+
+cat(nrow(x_train), 'train samples\n')
+cat(nrow(x_test), 'test samples\n')
+
+# Convert class vectors to binary class matrices
+y_train <- to_categorical(y_train, num_classes)
+y_test <- to_categorical(y_test, num_classes)
+
+```
+
+
+Defineer het model. 
+
+```{r, eval = FALSE}
+model <- keras_model_sequential()
+model %>% 
+  layer_dense(units = 256, activation = 'relu', input_shape = c(784)) %>% 
+  layer_dense(units = 10, activation = 'softmax')
+
+summary(model)
+
+model %>% compile(
+  loss = 'categorical_crossentropy',
+  optimizer = optimizer_rmsprop(),
+  metrics = c('accuracy')
+)
+```
+
+
+Train en evalueer het model.
+
+```{r, eval=FALSE}
+# Fit model to data
+history <- model %>% fit(
+  x_train, y_train,
+  batch_size = batch_size,
+  epochs = epochs,
+  verbose = 1,
+  view_metrics = FALSE,
+  validation_split = 0.2
+)
+
+plot(history)
+  
+score <- model %>% evaluate(
+  x_test, y_test,
+  verbose = 0
+)
+
+# Output metrics
+cat('Test loss:', score[[1]], '\n')
+cat('Test accuracy:', score[[2]], '\n')
+```
+
+
+
+## Convolutional model.
+
+Maak nu een meer fancy convolutional deeplearning model, input is nu een array van getallen ipv een plat geslagen vector zoals in vorige voorbeeld. En laten we nu Fashion MNIST nemen, door zalando beschikbaar gesteld.
+
+[Fashion MNIST](https://github.com/zalandoresearch/fashion-mnist)
+
+Data kan je krijgen door git repo te clonen. en in data dir zitten gz files die je moet uitpakken, dit zijn binaire files die je mer R kan inlezen, gebruikmakend van de functie `readBin`.
+
+
+```{r, eval=FALSE}
+### MNIST FASHION
+
+
+# Load the (FASHION) MNIST digit recognition dataset into R
+# http://yann.lecun.com/exdb/mnist/
+# assume you have all 4 files and gunzip'd them
+# creates train$n, train$x, train$y  and test$n, test$x, test$y
+# e.g. train$x is a 60000 x 784 matrix, each row is one digit (28x28)
+# call:  show_digit(train$x[5,])   to see a digit.
+# brendan o'connor - gist.github.com/39760 - anyall.org
+
+load_mnist <- function() {
+  load_image_file <- function(filename) {
+    ret = list()
+    f = file(filename,'rb')
+    readBin(f,'integer',n=1,size=4,endian='big')
+    ret$n = readBin(f,'integer',n=1,size=4,endian='big')
+    nrow = readBin(f,'integer',n=1,size=4,endian='big')
+    ncol = readBin(f,'integer',n=1,size=4,endian='big')
+    x = readBin(f,'integer',n=ret$n*nrow*ncol,size=1,signed=F)
+    ret$x = matrix(x, ncol=nrow*ncol, byrow=T)
+    close(f)
+    ret
+  }
+  load_label_file <- function(filename) {
+    f = file(filename,'rb')
+    readBin(f,'integer',n=1,size=4,endian='big')
+    n = readBin(f,'integer',n=1,size=4,endian='big')
+    y = readBin(f,'integer',n=n,size=1,signed=F)
+    close(f)
+    y
+  }
+  
+  train <<- load_image_file('/home/longhowlam/fashion-mnist/data/fashion/train-images-idx3-ubyte')
+  test <<- load_image_file('/home/longhowlam/fashion-mnist/data/fashion/t10k-images-idx3-ubyte')
+  
+  train$y <<- load_label_file('/home/longhowlam/fashion-mnist/data/fashion/train-labels-idx1-ubyte')
+  test$y <<- load_label_file('/home/longhowlam/fashion-mnist/data/fashion/t10k-labels-idx1-ubyte')  
+}
+
+show_digit <- function(arr784, col=gray(12:1/12), ...) {
+  image(matrix(arr784, nrow=28)[,28:1], col=col, ...)
+}
+
+load_mnist()
+
+show_digit(train$x[1816,])
+```
+
+
+```{r, eval=FALSE}
+
+library(keras)
+
+batch_size <- 128
+num_classes <- 10
+epochs <- 12
+
+# input image dimensions
+img_rows <- 28
+img_cols <- 28
+
+# the data, shuffled and split between train and test sets
+
+x_train <- train$x
+y_train <- train$y
+x_test <- test$x
+y_test <- test$y
+
+dim(x_train) <- c(nrow(x_train), img_rows, img_cols, 1) 
+dim(x_test) <- c(nrow(x_test), img_rows, img_cols, 1)
+input_shape <- c(img_rows, img_cols, 1)
+
+x_train <- x_train / 255
+x_test <- x_test / 255
+
+cat('x_train_shape:', dim(x_train), '\n')
+cat(nrow(x_train), 'train samples\n')
+cat(nrow(x_test), 'test samples\n')
+
+# convert class vectors to binary class matrices
+y_train <- to_categorical(y_train, num_classes)
+y_test <- to_categorical(y_test, num_classes)
+
+# define a two layer conv with max pooling  model
+model <- keras_model_sequential()
+model %>%
+  layer_conv_2d(
+    filters     = 32, 
+    kernel_size = c(3,3),
+    activation  = 'relu',
+    input_shape = input_shape
+  ) %>% 
+  layer_conv_2d(
+    filters     = 64,
+    kernel_size = c(3,3),
+    activation  = 'relu'
+  ) %>% 
+  layer_max_pooling_2d(
+    pool_size = c(2, 2)
+  ) %>% 
+  layer_dropout(rate = 0.25) %>%
+  layer_conv_2d(
+    filters     = 64,
+    kernel_size = c(3,3),
+    activation  = 'relu'
+  ) %>%
+  layer_max_pooling_2d(
+    pool_size = c(2, 2)
+  ) %>%
+  layer_flatten() %>% 
+  layer_dense(
+    units      = 256, 
+    activation = 'relu'
+  ) %>% 
+  layer_dropout(rate = 0.5) %>% 
+  layer_dense(
+    units = num_classes,
+    activation = 'softmax'
+  )
+
+# compile model
+model %>% compile(
+  loss = loss_categorical_crossentropy,
+  optimizer = optimizer_adadelta(),
+  metrics = c('accuracy')
+)
+
+# train and evaluate
+model %>% fit(
+  x_train, y_train,
+  batch_size = batch_size,
+  epochs = epochs,
+  verbose = 1,
+  validation_data = list(x_test, y_test)
+)
+
+
+scores <- model %>% evaluate(
+  x_test, y_test, verbose = 0
+)
+
+cat('Test loss:', scores[[1]], '\n')
+cat('Test accuracy:', scores[[2]], '\n')
+
+```
 
