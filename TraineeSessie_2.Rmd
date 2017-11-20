@@ -822,7 +822,6 @@ library(arulesViz)
 plot(head(sort(rules2, by = "lift"), n=50), method = "graph", control=list(cex=.8))
 ```
 
-
 # Deeplearning 
 
 In R kan je deeplearning modellen trainen met Keras met een Tensorflow back-end, we geven hier een simpel voorbeeld. Je kan vanuit het `keras` package tensorflow installeren. Zie ook mijn slides op [slideshare](https://www.slideshare.net/LonghowLam/keras-on-tensorflow-in-r-python) voor verdere uitleg.
@@ -830,9 +829,10 @@ In R kan je deeplearning modellen trainen met Keras met een Tensorflow back-end,
 
 ```{r, eval = FALSE}
 library(keras)
-## dir werkt makkelijk op een linux machine en is noet ondersteunt op een windows machine!
-#keras::install_keras()
+## De library keras bevat een makkelijke functie om de tensorflow backend  installeren, 
+## dit werkt makkelijk op een linux machine en is niet echt ondersteunt op een windows machine!
 
+# keras::install_keras()
 ```
 
 ## Een simpel model
@@ -849,15 +849,22 @@ c(c(x_train, y_train), c(x_test, y_test)) %<-% dataset_mnist()
 
 dim(x_train)
 
-# 60.000 plaatjes die 28 bij 28 zijn
+# We hebben 60.000 plaatjes die 28 bij 28 matrices zijn
 x_train[1,,]
+```
 
+Zoń 28 bij 28 plaatje is ook te plotten
+
+```{r, eval = FALSE}
 # bekijk plaatje n
 n = 110
 image(  x_train[n,,] )
 y_train[n]
+```
 
-# We gaan nu de data wat reshapen voor het model
+We gaan nu de data wat reshapen voor het model
+
+```{r, eval = FALSE}
 x_train <- array_reshape(x_train, c(nrow(x_train), 784))
 x_test <- array_reshape(x_test, c(nrow(x_test), 784))
 
@@ -871,7 +878,6 @@ cat(nrow(x_test), 'test samples\n')
 # Convert class vectors to binary class matrices
 y_train <- to_categorical(y_train, num_classes)
 y_test <- to_categorical(y_test, num_classes)
-
 ```
 
 
@@ -919,8 +925,7 @@ cat('Test accuracy:', score[[2]], '\n')
 ```
 
 
-
-We kunnen nu nog een tweede layer toevoegem
+We kunnen nu nog een tweede hidden layer toevoegen.
 
 ```{r, eval=FALSE}
 model <- keras_model_sequential()
@@ -939,8 +944,6 @@ model %>% compile(
 ```
 
 
-
-
 ## Convolutional model.
 
 Maak nu een meer fancy convolutional deeplearning model, input is nu een array van getallen ipv een plat geslagen vector zoals in vorige voorbeeld. En laten we nu Fashion MNIST nemen, door zalando beschikbaar gesteld.
@@ -952,15 +955,6 @@ Data kan je krijgen door git repo te clonen. en in data dir zitten gz files die 
 
 ```{r, eval=FALSE}
 ### MNIST FASHION
-
-
-# Load the (FASHION) MNIST digit recognition dataset into R
-# http://yann.lecun.com/exdb/mnist/
-# assume you have all 4 files and gunzip'd them
-# creates train$n, train$x, train$y  and test$n, test$x, test$y
-# e.g. train$x is a 60000 x 784 matrix, each row is one digit (28x28)
-# call:  show_digit(train$x[5,])   to see a digit.
-# brendan o'connor - gist.github.com/39760 - anyall.org
 
 load_mnist <- function() {
   load_image_file <- function(filename) {
@@ -975,7 +969,8 @@ load_mnist <- function() {
     close(f)
     ret
   }
-  load_label_file <- function(filename) {
+
+    load_label_file <- function(filename) {
     f = file(filename,'rb')
     readBin(f,'integer',n=1,size=4,endian='big')
     n = readBin(f,'integer',n=1,size=4,endian='big')
@@ -991,6 +986,7 @@ load_mnist <- function() {
   test$y <<- load_label_file('/home/longhowlam/fashion-mnist/data/fashion/t10k-labels-idx1-ubyte')  
 }
 
+# functie om digit te laten zien
 show_digit <- function(arr784, col=gray(12:1/12), ...) {
   image(matrix(arr784, nrow=28)[,28:1], col=col, ...)
 }
@@ -1000,7 +996,7 @@ load_mnist()
 show_digit(train$x[1816,])
 ```
 
-Nu kan je het model trainen, ik heb alleen 1 epoch gezet, dit model duurt een uur op dit laptopje om te fittenn.
+Nu kan je het model trainen, ik heb alleen 1 epoch gezet, dit model duurt een uur op dit laptopje om te trainen. Eerst weer de data goed zetten.
 
 
 ```{r, eval=FALSE}
@@ -1036,7 +1032,11 @@ cat(nrow(x_test), 'test samples\n')
 # convert class vectors to binary class matrices
 y_train <- to_categorical(y_train, num_classes)
 y_test <- to_categorical(y_test, num_classes)
+```
 
+Maak in keras nu het meer complexere convolutional model.
+
+```{r, eval = FALSE}
 # define a two layer conv with max pooling  model
 model <- keras_model_sequential()
 model %>%
