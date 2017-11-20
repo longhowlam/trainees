@@ -825,7 +825,7 @@ plot(head(sort(rules2, by = "lift"), n=50), method = "graph", control=list(cex=.
 
 # Deeplearning 
 
-In R kan je deeplearning modellen trainen met Keras met een Tensorflow back-end, we geven hier een simpel voorbeeld. Je kan vanuit het `keras` package tensorflow installeren.
+In R kan je deeplearning modellen trainen met Keras met een Tensorflow back-end, we geven hier een simpel voorbeeld. Je kan vanuit het `keras` package tensorflow installeren. Zie ook mijn slides op [slideshare](https://www.slideshare.net/LonghowLam/keras-on-tensorflow-in-r-python) voor verdere uitleg.
 
 
 ```{r, eval = FALSE}

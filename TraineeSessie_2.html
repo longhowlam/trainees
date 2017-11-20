@@ -693,13 +693,13 @@ rulesMatch &lt;-<span class="st"> </span><span class="kw">is.subset</span>(rules
 </div>
 <div id="deeplearning" class="section level1">
 <h1><span class="header-section-number">6</span> Deeplearning</h1>
-<p>In R kan je deeplearning modellen trainen met Keras met een Tensorflow back-end, we geven hier een simpel voorbeeld. Je kan vanuit het package keras tensorflow installeren.</p>
+<p>In R kan je deeplearning modellen trainen met Keras met een Tensorflow back-end, we geven hier een simpel voorbeeld. Je kan vanuit het <code>keras</code> package tensorflow installeren. Zie ook mijn slides op <a href="https://www.slideshare.net/LonghowLam/keras-on-tensorflow-in-r-python">slideshare</a> voor verdere uitleg.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(keras)
 ## dir werkt makkelijk op een linux machine en is noet ondersteunt op een windows machine!
 <span class="co">#keras::install_keras()</span></code></pre></div>
 <div id="een-simpel-model" class="section level2">
 <h2><span class="header-section-number">6.1</span> Een simpel model</h2>
-<p>We maken eerst een simpel model, 1 hidden layer, niks fancy nog. Download en prepareer eerst de data.</p>
+<p>We maken met keras eerst een simpel model, 1 hidden layer, niks fancy nog. Download en prepareer eerst de data.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">batch_size &lt;-<span class="st"> </span><span class="dv">128</span>
 num_classes &lt;-<span class="st"> </span><span class="dv">10</span>
 epochs &lt;-<span class="st"> </span><span class="dv">10</span>
@@ -765,6 +765,20 @@ score &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span cl
 <span class="co"># Output metrics</span>
 <span class="kw">cat</span>(<span class="st">'Test loss:'</span>, score[[<span class="dv">1</span>]], <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)
 <span class="kw">cat</span>(<span class="st">'Test accuracy:'</span>, score[[<span class="dv">2</span>]], <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</code></pre></div>
+<p>We kunnen nu nog een tweede layer toevoegem</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">keras_model_sequential</span>()
+model <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">256</span>, <span class="dt">activation =</span> <span class="st">'relu'</span>, <span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">784</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">128</span>, <span class="dt">activation =</span> <span class="st">'relu'</span>, <span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">784</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">10</span>, <span class="dt">activation =</span> <span class="st">'softmax'</span>)
+
+<span class="kw">summary</span>(model)
+
+model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">compile</span>(
+  <span class="dt">loss =</span> <span class="st">'categorical_crossentropy'</span>,
+  <span class="dt">optimizer =</span> <span class="kw">optimizer_rmsprop</span>(),
+  <span class="dt">metrics =</span> <span class="kw">c</span>(<span class="st">'accuracy'</span>)
+)</code></pre></div>
 </div>
 <div id="convolutional-model." class="section level2">
 <h2><span class="header-section-number">6.2</span> Convolutional model.</h2>
@@ -818,11 +832,12 @@ show_digit &lt;-<span class="st"> </span><span class="cf">function</span>(arr784
 <span class="kw">load_mnist</span>()
 
 <span class="kw">show_digit</span>(train<span class="op">$</span>x[<span class="dv">1816</span>,])</code></pre></div>
+<p>Nu kan je het model trainen, ik heb alleen 1 epoch gezet, dit model duurt een uur op dit laptopje om te fittenn.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(keras)
 
 batch_size &lt;-<span class="st"> </span><span class="dv">128</span>
 num_classes &lt;-<span class="st"> </span><span class="dv">10</span>
-epochs &lt;-<span class="st"> </span><span class="dv">12</span>
+epochs &lt;-<span class="st"> </span><span class="dv">1</span>
 
 <span class="co"># input image dimensions</span>
 img_rows &lt;-<span class="st"> </span><span class="dv">28</span>
