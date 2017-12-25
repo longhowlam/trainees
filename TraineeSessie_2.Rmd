@@ -143,6 +143,16 @@ TTest = myTitan[-train,]
 ```
 
 
+Bovenstaande code was op de oude manier in R een train en test set maken, er is zijn packages die dat voor je doen, een van die packages is `rsample`. Dit packages is veel algemener en kan ook gebruikt worden voor cross validation splits.
+
+```{r, eval = FALSE}
+library(rsample)
+myTitanSplit = initial_split(myTitan, prop = 0.8)
+TTrain = training(myTitanSplit)
+TTest = testing(myTitanSplit)
+```
+
+
 ## logistic regression
 
 Een logistic regression is een van de simpelste predictive modellen om mee te beginnen als je classificatie wilt doen. We gaan uit van een binaire Target (Y /N). We gebruiken de `TTrain` data set die we zojuist gemaakt hebben om een model te fitten.
