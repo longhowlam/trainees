@@ -1117,3 +1117,5 @@ cat('Test accuracy:', scores[[2]], '\n')
 
 ```
 
+Einde Sessie
+
