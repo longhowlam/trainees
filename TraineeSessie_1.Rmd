@@ -3,16 +3,16 @@ title: "Refresher data prep & interactive data visualiatie"
 author: "Longhow Lam"
 subtitle: "Trainee Sessie 01"
 output:
-  pdf_document:
-    toc: yes
-    toc_depth: '2'
-    number_sections: yes
   prettydoc::html_pretty:
     highlight: github
     number_sections: yes
     theme: cayman
     toc: yes
     toc_depth: 2
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+    number_sections: yes
   html_notebook:
     number_sections: yes
     theme: sandstone
@@ -1092,7 +1092,12 @@ hierarchical_list <- list(name = "World",
                                    list(name = "Argentina", size = 40134425))),
                             list(name = "Europe",  
                                  children = list(
-                                   list(name = "Germany", size = 81757600),
+                                   list(name = "Germany",
+                                      children = list(
+                                        list(name = "NRWF", size =  35447374),
+                                        list(name = "SAKSEN", size =  25447374)
+                                      )
+                                   ),
                                    list(name = "France", size = 65447374),
                                    list(name = "United Kingdom", size = 62041708))),
                             list(name = "Africa",  
@@ -1173,3 +1178,5 @@ m
 groupColors <- c("#000000", "#FFDD89", "#957244", "#F26223")
 chorddiag(m, groupColors = groupColors, groupnamePadding = 20)
 ```
+
+EINDE SESSIE

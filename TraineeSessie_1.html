@@ -420,7 +420,7 @@ patroon =<span class="st"> &quot;[[:punct:]]&quot;</span>
 </div>
 <div id="functies-uit-het-package-stringr" class="section level2">
 <h2><span class="header-section-number">4.2</span> functies uit het package stringr</h2>
-<p>In het package stringr zijn diverse functies om met characters te werken, een aantal zullen we laten zien</p>
+<p>In het package <code>stringr</code> zijn diverse functies om met characters te werken, een aantal zullen we laten zien</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">testset =<span class="st"> </span>titanic<span class="op">::</span>titanic_train <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(Name)
 ## maak extra kolom aan in titanic die namen zoekt
 testset =<span class="st"> </span>testset <span class="op">%&gt;%</span>
@@ -899,7 +899,12 @@ HoornEdges =<span class="st"> </span><span class="kw">readRDS</span>(<span class
                                    <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;Argentina&quot;</span>, <span class="dt">size =</span> <span class="dv">40134425</span>))),
                             <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;Europe&quot;</span>,  
                                  <span class="dt">children =</span> <span class="kw">list</span>(
-                                   <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;Germany&quot;</span>, <span class="dt">size =</span> <span class="dv">81757600</span>),
+                                   <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;Germany&quot;</span>,
+                                      <span class="dt">children =</span> <span class="kw">list</span>(
+                                        <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;NRWF&quot;</span>, <span class="dt">size =</span>  <span class="dv">35447374</span>),
+                                        <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;SAKSEN&quot;</span>, <span class="dt">size =</span>  <span class="dv">25447374</span>)
+                                      )
+                                   ),
                                    <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;France&quot;</span>, <span class="dt">size =</span> <span class="dv">65447374</span>),
                                    <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;United Kingdom&quot;</span>, <span class="dt">size =</span> <span class="dv">62041708</span>))),
                             <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;Africa&quot;</span>,  
@@ -919,24 +924,30 @@ HoornEdges =<span class="st"> </span><span class="kw">readRDS</span>(<span class
 <p>Interactieve sunburst plots kan je ook mooi gebruiken voor hierarchische data.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(sunburstR)
 
-sequences &lt;-<span class="st"> </span><span class="kw">read.csv</span>(
-  <span class="kw">system.file</span>(<span class="st">&quot;examples/visit-sequences.csv&quot;</span>,<span class="dt">package=</span><span class="st">&quot;sunburstR&quot;</span>)
-  ,<span class="dt">header =</span> <span class="ot">FALSE</span>
+seqData =<span class="st"> </span><span class="kw">read.csv</span>(
+  <span class="dt">file =</span> <span class="kw">paste0</span>(
+    <span class="st">&quot;https://gist.githubusercontent.com/mkajava/&quot;</span>,
+    <span class="st">&quot;7515402/raw/9f80d28094dc9dfed7090f8fb3376ef1539f4fd2/&quot;</span>,
+    <span class="st">&quot;comment-sequences.csv&quot;</span>
+  )
+  ,<span class="dt">header =</span> <span class="ot">TRUE</span>
   ,<span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>
-)[<span class="dv">1</span><span class="op">:</span><span class="dv">100</span>,]
-
-<span class="kw">sunburst</span>(sequences)
+)
+  
+<span class="kw">sunburst</span>(
+  seqData
+)
 
 <span class="kw">sunburst</span>(
-  sequences
+  seqData
   ,<span class="dt">count =</span> <span class="ot">TRUE</span>
 )
 
 ## aangepaste text in het midden 
 <span class="kw">sunburst</span>(
-  sequences
+  seqData
   <span class="co"># apply sort order to the legends</span>
-  ,<span class="dt">legendOrder =</span> <span class="kw">unique</span>(<span class="kw">unlist</span>(<span class="kw">strsplit</span>(sequences[,<span class="dv">1</span>],<span class="st">&quot;-&quot;</span>)))
+  ,<span class="dt">legendOrder =</span> <span class="kw">unique</span>(<span class="kw">unlist</span>(<span class="kw">strsplit</span>(seqData[,<span class="dv">1</span>],<span class="st">&quot;:&quot;</span>)))
   <span class="co"># just provide the name in the explanation in the center</span>
   ,<span class="dt">explanation =</span> <span class="st">&quot;function(d){return d.data.name}&quot;</span>
 )</code></pre></div>
@@ -961,6 +972,7 @@ m
 
 groupColors &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;#000000&quot;</span>, <span class="st">&quot;#FFDD89&quot;</span>, <span class="st">&quot;#957244&quot;</span>, <span class="st">&quot;#F26223&quot;</span>)
 <span class="kw">chorddiag</span>(m, <span class="dt">groupColors =</span> groupColors, <span class="dt">groupnamePadding =</span> <span class="dv">20</span>)</code></pre></div>
+<p>EINDE SESSIE</p>
 </div>
 </section>
 

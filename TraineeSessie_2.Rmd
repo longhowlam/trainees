@@ -924,7 +924,7 @@ history <- model %>% fit(
   x_train, y_train,
   batch_size = batch_size,
   epochs = epochs,
-  verbose = 1,
+  verbose = 2,
   view_metrics = FALSE,
   validation_split = 0.2
 )
@@ -963,16 +963,28 @@ model %>% compile(
 
 ## Convolutional model.
 
-Maak nu een meer fancy convolutional deeplearning model, input is nu een array van getallen ipv een plat geslagen vector zoals in vorige voorbeeld. En laten we nu Fashion MNIST nemen, door zalando beschikbaar gesteld.
+Maak nu een meer fancy convolutional deeplearning model, input is nu een array van getallen ipv een plat geslagen vector zoals in vorige voorbeeld. En laten we nu de Fashion MNIST nemen, een leuk alternative voor de cijfers, het zijn kledingplaatjes door zalando beschikbaar gesteld.
 
 [Fashion MNIST](https://github.com/zalandoresearch/fashion-mnist)
 
-Data kan je krijgen door git repo te clonen. en in data dir zitten gz files die je moet uitpakken, dit zijn binaire files die je mer R kan inlezen, gebruikmakend van de functie `readBin`.
+Data kan je krijgen door de git repo te clonen. en in data dir zitten gz files die je moet uitpakken, dit zijn binaire files die je mer R kan inlezen, gebruikmakend van de functie `readBin`.
 
+Er zijn 60.000 train en 10.000 test plaatjes, elk plaatje heeft een label (0-9) 
+
+Label	Description
+0	T-shirt/top
+1	Trouser
+2	Pullover
+3	Dress
+4	Coat
+5	Sandal
+6	Shirt
+7	Sneaker
+8	Bag
+9	Ankle boot
 
 ```{r, eval=FALSE}
-### MNIST FASHION
-
+### MNIST FASHION helper functie
 load_mnist <- function() {
   load_image_file <- function(filename) {
     ret = list()
@@ -1002,24 +1014,36 @@ load_mnist <- function() {
   train$y <<- load_label_file('/home/longhowlam/fashion-mnist/data/fashion/train-labels-idx1-ubyte')
   test$y <<- load_label_file('/home/longhowlam/fashion-mnist/data/fashion/t10k-labels-idx1-ubyte')  
 }
+```
 
-# functie om digit te laten zien
+Nu kan je de data inlezen 
+
+```{r, eval=FALSE}
+### Helper functie om een digit (een zalando plaatje) te laten zien
 show_digit <- function(arr784, col=gray(12:1/12), ...) {
   image(matrix(arr784, nrow=28)[,28:1], col=col, ...)
 }
 
 load_mnist()
 
+# vier plaatjes
 show_digit(train$x[1816,])
+train$y[1816]
+
+show_digit(train$x[116,])
+train$y[116]
+
+show_digit(train$x[3116,])
+train$y[3116]
+
+show_digit(train$x[1316,])
+train$y[1316]
 ```
 
-Nu kan je het model trainen, ik heb alleen 1 epoch gezet, dit model duurt een uur op dit laptopje om te trainen. Eerst weer de data goed zetten.
+Nu kan je het model trainen, ik heb alleen 1 epoch gezet, dit model duurt een uur op dit laptopje om te trainen. Eerst weer de data goed zetten en wat algemene settings, zoals batch size, dimensie en epochs specificeren....
 
 
 ```{r, eval=FALSE}
-
-library(keras)
-
 batch_size <- 128
 num_classes <- 10
 epochs <- 1
@@ -1029,7 +1053,6 @@ img_rows <- 28
 img_cols <- 28
 
 # the data, shuffled and split between train and test sets
-
 x_train <- train$x
 y_train <- train$y
 x_test <- test$x
@@ -1051,7 +1074,7 @@ y_train <- to_categorical(y_train, num_classes)
 y_test <- to_categorical(y_test, num_classes)
 ```
 
-Maak in keras nu het meer complexere convolutional model.
+Maak in keras nu het meer complexere convolutional model, verschillende lagen en pas ook dropout toe.
 
 ```{r, eval = FALSE}
 # define a two layer conv with max pooling  model
@@ -1091,6 +1114,18 @@ model %>%
     activation = 'softmax'
   )
 
+```
+
+Bekijk de beknopte smanevatting van het model
+
+```{r, eval = FALSE}
+summary(model)
+```
+
+
+Compileer en train het model
+
+```{r, eval = FALSE}
 # compile model
 model %>% compile(
   loss = loss_categorical_crossentropy,
@@ -1106,7 +1141,6 @@ model %>% fit(
   verbose = 1,
   validation_data = list(x_test, y_test)
 )
-
 
 scores <- model %>% evaluate(
   x_test, y_test, verbose = 0

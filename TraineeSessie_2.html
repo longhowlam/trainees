@@ -763,7 +763,7 @@ history &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span 
   x_train, y_train,
   <span class="dt">batch_size =</span> batch_size,
   <span class="dt">epochs =</span> epochs,
-  <span class="dt">verbose =</span> <span class="dv">1</span>,
+  <span class="dt">verbose =</span> <span class="dv">2</span>,
   <span class="dt">view_metrics =</span> <span class="ot">FALSE</span>,
   <span class="dt">validation_split =</span> <span class="fl">0.2</span>
 )
@@ -795,11 +795,12 @@ model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">co
 </div>
 <div id="convolutional-model." class="section level2">
 <h2><span class="header-section-number">6.2</span> Convolutional model.</h2>
-<p>Maak nu een meer fancy convolutional deeplearning model, input is nu een array van getallen ipv een plat geslagen vector zoals in vorige voorbeeld. En laten we nu Fashion MNIST nemen, door zalando beschikbaar gesteld.</p>
+<p>Maak nu een meer fancy convolutional deeplearning model, input is nu een array van getallen ipv een plat geslagen vector zoals in vorige voorbeeld. En laten we nu de Fashion MNIST nemen, een leuk alternative voor de cijfers, het zijn kledingplaatjes door zalando beschikbaar gesteld.</p>
 <p><a href="https://github.com/zalandoresearch/fashion-mnist">Fashion MNIST</a></p>
-<p>Data kan je krijgen door git repo te clonen. en in data dir zitten gz files die je moet uitpakken, dit zijn binaire files die je mer R kan inlezen, gebruikmakend van de functie <code>readBin</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">### MNIST FASHION
-
+<p>Data kan je krijgen door de git repo te clonen. en in data dir zitten gz files die je moet uitpakken, dit zijn binaire files die je mer R kan inlezen, gebruikmakend van de functie <code>readBin</code>.</p>
+<p>Er zijn 60.000 train en 10.000 test plaatjes, elk plaatje heeft een label (0-9)</p>
+<p>Label Description 0 T-shirt/top 1 Trouser 2 Pullover 3 Dress 4 Coat 5 Sandal 6 Shirt 7 Sneaker 8 Bag 9 Ankle boot</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">### MNIST FASHION helper functie
 load_mnist &lt;-<span class="st"> </span><span class="cf">function</span>() {
   load_image_file &lt;-<span class="st"> </span><span class="cf">function</span>(filename) {
     ret =<span class="st"> </span><span class="kw">list</span>()
@@ -828,20 +829,29 @@ load_mnist &lt;-<span class="st"> </span><span class="cf">function</span>() {
   
   train<span class="op">$</span>y &lt;&lt;-<span class="st"> </span><span class="kw">load_label_file</span>(<span class="st">'/home/longhowlam/fashion-mnist/data/fashion/train-labels-idx1-ubyte'</span>)
   test<span class="op">$</span>y &lt;&lt;-<span class="st"> </span><span class="kw">load_label_file</span>(<span class="st">'/home/longhowlam/fashion-mnist/data/fashion/t10k-labels-idx1-ubyte'</span>)  
-}
-
-<span class="co"># functie om digit te laten zien</span>
+}</code></pre></div>
+<p>Nu kan je de data inlezen</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">### Helper functie om een digit (een zalando plaatje) te laten zien
 show_digit &lt;-<span class="st"> </span><span class="cf">function</span>(arr784, <span class="dt">col=</span><span class="kw">gray</span>(<span class="dv">12</span><span class="op">:</span><span class="dv">1</span><span class="op">/</span><span class="dv">12</span>), ...) {
   <span class="kw">image</span>(<span class="kw">matrix</span>(arr784, <span class="dt">nrow=</span><span class="dv">28</span>)[,<span class="dv">28</span><span class="op">:</span><span class="dv">1</span>], <span class="dt">col=</span>col, ...)
 }
 
 <span class="kw">load_mnist</span>()
 
-<span class="kw">show_digit</span>(train<span class="op">$</span>x[<span class="dv">1816</span>,])</code></pre></div>
-<p>Nu kan je het model trainen, ik heb alleen 1 epoch gezet, dit model duurt een uur op dit laptopje om te trainen. Eerst weer de data goed zetten.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(keras)
+<span class="co"># vier plaatjes</span>
+<span class="kw">show_digit</span>(train<span class="op">$</span>x[<span class="dv">1816</span>,])
+train<span class="op">$</span>y[<span class="dv">1816</span>]
 
-batch_size &lt;-<span class="st"> </span><span class="dv">128</span>
+<span class="kw">show_digit</span>(train<span class="op">$</span>x[<span class="dv">116</span>,])
+train<span class="op">$</span>y[<span class="dv">116</span>]
+
+<span class="kw">show_digit</span>(train<span class="op">$</span>x[<span class="dv">3116</span>,])
+train<span class="op">$</span>y[<span class="dv">3116</span>]
+
+<span class="kw">show_digit</span>(train<span class="op">$</span>x[<span class="dv">1316</span>,])
+train<span class="op">$</span>y[<span class="dv">1316</span>]</code></pre></div>
+<p>Nu kan je het model trainen, ik heb alleen 1 epoch gezet, dit model duurt een uur op dit laptopje om te trainen. Eerst weer de data goed zetten en wat algemene settings, zoals batch size, dimensie en epochs specificeren….</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">batch_size &lt;-<span class="st"> </span><span class="dv">128</span>
 num_classes &lt;-<span class="st"> </span><span class="dv">10</span>
 epochs &lt;-<span class="st"> </span><span class="dv">1</span>
 
@@ -850,7 +860,6 @@ img_rows &lt;-<span class="st"> </span><span class="dv">28</span>
 img_cols &lt;-<span class="st"> </span><span class="dv">28</span>
 
 <span class="co"># the data, shuffled and split between train and test sets</span>
-
 x_train &lt;-<span class="st"> </span>train<span class="op">$</span>x
 y_train &lt;-<span class="st"> </span>train<span class="op">$</span>y
 x_test &lt;-<span class="st"> </span>test<span class="op">$</span>x
@@ -870,7 +879,7 @@ x_test &lt;-<span class="st"> </span>x_test <span class="op">/</span><span class
 <span class="co"># convert class vectors to binary class matrices</span>
 y_train &lt;-<span class="st"> </span><span class="kw">to_categorical</span>(y_train, num_classes)
 y_test &lt;-<span class="st"> </span><span class="kw">to_categorical</span>(y_test, num_classes)</code></pre></div>
-<p>Maak in keras nu het meer complexere convolutional model.</p>
+<p>Maak in keras nu het meer complexere convolutional model, verschillende lagen en pas ook dropout toe.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># define a two layer conv with max pooling  model</span>
 model &lt;-<span class="st"> </span><span class="kw">keras_model_sequential</span>()
 model <span class="op">%&gt;%</span>
@@ -906,9 +915,11 @@ model <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">layer_dense</span>(
     <span class="dt">units =</span> num_classes,
     <span class="dt">activation =</span> <span class="st">'softmax'</span>
-  )
-
-<span class="co"># compile model</span>
+  )</code></pre></div>
+<p>Bekijk de beknopte smanevatting van het model</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(model)</code></pre></div>
+<p>Compileer en train het model</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># compile model</span>
 model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">compile</span>(
   <span class="dt">loss =</span> loss_categorical_crossentropy,
   <span class="dt">optimizer =</span> <span class="kw">optimizer_adadelta</span>(),
@@ -923,7 +934,6 @@ model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">fi
   <span class="dt">verbose =</span> <span class="dv">1</span>,
   <span class="dt">validation_data =</span> <span class="kw">list</span>(x_test, y_test)
 )
-
 
 scores &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">evaluate</span>(
   x_test, y_test, <span class="dt">verbose =</span> <span class="dv">0</span>
