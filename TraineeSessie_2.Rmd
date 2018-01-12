@@ -942,13 +942,15 @@ cat('Test accuracy:', score[[2]], '\n')
 ```
 
 
-We kunnen nu nog een tweede hidden layer toevoegen.
+We kunnen nu nog een tweede hidden layer toevoegen met drop outs om overfitten te voorkomen.
 
 ```{r, eval=FALSE}
 model <- keras_model_sequential()
 model %>% 
-  layer_dense(units = 256, activation = 'relu', input_shape = c(784)) %>% 
-  layer_dense(units = 128, activation = 'relu', input_shape = c(784)) %>% 
+  layer_dense(units = 512, activation = 'relu', input_shape = c(784)) %>% 
+  layer_dropout(rate=0.2) %>%
+  layer_dense(units = 512, activation = 'relu', input_shape = c(784)) %>%
+  layer_dropout(rate=0.2) %>%
   layer_dense(units = 10, activation = 'softmax')
 
 summary(model)
