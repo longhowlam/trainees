@@ -1075,42 +1075,38 @@ Circle packings zijn een leuke manier om hierarchische data te visualiseren. Ins
 devtools::install_github("jeromefroe/circlepackeR")
 ```
 
-Maak wat dummy data aan. Volgend voorbeeldje is een hiërarchischer lijst.
+Maak wat dummy data aan. Volgend voorbeeldje is een hierarchische lijst.
 
 ```{r, eval= FALSE}
-hierarchical_list <- list(name = "World",
-                          children = list(
-                            list(name = "North America",
-                                 children = list(
-                                   list(name = "United States", size = 308865000),
-                                   list(name = "Mexico", size = 107550697),
-                                   list(name = "Canada", size = 34033000))),
-                            list(name = "South America", 
-                                 children = list(
-                                   list(name = "Brazil", size = 192612000),
-                                   list(name = "Colombia", size = 45349000),
-                                   list(name = "Argentina", size = 40134425))),
-                            list(name = "Europe",  
-                                 children = list(
-                                   list(name = "Germany",
-                                      children = list(
-                                        list(name = "NRWF", size =  35447374),
-                                        list(name = "SAKSEN", size =  25447374)
-                                      )
-                                   ),
-                                   list(name = "France", size = 65447374),
-                                   list(name = "United Kingdom", size = 62041708))),
-                            list(name = "Africa",  
-                                 children = list(
-                                   list(name = "Nigeria", size = 154729000),
-                                   list(name = "Ethiopia", size = 79221000),
-                                   list(name = "Egypt", size = 77979000))),
-                            list(name = "Asia",  
-                                 children = list(
-                                   list(name = "China", size = 1336335000),
-                                   list(name = "India", size = 1178225000),
-                                   list(name = "Indonesia", size = 231369500)))
-                          )
+hierarchical_list <- list(
+  name = "World",
+  children = list(
+    list(name = "North America",
+         children = list(
+           list(name = "United States", size = 308865000),
+           list(name = "Mexico", size = 107550697),
+           list(name = "Canada", size = 34033000))),
+    list(name = "South America", 
+         children = list(
+           list(name = "Brazil", size = 192612000),
+           list(name = "Colombia", size = 45349000),
+           list(name = "Argentina", size = 40134425))),
+    list(name = "Europe",  
+         children = list(
+           list(name = "Germany", size = 81757600),
+           list(name = "France", size = 65447374),
+           list(name = "United Kingdom", size = 62041708))),
+    list(name = "Africa",  
+         children = list(
+           list(name = "Nigeria", size = 154729000),
+           list(name = "Ethiopia", size = 79221000),
+           list(name = "Egypt", size = 77979000))),
+    list(name = "Asia",  
+         children = list(
+           list(name = "China", size = 1336335000),
+           list(name = "India", size = 1178225000),
+           list(name = "Indonesia", size = 231369500)))
+  )
 )
 ```
 
@@ -1119,6 +1115,32 @@ and plot it
 ```{r, eval=FALSE}
 circlepackeR::circlepackeR(hierarchical_list)
 ```
+
+The above code is not convenient to plot data that are in data frames. For example click data or web path logs. Let's take the following data example from the traamap package.
+
+```{r}
+library(dplyr)
+library(circlepackeR)
+library(data.tree)
+library(treemap)
+
+# Gross national income data
+data(GNI2014)
+GNI2014
+
+# create one column with a path string
+GNI2014 = GNI2014 %>% 
+  mutate(
+    webpath = paste("world", continent, country, sep = "/")
+  )
+
+# transform this data to a hierarchical tree that is suitable for circlepackR
+# 
+population <- as.Node(GNI2014, pathName = "webpath")
+circlepackeR(population,  size = "population")
+circlepackeR(population,  size = "GNI")
+```
+
 
 Interactieve sunburst plots kan je ook mooi gebruiken voor hierarchische data.
 

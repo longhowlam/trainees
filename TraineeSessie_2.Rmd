@@ -3,15 +3,15 @@ title: 'Machine learning in R'
 author: "Longhow Lam"
 subtitle: "Trainee sessie 02"
 output:
-  pdf_document:
-    toc: yes
-    toc_depth: '2'
-    number_sections: true
   prettydoc::html_pretty:
     highlight: github
     theme: cayman
     toc: true
     toc_depth: 2
+    number_sections: true
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
     number_sections: true
   html_notebook:
     theme: sandstone
@@ -60,8 +60,20 @@ We beginnen met simpele lineaire regressie, bruikbaar voor voorspel modellen waa
 ```{r, eval = FALSE}
 jaap = readRDS("data/Jaap.RDs")
 
-modelout  = lm( prijs ~ kamers              , data = jaap)
-modelout2 = lm( prijs ~kamers + Oppervlakte , data = jaap) 
+library(ggplot2)
+ggplot(jaap, aes(prijs, kamers)) + geom_point()
+ggplot(jaap, aes(prijs, Oppervlakte)) + geom_point()
+
+# some obvious outliers
+jaap = jaap %>% filter( prijs < 1e7 )
+```
+
+
+Een tweetal simepele modellen.
+
+```{r, eval = FALSE}
+modelout  = lm( prijs ~ kamers               , data = jaap)
+modelout2 = lm( prijs ~ kamers + Oppervlakte , data = jaap) 
 
 modelout
 modelout2
@@ -78,32 +90,53 @@ summary(modelout)
 plot(modelout)
 ```
 
+Iets mooiere diagnostische plots uit `lm` objecten krijg je met de library `ggfortify` die weet hoe je lm objecten moet interpreteren voor ggplot. Dan kan je met de functie `autoplot` uit ggplot mooiere diagnostische plots maken.
+
+```{r, eval = FALSE}
+library(ggfortify)
+library(ggplot2)
+
+ggplot2::autoplot(modelout)
+```
+
+Je ziet dat er wat outliers in de data zitten, die kunnen we nog eens er uit filteren
+
+```{r, eval = FALSE}
+jaap = jaap %>% filter( prijs < 1500000 )
+modelout  = lm( prijs ~ kamers               , data = jaap)
+modelout2 = lm( prijs ~ kamers + Oppervlakte , data = jaap) 
+```
+
+
 ### formula objects
 
 Modellen in R kan je specificeren met zogenaamde de formula objects. Hieronder zie je een aantal voorbeelden.
 
 ```{r, eval = FALSE}
-names(jaap)
-jaap = jaap %>% mutate(PC1Positie = stringr::str_sub(PC,1,1))
-f1 <- prijs ~ Oppervlakte + kamers + PC1Positie
+jaap = jaap %>% 
+  mutate(PC1Positie = stringr::str_sub(PC,1,1)) %>% 
+  filter(!is.na(PC1Positie))
+
+f0 = prijs ~ Oppervlakte + kamers 
+m0 = lm(f0, data = jaap)
+summary(m0)
+
+f1 = prijs ~ Oppervlakte + kamers + PC1Positie
 m1 = lm(f1, data = jaap)
-m1
 summary(m1)
 
-
 ## interactie termen
-f2 <- prijs ~ Oppervlakte*kamers*PC1Positie
+f2 = prijs ~ Oppervlakte + kamers + PC1Positie + Oppervlakte*PC1Positie
 m2 = lm(f2, data = jaap)
 summary(m2)
 
-
-##  termen weglaten
-f3 <- prijs ~ Oppervlakte*kamers*PC1Positie - Oppervlakte:kamers:PC1Positie
+## interactie termen
+f3 = prijs ~ Oppervlakte + kamers + PC1Positie + Oppervlakte*PC1Positie +  Oppervlakte*kamers
 m3 = lm(f3, data = jaap)
 summary(m3)
 
-## een target en de rest van de variabelen als inputs
-f4 = prijs ~ . -PC6 -PC
+##  interactietermen
+f4 = prijs ~ Oppervlakte*kamers*PC1Positie 
 m4 = lm(f4, data = jaap)
 summary(m4)
 ```
@@ -113,7 +146,75 @@ Als je verschillende model objecten hebt gemaakt kan je de functie `anova` gebru
 
 
 ```{r, eval =FALSE}
-anova(m1,m2, m3)
+anova(m0, m1, m2, m3, m4)
+```
+
+Nog een paar voorbeelden van formule objecten.
+
+```{r, eval=FALSE}
+##  termen weglaten
+f5 = prijs ~ Oppervlakte*kamers*PC1Positie - Oppervlakte:kamers:PC1Positie
+m5 = lm(f5, data = jaap)
+summary(m5)
+
+## een target en de rest van de variabelen als inputs
+f6 = prijs ~ . -PC6 -PC
+m6 = lm(f6, data = jaap)
+summary(m6)
+```
+
+
+### Buckets / linear constant  en splines 
+
+Als een input variable niet linear is m.b.t. de target kan je deze niet-lineariteit modelleren met buckets (linear constante stukken) of met splines.
+
+```{r, eval = FALSE}
+library(ggplot2)
+library(dplyr)
+library(splines)
+
+jaap %>% filter(prijs < 1000000, Oppervlakte < 1500) %>%ggplot(aes(x=Oppervlakte, y= prijs)) + geom_point()
+
+mybreaks = seq(0,1000, by = 25)
+jaap = jaap %>% mutate(OppervlakteBucket = cut(Oppervlakte, breaks = mybreaks))
+
+
+m1 = lm(prijs ~ Oppervlakte, data = jaap)
+m2 = lm(prijs ~ OppervlakteBucket, data = jaap)
+m3 = lm(prijs ~ ns(Oppervlakte,6), data = jaap)
+
+summary(m1)
+summary(m2)
+summary(m3)
+
+```
+
+###  predicties
+
+Met de functie `predict` kunnen we nieuwe huizen scoren, dat wil zeggen de prijs van andere huizen die niet in de training data set zaten voorspellen.
+
+
+```{r, eval=FALSE}
+NieuweHuizen = data.frame(
+  Oppervlakte = seq(20, 250, l = 100)
+  ) %>%
+  mutate(
+   OppervlakteBucket = cut(Oppervlakte, breaks = mybreaks)
+  )
+
+# Bucket predicties
+prijs2 = predict(m2, newdata = NieuweHuizen)
+NieuweHuizen$prijs2 = prijs2
+
+ggplot(NieuweHuizen, aes(x=Oppervlakte, y = prijs2)) + geom_line()
+
+# Spline predicties
+prijs3 = predict(m3, newdata = NieuweHuizen)
+NieuweHuizen$prijs3 = prijs3
+
+
+ggplot(NieuweHuizen, aes(x=Oppervlakte, y = prijs2)) + geom_point() + geom_point(aes(y=prijs3), col=2)
+
 ```
 
 
@@ -177,6 +278,14 @@ fancyRpartPlot(tree.out)
 ### larger trees with complexity parameter
 tree.out = rpart(Survived ~ Sex + Age +Pclass, data = titanic_train, control = list(cp=0.005))
 fancyRpartPlot(tree.out)
+```
+
+
+Met visNetwork kan je nog een mooiere interactieve decison tree maken.
+
+```{r, eval=FALSE}
+library(visNetwork)
+visTree(tree.out, height = "800px", nodesPopSize = TRUE, minNodeSize = 10, maxNodeSize = 30)
 ```
 
 
@@ -542,6 +651,7 @@ impObject = impute(
 
 ABT = impObject$data
 ```
+
 ## Het aanmaken van een task
 
 Maak nu een 'task' aan waarin je de data, de inputs en de target specificeert. Een classificatie taak voor categorische target of een regressie task voor een numerieke target.
@@ -742,63 +852,53 @@ cluster_membership = h2o.predict(
   as.data.frame()
 ```
 
+
 # Market basket analyse
 
-Met market basket analyse (ook wel association rules mining genoemd) kan je uit "transacties van klanten" vaak voorkomende combinaties of juiste hele "sterke combinaties" van producten bepalen. Hieronder volgt een voorbeeldje op een fictief grocery data setje.
+Met market basket analyse (ook wel association rules mining genoemd) kan je uit "transacties van klanten" vaak voorkomende combinaties of juiste hele "sterke combinaties" van producten bepalen. Hieronder volgt een voorbeeldje op een fictief grocery (boodschappen transacties) data setje.
 
 ```{r, eval = FALSE}
 library(arules)
-library(datasets)
 
-## voorbeeld R object Groceries, dit is een tranaction object
-data(Groceries)
-summary(Groceries)
-class(Groceries)
-
-## De producten die een klant zou kunnen kopen
-Groceries@itemInfo
-
-### Klant 10 heeft gekocht:
-Groceries@data[,10]
-```
-
-Met de functie `apriori` uit het arules package kan je nu vaak voorkomende combinaties van producten identificeren.
-
-```{r, eval = FALSE}
-rules <- apriori(Groceries, parameter = list(supp = 0.001, conf = 0.8))
-rules = sort(rules, decreasing = TRUE, na.last = NA, by = "lift")
-inspect(head(rules, n = 15))
-```
-
-De fictieve voorbeelddata `Groeceries` in R is al in een zogenaamde transactions object, normaal gesproken zal je data niet meteen zo hebben in R. Vanuit transactionele data moet je dit converteren naar een transaction object. Dit kan je ook doen met het `arules` package.
-
-```{r, eval = FALSE}
 ## De meest simpele transactionele data set
 trxDF = readRDS("data/boodschappen.RDs")
 
 ## Transormeer naar een transaction object
-Groceries2 = as(
+Groceries = as(
   split(
     trxDF$item,
     trxDF$id
     ),
   "transactions"
 )
-Groceries2
+
+Groceries
 
 ## Visuele Item informatie
-itemFrequencyPlot(Groceries2, topN = 35, cex.names = 0.75)
-
-rules2 <- apriori(Groceries2, parameter = list(supp = 0.001, conf = 0.8))
+itemFrequencyPlot(Groceries, topN = 35, cex.names = 0.75)
 ```
 
+Nu je de boodschappen als transaction object hebt kan je er market basket rules op los laten met behulp van het a-priori algoritme.
+
+```{r, eval= FALSE}
+rules <- apriori(Groceries, parameter = list(supp = 0.001, conf = 0.8))
+rules
+
+## laat enkele regels zien
+inspect(rules[1:10])
+
+inspect( sort(rules, by = "support")[1:10])
+
+## converteer de rules set naar een data frame
+rulesDF = DATAFRAME(rules)
+```
 
 Nu je de regels hebt kan je filteren op regels. Welke regels bevatten bepaalde producten.
 
 ```{r, eval = FALSE}
-rules.subset2 <- subset(rules, lhs %in% c("cereals", "curd"))
-rules.subset2
-inspect(head(rules.subset2,n=15))
+rules.subset = subset(rules, lhs %in% c("cereals", "curd"))
+rules.subset
+inspect(head(rules.subset, n=15))
 ```
 
 Of als iemand een bepaalde reeks transacties heeft welke regels horen daar bij en welk product kan je dan aanraden.
@@ -829,7 +929,58 @@ Een ander manier om regels weer te geven is in een network graph, de verzameling
 
 ```{r, eval=FALSE}
 library(arulesViz)
-plot(head(sort(rules2, by = "lift"), n=50), method = "graph", control=list(cex=.8))
+plot(head(sort(rules, by = "lift"), n=50), method = "graph", control=list(cex=.8))
+```
+
+## interactive MBA graphs
+
+You can visualise rules in interactive plotly plots or interactive visNetwork plots. First, an interactive scatter plot of the rules can be made. Each rule is plotted as a point, where the x axis represents the support and the y axis represent the confidence of the rule.
+
+```{r, eval=FALSE}
+rules <- apriori(Groceries, parameter = list(supp = 0.001, conf = 0.8) )
+rulesDF = rules %>% DATAFRAME()
+
+library(plotly)
+plotly_arules(rules, max = 2000)
+plotly_arules(rules, method = "two-key plot")
+```
+
+Secondly, an interactive visNetwork can be created. We need to extract the nodes and edges from the rules object.
+
+```{r, eval=FALSE}
+library(visNetwork)
+
+rules <- apriori(
+  Groceries, 
+  parameter = list(
+    supp = 0.0001, 
+    conf = 0.1, 
+    minlen = 2,
+    maxlen=2
+    )
+  )
+
+rulesDF = head(
+  sort(rules, by = "lift"),
+  n=250
+  ) %>% 
+  DATAFRAME() %>%
+  mutate(
+    from = as.character(LHS),
+    to = as.character(RHS),
+    value = lift
+  )
+
+nodes = data.frame(
+  id = base::unique(c(rulesDF$from, rulesDF$to)),
+  stringsAsFactors = FALSE
+) %>% mutate(
+  title = id
+)
+
+visNetwork(nodes, rulesDF) %>%
+   visOptions(highlightNearest = TRUE,  nodesIdSelection = TRUE) %>%
+   visEdges(smooth = FALSE) 
 ```
 
 # Deeplearning 
@@ -1011,7 +1162,7 @@ load_mnist <- function() {
   }
   
   train <<- load_image_file('/home/longhowlam/datasets/fashion/train-images-idx3-ubyte')
-  test <<- load_image_file('/home/longhowlam/datasets//fashion/t10k-images-idx3-ubyte')
+  test <<- load_image_file('/home/longhowlam/datasets/fashion/t10k-images-idx3-ubyte')
   
   train$y <<- load_label_file('/home/longhowlam/datasets/fashion/train-labels-idx1-ubyte')
   test$y <<- load_label_file('/home/longhowlam/datasets/fashion/t10k-labels-idx1-ubyte')  

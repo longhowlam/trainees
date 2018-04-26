@@ -98,7 +98,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li><a href="#unsupervised-learning"><span class="toc-section-number">4</span> Unsupervised learning</a><ul>
 <li><a href="#k-means-clustering"><span class="toc-section-number">4.1</span> k-means Clustering</a></li>
 </ul></li>
-<li><a href="#market-basket-analyse"><span class="toc-section-number">5</span> Market basket analyse</a></li>
+<li><a href="#market-basket-analyse"><span class="toc-section-number">5</span> Market basket analyse</a><ul>
+<li><a href="#interactive-mba-graphs"><span class="toc-section-number">5.1</span> interactive MBA graphs</a></li>
+</ul></li>
 <li><a href="#deeplearning"><span class="toc-section-number">6</span> Deeplearning</a><ul>
 <li><a href="#een-simpel-model"><span class="toc-section-number">6.1</span> Een simpel model</a></li>
 <li><a href="#convolutional-model."><span class="toc-section-number">6.2</span> Convolutional model.</a></li>
@@ -118,8 +120,15 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>We beginnen met simpele lineaire regressie, bruikbaar voor voorspel modellen waar de Target variable continu (numeric) is. We nemen als voorbeeld huizen prijs data die ik gescraped heb van jaap.nl. We willen de prijs van een huis voorspellen basis van een aantal input variabelen/kenmerken.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">jaap =<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;data/Jaap.RDs&quot;</span>)
 
-modelout  =<span class="st"> </span><span class="kw">lm</span>( prijs <span class="op">~</span><span class="st"> </span>kamers              , <span class="dt">data =</span> jaap)
-modelout2 =<span class="st"> </span><span class="kw">lm</span>( prijs <span class="op">~</span>kamers <span class="op">+</span><span class="st"> </span>Oppervlakte , <span class="dt">data =</span> jaap) 
+<span class="kw">library</span>(ggplot2)
+<span class="kw">ggplot</span>(jaap, <span class="kw">aes</span>(prijs, kamers)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()
+<span class="kw">ggplot</span>(jaap, <span class="kw">aes</span>(prijs, Oppervlakte)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()
+
+<span class="co"># some obvious outliers</span>
+jaap =<span class="st"> </span>jaap <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>( prijs <span class="op">&lt;</span><span class="st"> </span><span class="fl">1e7</span> )</code></pre></div>
+<p>Een tweetal simepele modellen.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">modelout  =<span class="st"> </span><span class="kw">lm</span>( prijs <span class="op">~</span><span class="st"> </span>kamers               , <span class="dt">data =</span> jaap)
+modelout2 =<span class="st"> </span><span class="kw">lm</span>( prijs <span class="op">~</span><span class="st"> </span>kamers <span class="op">+</span><span class="st"> </span>Oppervlakte , <span class="dt">data =</span> jaap) 
 
 modelout
 modelout2</code></pre></div>
@@ -130,34 +139,100 @@ modelout<span class="op">$</span>coefficients
 
 <span class="kw">summary</span>(modelout)
 <span class="kw">plot</span>(modelout)</code></pre></div>
+<p>Iets mooiere diagnostische plots uit <code>lm</code> objecten krijg je met de library <code>ggfortify</code> die weet hoe je lm objecten moet interpreteren voor ggplot. Dan kan je met de functie <code>autoplot</code> uit ggplot mooiere diagnostische plots maken.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggfortify)
+<span class="kw">library</span>(ggplot2)
+
+ggplot2<span class="op">::</span><span class="kw">autoplot</span>(modelout)</code></pre></div>
+<p>Je ziet dat er wat outliers in de data zitten, die kunnen we nog eens er uit filteren</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">jaap =<span class="st"> </span>jaap <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>( prijs <span class="op">&lt;</span><span class="st"> </span><span class="dv">1500000</span> )
+modelout  =<span class="st"> </span><span class="kw">lm</span>( prijs <span class="op">~</span><span class="st"> </span>kamers               , <span class="dt">data =</span> jaap)
+modelout2 =<span class="st"> </span><span class="kw">lm</span>( prijs <span class="op">~</span><span class="st"> </span>kamers <span class="op">+</span><span class="st"> </span>Oppervlakte , <span class="dt">data =</span> jaap) </code></pre></div>
 <div id="formula-objects" class="section level3">
 <h3><span class="header-section-number">1.1.1</span> formula objects</h3>
 <p>Modellen in R kan je specificeren met zogenaamde de formula objects. Hieronder zie je een aantal voorbeelden.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(jaap)
-jaap =<span class="st"> </span>jaap <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">PC1Positie =</span> stringr<span class="op">::</span><span class="kw">str_sub</span>(PC,<span class="dv">1</span>,<span class="dv">1</span>))
-f1 &lt;-<span class="st"> </span>prijs <span class="op">~</span><span class="st"> </span>Oppervlakte <span class="op">+</span><span class="st"> </span>kamers <span class="op">+</span><span class="st"> </span>PC1Positie
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">jaap =<span class="st"> </span>jaap <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">PC1Positie =</span> stringr<span class="op">::</span><span class="kw">str_sub</span>(PC,<span class="dv">1</span>,<span class="dv">1</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(PC1Positie))
+
+f0 =<span class="st"> </span>prijs <span class="op">~</span><span class="st"> </span>Oppervlakte <span class="op">+</span><span class="st"> </span>kamers 
+m0 =<span class="st"> </span><span class="kw">lm</span>(f0, <span class="dt">data =</span> jaap)
+<span class="kw">summary</span>(m0)
+
+f1 =<span class="st"> </span>prijs <span class="op">~</span><span class="st"> </span>Oppervlakte <span class="op">+</span><span class="st"> </span>kamers <span class="op">+</span><span class="st"> </span>PC1Positie
 m1 =<span class="st"> </span><span class="kw">lm</span>(f1, <span class="dt">data =</span> jaap)
-m1
 <span class="kw">summary</span>(m1)
 
-
 ## interactie termen
-f2 &lt;-<span class="st"> </span>prijs <span class="op">~</span><span class="st"> </span>Oppervlakte<span class="op">*</span>kamers<span class="op">*</span>PC1Positie
+f2 =<span class="st"> </span>prijs <span class="op">~</span><span class="st"> </span>Oppervlakte <span class="op">+</span><span class="st"> </span>kamers <span class="op">+</span><span class="st"> </span>PC1Positie <span class="op">+</span><span class="st"> </span>Oppervlakte<span class="op">*</span>PC1Positie
 m2 =<span class="st"> </span><span class="kw">lm</span>(f2, <span class="dt">data =</span> jaap)
 <span class="kw">summary</span>(m2)
 
-
-##  termen weglaten
-f3 &lt;-<span class="st"> </span>prijs <span class="op">~</span><span class="st"> </span>Oppervlakte<span class="op">*</span>kamers<span class="op">*</span>PC1Positie <span class="op">-</span><span class="st"> </span>Oppervlakte<span class="op">:</span>kamers<span class="op">:</span>PC1Positie
+## interactie termen
+f3 =<span class="st"> </span>prijs <span class="op">~</span><span class="st"> </span>Oppervlakte <span class="op">+</span><span class="st"> </span>kamers <span class="op">+</span><span class="st"> </span>PC1Positie <span class="op">+</span><span class="st"> </span>Oppervlakte<span class="op">*</span>PC1Positie <span class="op">+</span><span class="st">  </span>Oppervlakte<span class="op">*</span>kamers
 m3 =<span class="st"> </span><span class="kw">lm</span>(f3, <span class="dt">data =</span> jaap)
 <span class="kw">summary</span>(m3)
 
-## een target en de rest van de variabelen als inputs
-f4 =<span class="st"> </span>prijs <span class="op">~</span><span class="st"> </span>. <span class="op">-</span>PC6 <span class="op">-</span>PC
+##  interactietermen
+f4 =<span class="st"> </span>prijs <span class="op">~</span><span class="st"> </span>Oppervlakte<span class="op">*</span>kamers<span class="op">*</span>PC1Positie 
 m4 =<span class="st"> </span><span class="kw">lm</span>(f4, <span class="dt">data =</span> jaap)
 <span class="kw">summary</span>(m4)</code></pre></div>
 <p>Als je verschillende model objecten hebt gemaakt kan je de functie <code>anova</code> gebruiken om ze met elkaar te vergelijken. Dit gebeurt met behulp van F statistics.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">anova</span>(m1,m2, m3)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">anova</span>(m0, m1, m2, m3, m4)</code></pre></div>
+<p>Nog een paar voorbeelden van formule objecten.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##  termen weglaten
+f5 =<span class="st"> </span>prijs <span class="op">~</span><span class="st"> </span>Oppervlakte<span class="op">*</span>kamers<span class="op">*</span>PC1Positie <span class="op">-</span><span class="st"> </span>Oppervlakte<span class="op">:</span>kamers<span class="op">:</span>PC1Positie
+m5 =<span class="st"> </span><span class="kw">lm</span>(f5, <span class="dt">data =</span> jaap)
+<span class="kw">summary</span>(m5)
+
+## een target en de rest van de variabelen als inputs
+f6 =<span class="st"> </span>prijs <span class="op">~</span><span class="st"> </span>. <span class="op">-</span>PC6 <span class="op">-</span>PC
+m6 =<span class="st"> </span><span class="kw">lm</span>(f6, <span class="dt">data =</span> jaap)
+<span class="kw">summary</span>(m6)</code></pre></div>
+</div>
+<div id="buckets-linear-constant-en-splines" class="section level3">
+<h3><span class="header-section-number">1.1.2</span> Buckets / linear constant en splines</h3>
+<p>Als een input variable niet linear is m.b.t. de target kan je deze niet-lineariteit modelleren met buckets (linear constante stukken) of met splines.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(dplyr)
+<span class="kw">library</span>(splines)
+
+jaap <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(prijs <span class="op">&lt;</span><span class="st"> </span><span class="dv">1000000</span>, Oppervlakte <span class="op">&lt;</span><span class="st"> </span><span class="dv">1500</span>) <span class="op">%&gt;%</span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x=</span>Oppervlakte, <span class="dt">y=</span> prijs)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()
+
+mybreaks =<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">1000</span>, <span class="dt">by =</span> <span class="dv">25</span>)
+jaap =<span class="st"> </span>jaap <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">OppervlakteBucket =</span> <span class="kw">cut</span>(Oppervlakte, <span class="dt">breaks =</span> mybreaks))
+
+
+m1 =<span class="st"> </span><span class="kw">lm</span>(prijs <span class="op">~</span><span class="st"> </span>Oppervlakte, <span class="dt">data =</span> jaap)
+m2 =<span class="st"> </span><span class="kw">lm</span>(prijs <span class="op">~</span><span class="st"> </span>OppervlakteBucket, <span class="dt">data =</span> jaap)
+m3 =<span class="st"> </span><span class="kw">lm</span>(prijs <span class="op">~</span><span class="st"> </span><span class="kw">ns</span>(Oppervlakte,<span class="dv">6</span>), <span class="dt">data =</span> jaap)
+
+<span class="kw">summary</span>(m1)
+<span class="kw">summary</span>(m2)
+<span class="kw">summary</span>(m3)</code></pre></div>
+</div>
+<div id="predicties" class="section level3">
+<h3><span class="header-section-number">1.1.3</span> predicties</h3>
+<p>Met de functie <code>predict</code> kunnen we nieuwe huizen scoren, dat wil zeggen de prijs van andere huizen die niet in de training data set zaten voorspellen.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">NieuweHuizen =<span class="st"> </span><span class="kw">data.frame</span>(
+  <span class="dt">Oppervlakte =</span> <span class="kw">seq</span>(<span class="dv">20</span>, <span class="dv">250</span>, <span class="dt">l =</span> <span class="dv">100</span>)
+  ) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(
+   <span class="dt">OppervlakteBucket =</span> <span class="kw">cut</span>(Oppervlakte, <span class="dt">breaks =</span> mybreaks)
+  )
+
+<span class="co"># Bucket predicties</span>
+prijs2 =<span class="st"> </span><span class="kw">predict</span>(m2, <span class="dt">newdata =</span> NieuweHuizen)
+NieuweHuizen<span class="op">$</span>prijs2 =<span class="st"> </span>prijs2
+
+<span class="kw">ggplot</span>(NieuweHuizen, <span class="kw">aes</span>(<span class="dt">x=</span>Oppervlakte, <span class="dt">y =</span> prijs2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>()
+
+<span class="co"># Spline predicties</span>
+prijs3 =<span class="st"> </span><span class="kw">predict</span>(m3, <span class="dt">newdata =</span> NieuweHuizen)
+NieuweHuizen<span class="op">$</span>prijs3 =<span class="st"> </span>prijs3
+
+
+<span class="kw">ggplot</span>(NieuweHuizen, <span class="kw">aes</span>(<span class="dt">x=</span>Oppervlakte, <span class="dt">y =</span> prijs2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y=</span>prijs3), <span class="dt">col=</span><span class="dv">2</span>)</code></pre></div>
 </div>
 </div>
 <div id="splitsen-in-train-en-test" class="section level2">
@@ -205,6 +280,9 @@ TTest =<span class="st"> </span><span class="kw">testing</span>(myTitanSplit)</c
 ### larger trees with complexity parameter
 tree.out =<span class="st"> </span><span class="kw">rpart</span>(Survived <span class="op">~</span><span class="st"> </span>Sex <span class="op">+</span><span class="st"> </span>Age <span class="op">+</span>Pclass, <span class="dt">data =</span> titanic_train, <span class="dt">control =</span> <span class="kw">list</span>(<span class="dt">cp=</span><span class="fl">0.005</span>))
 <span class="kw">fancyRpartPlot</span>(tree.out)</code></pre></div>
+<p>Met visNetwork kan je nog een mooiere interactieve decison tree maken.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(visNetwork)
+<span class="kw">visTree</span>(tree.out, <span class="dt">height =</span> <span class="st">&quot;800px&quot;</span>, <span class="dt">nodesPopSize =</span> <span class="ot">TRUE</span>, <span class="dt">minNodeSize =</span> <span class="dv">10</span>, <span class="dt">maxNodeSize =</span> <span class="dv">30</span>)</code></pre></div>
 </div>
 <div id="random-forest-met-ranger" class="section level2">
 <h2><span class="header-section-number">1.5</span> random forest met ranger</h2>
@@ -238,7 +316,7 @@ xgboost.out =<span class="st"> </span><span class="kw">xgboost</span>(<span clas
 <div id="predictie-en-validatie" class="section level2">
 <h2><span class="header-section-number">1.7</span> predictie en validatie</h2>
 <p>Met een test set kan je bepalen hoe goed een model is. Gebruik het model object van een modelfit om een test set te scoren en de scores met de ware uitkomsten te vergelijken.</p>
-<div id="predicties" class="section level3">
+<div id="predicties-1" class="section level3">
 <h3><span class="header-section-number">1.7.1</span> predicties</h3>
 <p>Voor binaire classificaties is het handig om response kansen uit te rekenen. Voor logistische regressie met <code>glm</code> gebeurt dit niet automatisch</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pred_GLM =<span class="st"> </span><span class="kw">predict</span>(out.glm, <span class="dt">data =</span> TTest, <span class="dt">type=</span><span class="st">'response'</span>)
@@ -632,46 +710,40 @@ cluster_membership =<span class="st"> </span><span class="kw">h2o.predict</span>
 </div>
 <div id="market-basket-analyse" class="section level1">
 <h1><span class="header-section-number">5</span> Market basket analyse</h1>
-<p>Met market basket analyse (ook wel association rules mining genoemd) kan je uit “transacties van klanten” vaak voorkomende combinaties of juiste hele “sterke combinaties” van producten bepalen. Hieronder volgt een voorbeeldje op een fictief grocery data setje.</p>
+<p>Met market basket analyse (ook wel association rules mining genoemd) kan je uit “transacties van klanten” vaak voorkomende combinaties of juiste hele “sterke combinaties” van producten bepalen. Hieronder volgt een voorbeeldje op een fictief grocery (boodschappen transacties) data setje.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(arules)
-<span class="kw">library</span>(datasets)
 
-## voorbeeld R object Groceries, dit is een tranaction object
-<span class="kw">data</span>(Groceries)
-<span class="kw">summary</span>(Groceries)
-<span class="kw">class</span>(Groceries)
-
-## De producten die een klant zou kunnen kopen
-Groceries<span class="op">@</span>itemInfo
-
-### Klant 10 heeft gekocht:
-Groceries<span class="op">@</span>data[,<span class="dv">10</span>]</code></pre></div>
-<p>Met de functie <code>apriori</code> uit het arules package kan je nu vaak voorkomende combinaties van producten identificeren.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rules &lt;-<span class="st"> </span><span class="kw">apriori</span>(Groceries, <span class="dt">parameter =</span> <span class="kw">list</span>(<span class="dt">supp =</span> <span class="fl">0.001</span>, <span class="dt">conf =</span> <span class="fl">0.8</span>))
-rules =<span class="st"> </span><span class="kw">sort</span>(rules, <span class="dt">decreasing =</span> <span class="ot">TRUE</span>, <span class="dt">na.last =</span> <span class="ot">NA</span>, <span class="dt">by =</span> <span class="st">&quot;lift&quot;</span>)
-<span class="kw">inspect</span>(<span class="kw">head</span>(rules, <span class="dt">n =</span> <span class="dv">15</span>))</code></pre></div>
-<p>De fictieve voorbeelddata <code>Groeceries</code> in R is al in een zogenaamde transactions object, normaal gesproken zal je data niet meteen zo hebben in R. Vanuit transactionele data moet je dit converteren naar een transaction object. Dit kan je ook doen met het <code>arules</code> package.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## De meest simpele transactionele data set
+## De meest simpele transactionele data set
 trxDF =<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;data/boodschappen.RDs&quot;</span>)
 
 ## Transormeer naar een transaction object
-Groceries2 =<span class="st"> </span><span class="kw">as</span>(
+Groceries =<span class="st"> </span><span class="kw">as</span>(
   <span class="kw">split</span>(
     trxDF<span class="op">$</span>item,
     trxDF<span class="op">$</span>id
     ),
   <span class="st">&quot;transactions&quot;</span>
 )
-Groceries2
+
+Groceries
 
 ## Visuele Item informatie
-<span class="kw">itemFrequencyPlot</span>(Groceries2, <span class="dt">topN =</span> <span class="dv">35</span>, <span class="dt">cex.names =</span> <span class="fl">0.75</span>)
+<span class="kw">itemFrequencyPlot</span>(Groceries, <span class="dt">topN =</span> <span class="dv">35</span>, <span class="dt">cex.names =</span> <span class="fl">0.75</span>)</code></pre></div>
+<p>Nu je de boodschappen als transaction object hebt kan je er market basket rules op los laten met behulp van het a-priori algoritme.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rules &lt;-<span class="st"> </span><span class="kw">apriori</span>(Groceries, <span class="dt">parameter =</span> <span class="kw">list</span>(<span class="dt">supp =</span> <span class="fl">0.001</span>, <span class="dt">conf =</span> <span class="fl">0.8</span>))
+rules
 
-rules2 &lt;-<span class="st"> </span><span class="kw">apriori</span>(Groceries2, <span class="dt">parameter =</span> <span class="kw">list</span>(<span class="dt">supp =</span> <span class="fl">0.001</span>, <span class="dt">conf =</span> <span class="fl">0.8</span>))</code></pre></div>
+## laat enkele regels zien
+<span class="kw">inspect</span>(rules[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>])
+
+<span class="kw">inspect</span>( <span class="kw">sort</span>(rules, <span class="dt">by =</span> <span class="st">&quot;support&quot;</span>)[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>])
+
+## converteer de rules set naar een data frame
+rulesDF =<span class="st"> </span><span class="kw">DATAFRAME</span>(rules)</code></pre></div>
 <p>Nu je de regels hebt kan je filteren op regels. Welke regels bevatten bepaalde producten.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rules.subset2 &lt;-<span class="st"> </span><span class="kw">subset</span>(rules, lhs <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;cereals&quot;</span>, <span class="st">&quot;curd&quot;</span>))
-rules.subset2
-<span class="kw">inspect</span>(<span class="kw">head</span>(rules.subset2,<span class="dt">n=</span><span class="dv">15</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rules.subset =<span class="st"> </span><span class="kw">subset</span>(rules, lhs <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;cereals&quot;</span>, <span class="st">&quot;curd&quot;</span>))
+rules.subset
+<span class="kw">inspect</span>(<span class="kw">head</span>(rules.subset, <span class="dt">n=</span><span class="dv">15</span>))</code></pre></div>
 <p>Of als iemand een bepaalde reeks transacties heeft welke regels horen daar bij en welk product kan je dan aanraden.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">PersoonA =<span class="st"> </span><span class="kw">data.frame</span>(
   <span class="dt">id =</span> <span class="kw">rep</span>(<span class="dv">1</span>,<span class="dv">3</span>),
@@ -694,7 +766,51 @@ rulesMatch &lt;-<span class="st"> </span><span class="kw">is.subset</span>(rules
 <span class="kw">inspect</span>(rules[rulesMatch[,<span class="dv">1</span>]]<span class="op">@</span>rhs)</code></pre></div>
 <p>Een ander manier om regels weer te geven is in een network graph, de verzameling regels vormen in feite een netwerk. A –&gt; B, B –&gt; C, D –&gt; B bijvoorbeeld.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(arulesViz)
-<span class="kw">plot</span>(<span class="kw">head</span>(<span class="kw">sort</span>(rules2, <span class="dt">by =</span> <span class="st">&quot;lift&quot;</span>), <span class="dt">n=</span><span class="dv">50</span>), <span class="dt">method =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">control=</span><span class="kw">list</span>(<span class="dt">cex=</span>.<span class="dv">8</span>))</code></pre></div>
+<span class="kw">plot</span>(<span class="kw">head</span>(<span class="kw">sort</span>(rules, <span class="dt">by =</span> <span class="st">&quot;lift&quot;</span>), <span class="dt">n=</span><span class="dv">50</span>), <span class="dt">method =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">control=</span><span class="kw">list</span>(<span class="dt">cex=</span>.<span class="dv">8</span>))</code></pre></div>
+<div id="interactive-mba-graphs" class="section level2">
+<h2><span class="header-section-number">5.1</span> interactive MBA graphs</h2>
+<p>You can visualise rules in interactive plotly plots or interactive visNetwork plots. First, an interactive scatter plot of the rules can be made. Each rule is plotted as a point, where the x axis represents the support and the y axis represent the confidence of the rule.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rules &lt;-<span class="st"> </span><span class="kw">apriori</span>(Groceries, <span class="dt">parameter =</span> <span class="kw">list</span>(<span class="dt">supp =</span> <span class="fl">0.001</span>, <span class="dt">conf =</span> <span class="fl">0.8</span>) )
+rulesDF =<span class="st"> </span>rules <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">DATAFRAME</span>()
+
+<span class="kw">library</span>(plotly)
+<span class="kw">plotly_arules</span>(rules, <span class="dt">max =</span> <span class="dv">2000</span>)
+<span class="kw">plotly_arules</span>(rules, <span class="dt">method =</span> <span class="st">&quot;two-key plot&quot;</span>)</code></pre></div>
+<p>Secondly, an interactive visNetwork can be created. We need to extract the nodes and edges from the rules object.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(visNetwork)
+
+rules &lt;-<span class="st"> </span><span class="kw">apriori</span>(
+  Groceries, 
+  <span class="dt">parameter =</span> <span class="kw">list</span>(
+    <span class="dt">supp =</span> <span class="fl">0.0001</span>, 
+    <span class="dt">conf =</span> <span class="fl">0.1</span>, 
+    <span class="dt">minlen =</span> <span class="dv">2</span>,
+    <span class="dt">maxlen=</span><span class="dv">2</span>
+    )
+  )
+
+rulesDF =<span class="st"> </span><span class="kw">head</span>(
+  <span class="kw">sort</span>(rules, <span class="dt">by =</span> <span class="st">&quot;lift&quot;</span>),
+  <span class="dt">n=</span><span class="dv">250</span>
+  ) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">DATAFRAME</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(
+    <span class="dt">from =</span> <span class="kw">as.character</span>(LHS),
+    <span class="dt">to =</span> <span class="kw">as.character</span>(RHS),
+    <span class="dt">value =</span> lift
+  )
+
+nodes =<span class="st"> </span><span class="kw">data.frame</span>(
+  <span class="dt">id =</span> base<span class="op">::</span><span class="kw">unique</span>(<span class="kw">c</span>(rulesDF<span class="op">$</span>from, rulesDF<span class="op">$</span>to)),
+  <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>
+) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(
+  <span class="dt">title =</span> id
+)
+
+<span class="kw">visNetwork</span>(nodes, rulesDF) <span class="op">%&gt;%</span>
+<span class="st">   </span><span class="kw">visOptions</span>(<span class="dt">highlightNearest =</span> <span class="ot">TRUE</span>,  <span class="dt">nodesIdSelection =</span> <span class="ot">TRUE</span>) <span class="op">%&gt;%</span>
+<span class="st">   </span><span class="kw">visEdges</span>(<span class="dt">smooth =</span> <span class="ot">FALSE</span>) </code></pre></div>
+</div>
 </div>
 <div id="deeplearning" class="section level1">
 <h1><span class="header-section-number">6</span> Deeplearning</h1>
@@ -778,11 +894,13 @@ score &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span cl
 <span class="co"># Output metrics</span>
 <span class="kw">cat</span>(<span class="st">'Test loss:'</span>, score[[<span class="dv">1</span>]], <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)
 <span class="kw">cat</span>(<span class="st">'Test accuracy:'</span>, score[[<span class="dv">2</span>]], <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</code></pre></div>
-<p>We kunnen nu nog een tweede hidden layer toevoegen.</p>
+<p>We kunnen nu nog een tweede hidden layer toevoegen met drop outs om overfitten te voorkomen.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">keras_model_sequential</span>()
 model <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">256</span>, <span class="dt">activation =</span> <span class="st">'relu'</span>, <span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">784</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">128</span>, <span class="dt">activation =</span> <span class="st">'relu'</span>, <span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">784</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">512</span>, <span class="dt">activation =</span> <span class="st">'relu'</span>, <span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">784</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_dropout</span>(<span class="dt">rate=</span><span class="fl">0.2</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">512</span>, <span class="dt">activation =</span> <span class="st">'relu'</span>, <span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">784</span>)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">layer_dropout</span>(<span class="dt">rate=</span><span class="fl">0.2</span>) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">10</span>, <span class="dt">activation =</span> <span class="st">'softmax'</span>)
 
 <span class="kw">summary</span>(model)
@@ -824,11 +942,11 @@ load_mnist &lt;-<span class="st"> </span><span class="cf">function</span>() {
     y
   }
   
-  train &lt;&lt;-<span class="st"> </span><span class="kw">load_image_file</span>(<span class="st">'/home/longhowlam/fashion-mnist/data/fashion/train-images-idx3-ubyte'</span>)
-  test &lt;&lt;-<span class="st"> </span><span class="kw">load_image_file</span>(<span class="st">'/home/longhowlam/fashion-mnist/data/fashion/t10k-images-idx3-ubyte'</span>)
+  train &lt;&lt;-<span class="st"> </span><span class="kw">load_image_file</span>(<span class="st">'/home/longhowlam/datasets/fashion/train-images-idx3-ubyte'</span>)
+  test &lt;&lt;-<span class="st"> </span><span class="kw">load_image_file</span>(<span class="st">'/home/longhowlam/datasets/fashion/t10k-images-idx3-ubyte'</span>)
   
-  train<span class="op">$</span>y &lt;&lt;-<span class="st"> </span><span class="kw">load_label_file</span>(<span class="st">'/home/longhowlam/fashion-mnist/data/fashion/train-labels-idx1-ubyte'</span>)
-  test<span class="op">$</span>y &lt;&lt;-<span class="st"> </span><span class="kw">load_label_file</span>(<span class="st">'/home/longhowlam/fashion-mnist/data/fashion/t10k-labels-idx1-ubyte'</span>)  
+  train<span class="op">$</span>y &lt;&lt;-<span class="st"> </span><span class="kw">load_label_file</span>(<span class="st">'/home/longhowlam/datasets/fashion/train-labels-idx1-ubyte'</span>)
+  test<span class="op">$</span>y &lt;&lt;-<span class="st"> </span><span class="kw">load_label_file</span>(<span class="st">'/home/longhowlam/datasets/fashion/t10k-labels-idx1-ubyte'</span>)  
 }</code></pre></div>
 <p>Nu kan je de data inlezen</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">### Helper functie om een digit (een zalando plaatje) te laten zien
