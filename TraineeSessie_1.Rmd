@@ -590,13 +590,16 @@ levels(test$z2)
 <br>
 
 
-# Dates in R
+# Dates and times in R
 
 ---
 
 Voor datums (en tijden) in R zijn de packages `anytime` en `lubridate` heel handig. Laten we er van uitgaan dat we characters hebben met datums en daar mee willen rekenen. Dan kunnen we de functie `anydate` uit het anytime package gebruiken.
 
 ```{r, eval=FALSE}
+library(lubridate)
+library(anytime)
+
 y = c("1973-09-12", "1980-05-23", "1981-12-09")
 
 testdata = tibble(DoB = y)
@@ -636,9 +639,81 @@ testdata = testdata %>%
 Een Unix time stamps is het aantal seconden sinds 1-1-1970. Mocht je dit ooit tegen komen dan kan anytime er ook mee uit de voeten.
 
 ```{r, eval=FALSE}
+library(readr)
 tmp = read_csv("data/unixtimestamps.csv")
 tmp$datum = anydate(tmp$timestamp)
 tmp
+```
+
+
+Tijdstippen kunnen in R ook worden weergegven met times
+
+
+```{r, eval = FALSE}
+tmp = paste("2018-01-23", c("12:01:33", "12:01:38", "12:01:58"))
+Waarde = c(2.4, 5.6, 7.8)
+
+MeetData = tibble(tmp = tmp, Waarde= Waarde)
+
+MeetData = MeetData %>% 
+  mutate(
+    Meettijdstip = ymd_hms(tmp)
+  )
+
+```
+
+
+## durations en intervals
+
+Als je in R twee datums/times van elkaar aftrekt krijg je in R een duration 
+
+```{r, eval = FALSE}
+MeetData = MeetData %>% 
+  mutate(
+    duur = ymd_hms("2018-02-01 00:00:00") - ymd_hms(tmp)
+  )
+
+```
+
+Ja kan durations ook zelf maken en optellen bij een datum
+
+```{r, eval = FALSE}
+testduur = dweeks(3)
+testduur = dweeks(3.1)
+class(testduur)
+
+MeetData = MeetData %>% 
+  mutate(
+   t2 = Meettijdstip + dyears(2),
+   t3 = Meettijdstip + dseconds(1800),
+   t4 = Meettijdstip + dweeks(3)
+   
+  )
+
+```
+
+
+In R heb je ook zogenaamde `interval` objecten, dit is de tijdsperiode tussen een start en eind datum. Hiermee kan je de leeftijd in jaren ook precies uitrekenen.
+
+```{r, eval = FALSE}
+
+y = c("1973-09-12", "1973-01-09")
+
+testdata = tibble(DoB = y)
+
+testdata = testdata %>%
+  mutate(
+    GeboorteDatum = anydate(DoB),
+    interval1 = interval(GeboorteDatum, today()),
+    interval2 = GeboorteDatum %--% today(),
+    leeftijd = interval1 %/% years(1)
+  )
+
+testdata
+
+# NB %/% is de integer division in R
+13 / 6
+13 %/% 6
 ```
 
 
@@ -653,6 +728,9 @@ library(dplyr)
 ## maak een connectie naar spark
 sc <- spark_connect(master = "local")
 
+## nu zie je ook in RStudio een Spark connection met spark data sets
+## en een link naar de spark User Interface
+
 ## upload data naar spark, zie ook connections tab
 iris_tbl <- copy_to(sc, iris)
 
@@ -661,7 +739,11 @@ test = iris_tbl %>% filter(Sepal_Length >5)
 
 class(test)
 test %>% count()
+```
 
+Als je klaar bent: disconnect van Spark
+
+```{r, eval=FALSE}
 spark_disconnect(sc)
 ```
 
@@ -669,7 +751,6 @@ Als je MySQL hebt en een odbc connectie hebt opgezet  kan je een link leggen naa
 
 ```{r, eval=FALSE}
 library(odbc)
-library(RMySQL)
 library(DBI)
 library(dplyr)
 
@@ -680,7 +761,7 @@ con_sql <-  dbConnect(odbc::odbc(), "my-connector")
 dbListTables(con_sql)
 
 ## copier lokale R data frames naar MySQL
-dbWriteTable(conn = con_sql, name = 'mtcars', value = mtcars)
+dbWriteTable(conn = con_sql, name = 'mtcars_test', value = mtcars)
 
 ## je hebt een'handle' nodig naar een tabel, daar kan je dplyr op gebruiken
 tbl_handle = tbl(con_sql, "mtcars")
@@ -692,10 +773,13 @@ zz = tbl_handle %>% filter(disp > 260)
 class(zz)
 
 lokaledata = zz %>% collect()
-
-dbDisconnect(con_sql)
 ```
 
+Als je klaar bent: disconnect van MySQL
+
+```{r eval=FALSE}
+dbDisconnect(con_sql)
+```
 
 
 # Interactive grafieken
