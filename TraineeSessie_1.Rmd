@@ -902,7 +902,7 @@ m
 Plot de restaurants in Zwolle op een kaartje. Data van Iens gescraped.
 
 ```{r, eval=FALSE}
-Restaurants <- read.csv("data/Restaurants.csv", fileEncoding = "UTF-8")
+Restaurants <- read.csv("data/Restaurants.csv")
 Zwolle = Restaurants %>% filter(plaats == "Zwolle")
 
 ## tooltip teksten kunnen geplaatst worden
@@ -1083,6 +1083,8 @@ for (i in 1:length(plg)){
 pc2_lf
 ```
 
+
+popup texts in leaflets kunnen ook images en animated animated images bevatten. See as an example [this leaflet of Amsterdam](http://www.lhldsd.nl/AmsterdamWijkenOverzichtAnimated.html) en [this shiny app](http://145.131.21.163:3838/sample-apps/amsterdam_panoramaimages/)
 
 
 ## Netwerk grafieken, visnetwork
