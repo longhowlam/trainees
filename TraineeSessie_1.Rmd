@@ -47,8 +47,7 @@ Het `tidyverse` package is een verzameling R packages met 'dezelfde' gedachtegoe
 library(tidyverse)
 library(lubridate)
 library(anytime)
-library(stringr)
-library(dplyr)
+
 library(ggplot2)
 library(readr)
 library(plotly)
@@ -65,6 +64,18 @@ library(rgdal)
 library(visNetwork)
 ```
 
+Merk op: Het is soms niet zo handig om een hele lijst aan libraries aan je R sessie te koppelen. In bovenstaande lijst van packages hebben we nu meerdere packages met de functie `select`.
+
+```{r, eval=FALSE}
+getAnywhere("select")
+```
+
+Een package kan je detatchen van je huidige sessie met het commando:
+
+```{r, eval=FALSE}
+detach(package:raster)
+```
+
 
 # De dplyr library
 
@@ -78,6 +89,8 @@ Het mooie is dat deze sleutel woorden ook achter elkaar gebruikt kunnen worden m
 ## kolommen selecteren met select
 
 ```{r, eval=FALSE}
+library(dplyr)
+
 ## enkele kolommen selecteren
 my.cars = select(mtcars, hp, mpg, drat)
 
@@ -140,13 +153,17 @@ mycars = mtcars %>%
   )
 ```
 
-Je kan ook zelf gemaakte functies gebruiken. 
+Je kan ook zelf gemaakte functies gebruiken in mutate.
 
 ```{r, eval=FALSE}
 normalize <- function(x){
     return((x- mean(x))/(max(x)-min(x)))
 }
 
+# test run van de functie
+normalize(1:10) 
+
+# in mutate
 mycars = mtcars %>%
   mutate(
     cyln = normalize(cyl)
@@ -244,7 +261,6 @@ class(by_cyl)
 
 summarise(by_cyl, Naampje1 = mean(disp), Naampje2 = mean(hp))
 
-
 ## maar vaak doe je de twee in 1 run samen
 out = mtcars %>%
   group_by(
@@ -271,11 +287,9 @@ out = filter(
 ```
 
 
-
 ## joins
 
 Met dplyr kun je makkelijk tabellen joinen. Er zijn verschillende joins die ondersteunt worden. We geven hier een aantal voorbeelden.
-
 
 ```{r, eval=FALSE}
 ### maak twee data frames aan
@@ -316,7 +330,6 @@ df6 = df1 %>% anti_join(
 ## alle rijen van df1 en df2
 full_join(df1, df2, by = c("col1" = "col1"))
 ```
-
 
 <br>
 
@@ -426,7 +439,16 @@ Character data in R kan je bewerken/manipuleren met het `stringr` package. Voord
 Dit is een soort 'mini' taaltje om character patronen te specificeren om er vervolgens bijvoorbeeld op te zoeken. Eerst wat dummy character data.
 
 ```{r, eval=FALSE}
-test = c("Mijn nummer is 06-12345678", "dit is .. een 1628EP postcode test", "foutje?:  0234XD", "dit is er nog een 1628 EP", "en nog een foute 126EP", "nog een 1234    XX", "1234eZ en nog 4567PK", "12345 Aabcde", "&yfy.")
+test = c(
+  "Mijn nummer is 06-12345678", 
+  "dit is .. een 1628EP postcode test", 
+  "foutje?:  0234XD", 
+  "dit is er nog een 1628 EP", 
+  "en nog een foute 126EP", 
+  "nog een 1234    XX", 
+  "1234eZ en nog 4567PK", 
+  "12345 Aabcde", "&yfy."
+)
 test
 ```
 
