@@ -74,6 +74,7 @@ Een package kan je detatchen van je huidige sessie met het commando:
 
 ```{r, eval=FALSE}
 detach(package:raster)
+detach(package:plotly)
 ```
 
 
