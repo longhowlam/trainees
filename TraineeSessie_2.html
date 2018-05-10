@@ -121,8 +121,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">jaap =<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;data/Jaap.RDs&quot;</span>)
 
 <span class="kw">library</span>(ggplot2)
-<span class="kw">ggplot</span>(jaap, <span class="kw">aes</span>(prijs, kamers)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()
-<span class="kw">ggplot</span>(jaap, <span class="kw">aes</span>(prijs, Oppervlakte)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()
+<span class="kw">ggplot</span>(jaap, <span class="kw">aes</span>( kamers, prijs)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()
+<span class="kw">ggplot</span>(jaap, <span class="kw">aes</span>( Oppervlakte, prijs)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()
 
 <span class="co"># some obvious outliers</span>
 jaap =<span class="st"> </span>jaap <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>( prijs <span class="op">&lt;</span><span class="st"> </span><span class="fl">1e7</span> )</code></pre></div>
@@ -243,18 +243,24 @@ NieuweHuizen<span class="op">$</span>prijs3 =<span class="st"> </span>prijs3
 
 ## maak een categorische kolom van survived
 myTitan =<span class="st"> </span>titanic<span class="op">::</span>titanic_train
-myTitan <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(
+myTitan =<span class="st"> </span>myTitan <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(
   <span class="dt">Survived =</span> <span class="kw">ifelse</span>(Survived <span class="op">&lt;</span><span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;N&quot;</span>, <span class="st">&quot;Y&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>as.factor
 )
 
-<span class="kw">table</span>(myTitan<span class="op">$</span>Survived)
+## haal missende waarden weg, we gaan ons hier even niet vermoeien met missende waarden :-)
+myTitan =<span class="st"> </span>myTitan <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(
+    <span class="op">!</span><span class="kw">is.na</span>(Age)
+  )
 
 N =<span class="st"> </span><span class="kw">dim</span>(myTitan)[<span class="dv">1</span>]
-
 train =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span>N, <span class="dt">size =</span> <span class="kw">floor</span>(perc<span class="op">*</span>N))
 
 TTrain =<span class="st"> </span>myTitan[train,]
 TTest =<span class="st"> </span>myTitan[<span class="op">-</span>train,]</code></pre></div>
+<p>Dus we hebben nu een train en test set en we zien een verhouding van survived die verschillend zijn in train en test omdat we hier redelijk kleine data setjes hebben.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(TTrain<span class="op">$</span>Survived)
+<span class="kw">table</span>(TTest<span class="op">$</span>Survived)</code></pre></div>
 <p>Bovenstaande code was op de oude manier in R een train en test set maken, er is zijn packages die dat voor je doen, een van die packages is <code>rsample</code>. Dit packages is veel algemener en kan ook gebruikt worden voor cross validation splits.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rsample)
 myTitanSplit =<span class="st"> </span><span class="kw">initial_split</span>(myTitan, <span class="dt">prop =</span> <span class="fl">0.8</span>)
@@ -278,59 +284,64 @@ TTest =<span class="st"> </span><span class="kw">testing</span>(myTitanSplit)</c
 <span class="kw">fancyRpartPlot</span>(tree.out)
 
 ### larger trees with complexity parameter
-tree.out =<span class="st"> </span><span class="kw">rpart</span>(Survived <span class="op">~</span><span class="st"> </span>Sex <span class="op">+</span><span class="st"> </span>Age <span class="op">+</span>Pclass, <span class="dt">data =</span> titanic_train, <span class="dt">control =</span> <span class="kw">list</span>(<span class="dt">cp=</span><span class="fl">0.005</span>))
-<span class="kw">fancyRpartPlot</span>(tree.out)</code></pre></div>
+tree.out2 =<span class="st"> </span><span class="kw">rpart</span>(Survived <span class="op">~</span><span class="st"> </span>Sex <span class="op">+</span><span class="st"> </span>Age <span class="op">+</span>Pclass, <span class="dt">data =</span> TTrain, <span class="dt">control =</span> <span class="kw">list</span>(<span class="dt">cp=</span><span class="fl">0.0005</span>))
+<span class="kw">fancyRpartPlot</span>(tree.out2)</code></pre></div>
 <p>Met visNetwork kan je nog een mooiere interactieve decison tree maken.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(visNetwork)
 <span class="kw">visTree</span>(tree.out, <span class="dt">height =</span> <span class="st">&quot;800px&quot;</span>, <span class="dt">nodesPopSize =</span> <span class="ot">TRUE</span>, <span class="dt">minNodeSize =</span> <span class="dv">10</span>, <span class="dt">maxNodeSize =</span> <span class="dv">30</span>)</code></pre></div>
 </div>
 <div id="random-forest-met-ranger" class="section level2">
 <h2><span class="header-section-number">1.5</span> random forest met ranger</h2>
-<p>Een random forest is een zogenaamde ensemble model. Het is de combinatie van (veel) verschillende decision trees.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ranger.out =<span class="st"> </span><span class="kw">ranger</span>( Survived <span class="op">~</span><span class="st"> </span>Sex <span class="op">+</span><span class="st"> </span>Age <span class="op">+</span><span class="st"> </span>Pclass, <span class="dt">data =</span> TTrain)
-
-### er zijn missende waarden. We zouden ze kunnen verwijdern
-TTrain =<span class="st"> </span>TTrain <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(Age))
-ranger.out =<span class="st"> </span><span class="kw">ranger</span>( Survived <span class="op">~</span><span class="st"> </span>Sex <span class="op">+</span><span class="st"> </span>Age <span class="op">+</span>Pclass, <span class="dt">data =</span> TTrain, <span class="dt">importance =</span> <span class="st">&quot;impurity&quot;</span>)
-
+<p>Een random forest is een zogenaamde ensemble model. Het is de combinatie van (veel) verschillende decision trees. In R kan je met verschillende packages random forests fitten. Het package <code>ranger</code> is hier een van.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ranger.out =<span class="st"> </span><span class="kw">ranger</span>( Survived <span class="op">~</span><span class="st"> </span>Sex <span class="op">+</span><span class="st"> </span>Age <span class="op">+</span><span class="st"> </span>Pclass, <span class="dt">data =</span> TTrain , <span class="dt">probability =</span> <span class="ot">TRUE</span>)
 ranger.out</code></pre></div>
 </div>
 <div id="xgboost" class="section level2">
 <h2><span class="header-section-number">1.6</span> xgboost</h2>
 <p>Extreme gradient boosting wordt de laatste tijd ook veel gebruikt in Kaggle competities. Zoals bij random forests is een xgboost model ook een ensemble van decision trees, maar de trees zijn nu niet onafhankelijk van elkaar. Eerst wordt een tree gefit, daarna een andere op basis van de eerste, etc.</p>
 <p>Met de library <code>xgboost</code> kan je in R extreme gradient boosting modellen fitten. De aanroep is anders dan wat we tot nu toe gezien hebben. De <code>xgboost</code> functie moet een matrix met input variabelen worden meegegeven.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Titan_Inputmatrix =<span class="st"> </span><span class="kw">sparse.model.matrix</span>( Survived <span class="op">~</span><span class="st"> </span>Sex <span class="op">+</span><span class="st"> </span>Age <span class="op">+</span><span class="st"> </span>Pclass, <span class="dt">data =</span> TTrain)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(Matrix)
+Titan_Inputmatrix =<span class="st"> </span><span class="kw">sparse.model.matrix</span>( Survived <span class="op">~</span><span class="st"> </span>Sex <span class="op">+</span><span class="st"> </span>Age <span class="op">+</span><span class="st"> </span>Pclass, <span class="dt">data =</span> TTrain)
 
-Titan_Inputmatrix
+## hoe ziet zo'n input matrix er uit? eerste 15 rijen
+Titan_Inputmatrix[<span class="dv">1</span><span class="op">:</span><span class="dv">15</span>,]
 
-xgboost.out =<span class="st"> </span><span class="kw">xgboost</span>(Titan_Inputmatrix, <span class="dt">label =</span> TTrain<span class="op">$</span>Survived, <span class="dt">nrounds =</span> <span class="dv">10</span>)
-
-## er zijn diverse opties mee te geven aan xgboost
-param =<span class="st"> </span><span class="kw">list</span>(
+## nu kan je de xgboost aanroepen met input matrix en label
+xgboost.out =<span class="st"> </span><span class="kw">xgboost</span>(Titan_Inputmatrix, <span class="dt">label =</span> TTrain<span class="op">$</span>Survived, <span class="dt">nrounds =</span> <span class="dv">25</span>)</code></pre></div>
+<p>Bovenstaande aanroep fit een regression tree, dat is niet wat we willen we willen een binairy classificatie, label moet dan wel numeriek 0 / 1 zijn.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">param =<span class="st"> </span><span class="kw">list</span>(
   <span class="dt">objective =</span> <span class="st">'binary:logistic'</span>,
   <span class="dt">eval_metric =</span> <span class="st">'auc'</span>
 )
 
-xgboost.out =<span class="st"> </span><span class="kw">xgboost</span>(<span class="dt">params=</span>param, Titan_Inputmatrix, <span class="dt">label =</span> TTrain<span class="op">$</span>Survived, <span class="dt">nrounds =</span> <span class="dv">10</span>)</code></pre></div>
+xgboost.out2 =<span class="st"> </span><span class="kw">xgboost</span>(
+  <span class="dt">params=</span>param,
+  Titan_Inputmatrix,
+  <span class="dt">label =</span> <span class="kw">as.integer</span>(TTrain<span class="op">$</span>Survived) <span class="op">-</span><span class="dv">1</span> , <span class="dt">nrounds =</span> <span class="dv">25</span>)</code></pre></div>
 </div>
 <div id="predictie-en-validatie" class="section level2">
 <h2><span class="header-section-number">1.7</span> predictie en validatie</h2>
 <p>Met een test set kan je bepalen hoe goed een model is. Gebruik het model object van een modelfit om een test set te scoren en de scores met de ware uitkomsten te vergelijken.</p>
 <div id="predicties-1" class="section level3">
 <h3><span class="header-section-number">1.7.1</span> predicties</h3>
-<p>Voor binaire classificaties is het handig om response kansen uit te rekenen. Voor logistische regressie met <code>glm</code> gebeurt dit niet automatisch</p>
+<p>Voor binaire classificaties is het handig om response kansen uit te rekenen. Voor logistische regressie met <code>glm</code> gebeurt dit niet automatisch, we zetten extra <code>type = response</code></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pred_GLM =<span class="st"> </span><span class="kw">predict</span>(out.glm, <span class="dt">data =</span> TTest, <span class="dt">type=</span><span class="st">'response'</span>)
 <span class="kw">hist</span>(pred_GLM)</code></pre></div>
 <p>Voorspelling van de decision tree, en random forest ranger.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pred_tree =<span class="st"> </span><span class="kw">predict</span>(tree.out, <span class="dt">data =</span> TTest)
-<span class="kw">hist</span>(pred_tree)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## LET OP! prediecties van tree zitten in een matrix
+pred_tree =<span class="st"> </span><span class="kw">predict</span>(tree.out, <span class="dt">newdata =</span> TTest)
+pred_tree[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>,]
+<span class="kw">hist</span>(pred_tree[,<span class="dv">2</span>])
 
-TTest =<span class="st"> </span>TTest <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(Age))
+## LET OP hier is argument data ipv newdata en je krijgt een lijst terug 
 pred_ranger =<span class="st"> </span><span class="kw">predict</span>(ranger.out, <span class="dt">data =</span> TTest)
-<span class="kw">hist</span>(pred_ranger<span class="op">$</span>predictions)</code></pre></div>
+pred_ranger<span class="op">$</span>predictions[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>,]
+<span class="kw">hist</span>(pred_ranger<span class="op">$</span>predictions[,<span class="dv">2</span>])</code></pre></div>
 <p>En voor xgboost moet je ook de test set als matrix veranderen</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Titan_Testmatrix =<span class="st"> </span><span class="kw">sparse.model.matrix</span>( Survived <span class="op">~</span><span class="st"> </span>Sex <span class="op">+</span><span class="st"> </span>Age <span class="op">+</span>Pclass, <span class="dt">data =</span> TTest)
-pred_xgboost =<span class="st"> </span><span class="kw">predict</span>(xgboost.out, <span class="dt">newdata =</span> Titan_Testmatrix)
+pred_xgboost =<span class="st"> </span><span class="kw">predict</span>(xgboost.out2, <span class="dt">newdata =</span> Titan_Testmatrix)
+
+## hier zitten de predicties een vector
 <span class="kw">hist</span>(pred_xgboost)</code></pre></div>
 </div>
 <div id="variable-importance-in-trees" class="section level3">
@@ -343,19 +354,46 @@ tree.out<span class="op">$</span>variable.importance
 ranger.out<span class="op">$</span>variable.importance
 
 <span class="co"># xgboost</span>
-<span class="kw">xgb.importance</span>( <span class="kw">colnames</span>(Titan_Inputmatrix), <span class="dt">model =</span>xgboost.out)</code></pre></div>
+<span class="kw">xgb.importance</span>( <span class="kw">colnames</span>(Titan_Inputmatrix), <span class="dt">model =</span>xgboost.out2)</code></pre></div>
+</div>
+<div id="lift-percentages" class="section level3">
+<h3><span class="header-section-number">1.7.3</span> Lift percentages</h3>
+<p>Als we geen model hebben kan je de overall survival kans uitrekenen (op de test set:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## if you know nothing :-)
+TTest =<span class="st"> </span>TTest <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">target =</span> <span class="kw">ifelse</span>(Survived <span class="op">==</span><span class="st"> &quot;Y&quot;</span>,<span class="dv">1</span>,<span class="dv">0</span>))
+TTest <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">target =</span> <span class="kw">mean</span>(target))</code></pre></div>
+<p>Als we een goed model hebben zullen de survival kansen hoger liggen voor mensen met een hogere score. Laten we de GLM (logistische regressie model) predcities in tien stukken (decielen) opdelen, en per deciel de survival kans uitrekenen.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">testpr =<span class="st"> </span><span class="kw">predict</span>(out.glm, <span class="dt">newdata =</span> TTest, <span class="dt">type=</span><span class="st">'response'</span>)
+TTest<span class="op">$</span>predictieGLM =<span class="st"> </span>testpr
+
+### deel de GLM predicties op in tien even grote stukken
+TTest =<span class="st"> </span>TTest <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(
+    <span class="dt">percPredictie =</span> <span class="kw">cut</span>(
+      predictieGLM, 
+      <span class="dt">breaks =</span> <span class="kw">quantile</span>(
+        predictieGLM, 
+        <span class="dt">probs =</span> (<span class="dv">0</span><span class="op">:</span><span class="dv">10</span>)<span class="op">/</span><span class="dv">10</span>
+      )
+    )
+  )
+
+## if you have a score!!!
+TTest <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(percPredictie) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(
+    <span class="dt">N =</span> <span class="kw">n</span>(),
+    <span class="dt">target =</span> <span class="kw">mean</span>(target)
+  )</code></pre></div>
 </div>
 <div id="roc-curves-and-hit-rates" class="section level3">
-<h3><span class="header-section-number">1.7.3</span> roc curves and hit rates</h3>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">testpr =<span class="st"> </span><span class="kw">predict</span>(tree.out, TTest)
-TTest<span class="op">$</span>predictie =<span class="st"> </span>testpr
-
-rocResultTEST =<span class="st"> </span><span class="kw">roc</span>(Survived  <span class="op">~</span><span class="st"> </span>predictie, <span class="dt">data =</span> TTest , <span class="dt">auc=</span><span class="ot">TRUE</span>, <span class="dt">ci =</span><span class="ot">TRUE</span>)
+<h3><span class="header-section-number">1.7.4</span> roc curves and hit rates</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rocResultTEST =<span class="st"> </span><span class="kw">roc</span>(Survived  <span class="op">~</span><span class="st"> </span>predictieGLM, <span class="dt">data =</span> TTest , <span class="dt">auc=</span><span class="ot">TRUE</span>, <span class="dt">ci =</span><span class="ot">TRUE</span>)
 <span class="kw">plot</span>(rocResultTEST)
 
 ## HITRATES 
 TTest <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(predictie, Survived))  <span class="op">+</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(predictieGLM, target))  <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_smooth</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">slope =</span> <span class="dv">1</span>,<span class="dt">intercept =</span> <span class="dv">0</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;survived rate rate on test set&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))</code></pre></div>
@@ -843,7 +881,7 @@ n =<span class="st"> </span><span class="dv">110</span>
 <span class="kw">image</span>(  x_train[n,,] )
 y_train[n]</code></pre></div>
 <p>We gaan nu de data wat reshapen voor het model</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Sla de matruces plat tot een vector (array) van 784 = (28*28)</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Sla de matrices plat tot een vector (array) van 784 = (28*28)</span>
 x_train &lt;-<span class="st"> </span><span class="kw">array_reshape</span>(x_train, <span class="kw">c</span>(<span class="kw">nrow</span>(x_train), <span class="dv">784</span>))
 x_test &lt;-<span class="st"> </span><span class="kw">array_reshape</span>(x_test, <span class="kw">c</span>(<span class="kw">nrow</span>(x_test), <span class="dv">784</span>))
 
