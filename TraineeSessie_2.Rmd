@@ -31,11 +31,12 @@ output:
 library(rpart)
 library(glmnet)
 library(ranger)
-library(xgboost)
+
 library(ROCR)
 library(pROC)
 library(titanic)
 library(rattle)
+library(xgboost)
 library(mlr)
 library(h2o)
 library(dplyr)
@@ -229,20 +230,29 @@ perc = 0.80
 
 ## maak een categorische kolom van survived
 myTitan = titanic::titanic_train
-myTitan %>% mutate(
+myTitan = myTitan %>% mutate(
   Survived = ifelse(Survived < 1, "N", "Y") %>% as.factor
 )
 
-table(myTitan$Survived)
+## haal missende waarden weg, we gaan ons hier even niet vermoeien met missende waarden :-)
+myTitan = myTitan %>% 
+  filter(
+    !is.na(Age)
+  )
 
 N = dim(myTitan)[1]
-
 train = sample(1:N, size = floor(perc*N))
 
 TTrain = myTitan[train,]
 TTest = myTitan[-train,]
 ```
 
+Dus we hebben nu een train en test set en we zien een verhouding van survived die verschillend zijn in train en test omdat we hier redelijk kleine data setjes hebben.
+
+```{r, eval=FALSE}
+table(TTrain$Survived)
+table(TTest$Survived)
+```
 
 Bovenstaande code was op de oude manier in R een train en test set maken, er is zijn packages die dat voor je doen, een van die packages is `rsample`. Dit packages is veel algemener en kan ook gebruikt worden voor cross validation splits.
 
@@ -276,8 +286,8 @@ text(tree.out, use.n = TRUE)
 fancyRpartPlot(tree.out)
 
 ### larger trees with complexity parameter
-tree.out = rpart(Survived ~ Sex + Age +Pclass, data = titanic_train, control = list(cp=0.005))
-fancyRpartPlot(tree.out)
+tree.out2 = rpart(Survived ~ Sex + Age +Pclass, data = TTrain, control = list(cp=0.0005))
+fancyRpartPlot(tree.out2)
 ```
 
 
@@ -291,17 +301,11 @@ visTree(tree.out, height = "800px", nodesPopSize = TRUE, minNodeSize = 10, maxNo
 
 ## random forest met ranger
 
-Een random forest is een zogenaamde ensemble model. Het is de combinatie van (veel) verschillende decision trees.
+Een random forest is een zogenaamde ensemble model. Het is de combinatie van (veel) verschillende decision trees. In R kan je met verschillende packages random forests fitten. Het package `ranger` is hier een van.
 
 ```{r, eval = FALSE}
-ranger.out = ranger( Survived ~ Sex + Age + Pclass, data = TTrain)
-
-### er zijn missende waarden. We zouden ze kunnen verwijdern
-TTrain = TTrain %>% filter(!is.na(Age))
-ranger.out = ranger( Survived ~ Sex + Age +Pclass, data = TTrain, importance = "impurity")
-
+ranger.out = ranger( Survived ~ Sex + Age + Pclass, data = TTrain , probability = TRUE)
 ranger.out
-
 ```
 
 ## xgboost
@@ -311,19 +315,30 @@ Extreme gradient boosting wordt de laatste tijd ook veel gebruikt in Kaggle comp
 Met de library `xgboost` kan je in R extreme gradient boosting modellen fitten. De aanroep is anders dan wat we tot nu toe gezien hebben. De `xgboost` functie moet een matrix met input variabelen worden meegegeven.
 
 ```{r, eval = FALSE}
+library(Matrix)
 Titan_Inputmatrix = sparse.model.matrix( Survived ~ Sex + Age + Pclass, data = TTrain)
 
-Titan_Inputmatrix
+## hoe ziet zo'n input matrix er uit? eerste 15 rijen
+Titan_Inputmatrix[1:15,]
 
-xgboost.out = xgboost(Titan_Inputmatrix, label = TTrain$Survived, nrounds = 10)
+## nu kan je de xgboost aanroepen met input matrix en label
+xgboost.out = xgboost(Titan_Inputmatrix, label = TTrain$Survived, nrounds = 25)
+```
 
-## er zijn diverse opties mee te geven aan xgboost
+
+Bovenstaande aanroep fit een regression tree, dat is niet wat we willen we willen een binairy classificatie, label moet dan wel numeriek 0 / 1 zijn.
+
+```{r, eval=FALSE}
 param = list(
   objective = 'binary:logistic',
   eval_metric = 'auc'
 )
 
-xgboost.out = xgboost(params=param, Titan_Inputmatrix, label = TTrain$Survived, nrounds = 10)
+xgboost.out2 = xgboost(
+  params=param,
+  Titan_Inputmatrix,
+  label = as.integer(TTrain$Survived) -1 , nrounds = 25)
+
 ```
 
 
@@ -333,7 +348,7 @@ Met een test set kan je bepalen hoe goed een model is. Gebruik het model object 
 
 ### predicties
 
-Voor binaire classificaties is het handig om response kansen uit te rekenen. Voor logistische regressie met `glm` gebeurt dit niet automatisch
+Voor binaire classificaties is het handig om response kansen uit te rekenen. Voor logistische regressie met `glm` gebeurt dit niet automatisch, we zetten extra `type = response`
 
 ```{r, eval = FALSE}
 pred_GLM = predict(out.glm, data = TTest, type='response')
@@ -343,19 +358,24 @@ hist(pred_GLM)
 Voorspelling van de decision tree, en random forest ranger.
 
 ```{r, eval = FALSE}
-pred_tree = predict(tree.out, data = TTest)
-hist(pred_tree)
+## LET OP! prediecties van tree zitten in een matrix
+pred_tree = predict(tree.out, newdata = TTest)
+pred_tree[1:10,]
+hist(pred_tree[,2])
 
-TTest = TTest %>% filter(!is.na(Age))
+## LET OP hier is argument data ipv newdata en je krijgt een lijst terug 
 pred_ranger = predict(ranger.out, data = TTest)
-hist(pred_ranger$predictions)
+pred_ranger$predictions[1:10,]
+hist(pred_ranger$predictions[,2])
 ```
 
 En voor xgboost moet je ook de test set als matrix veranderen
 
 ```{r, eval = FALSE}
 Titan_Testmatrix = sparse.model.matrix( Survived ~ Sex + Age +Pclass, data = TTest)
-pred_xgboost = predict(xgboost.out, newdata = Titan_Testmatrix)
+pred_xgboost = predict(xgboost.out2, newdata = Titan_Testmatrix)
+
+## hier zitten de predicties een vector
 hist(pred_xgboost)
 ```
 
@@ -371,23 +391,58 @@ tree.out$variable.importance
 ranger.out$variable.importance
 
 # xgboost
-xgb.importance( colnames(Titan_Inputmatrix), model =xgboost.out)
+xgb.importance( colnames(Titan_Inputmatrix), model =xgboost.out2)
 
 ```
 
 
+### Lift percentages
+
+Als we geen model hebben kan je de overall survival kans uitrekenen (op de test set:
+
+```{r, eval=FALSE}
+## if you know nothing :-)
+TTest = TTest %>% mutate(target = ifelse(Survived == "Y",1,0))
+TTest %>%  summarise(target = mean(target))
+```
+
+Als we een goed model hebben zullen de survival kansen hoger liggen voor mensen met een hogere score. Laten we de GLM (logistische regressie model) predcities in tien stukken (decielen) opdelen, en per deciel de survival kans uitrekenen.
+
+```{r, eval=FALSE}
+testpr = predict(out.glm, newdata = TTest, type='response')
+TTest$predictieGLM = testpr
+
+### deel de GLM predicties op in tien even grote stukken
+TTest = TTest %>% 
+  mutate(
+    percPredictie = cut(
+      predictieGLM, 
+      breaks = quantile(
+        predictieGLM, 
+        probs = (0:10)/10
+      )
+    )
+  )
+
+## if you have a score!!!
+TTest %>%
+  group_by(percPredictie) %>% 
+  summarise(
+    N = n(),
+    target = mean(target)
+  )
+
+```
+
 ### roc curves and hit rates
 
 ```{r, eval = FALSE}
-testpr = predict(tree.out, TTest)
-TTest$predictie = testpr
-
-rocResultTEST = roc(Survived  ~ predictie, data = TTest , auc=TRUE, ci =TRUE)
+rocResultTEST = roc(Survived  ~ predictieGLM, data = TTest , auc=TRUE, ci =TRUE)
 plot(rocResultTEST)
 
 ## HITRATES 
 TTest %>% 
-  ggplot(aes(predictie, Survived))  +
+  ggplot(aes(predictieGLM, target))  +
   geom_smooth() +
   geom_abline(slope = 1,intercept = 0) +
   ggtitle("survived rate rate on test set") + scale_y_continuous(limits=c(0,1))
