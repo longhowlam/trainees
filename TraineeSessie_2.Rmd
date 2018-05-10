@@ -325,7 +325,6 @@ Titan_Inputmatrix[1:15,]
 xgboost.out = xgboost(Titan_Inputmatrix, label = TTrain$Survived, nrounds = 25)
 ```
 
-
 Bovenstaande aanroep fit een regression tree, dat is niet wat we willen we willen een binairy classificatie, label moet dan wel numeriek 0 / 1 zijn.
 
 ```{r, eval=FALSE}
@@ -394,7 +393,6 @@ ranger.out$variable.importance
 xgb.importance( colnames(Titan_Inputmatrix), model =xgboost.out2)
 
 ```
-
 
 ### Lift percentages
 
