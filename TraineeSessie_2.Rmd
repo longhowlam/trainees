@@ -70,7 +70,7 @@ jaap = jaap %>% filter( prijs < 1e7 )
 ```
 
 
-Een tweetal simepele modellen.
+Een tweetal simpele modellen.
 
 ```{r, eval = FALSE}
 modelout  = lm( prijs ~ kamers               , data = jaap)
@@ -114,6 +114,7 @@ modelout2 = lm( prijs ~ kamers + Oppervlakte , data = jaap)
 Modellen in R kan je specificeren met zogenaamde de formula objects. Hieronder zie je een aantal voorbeelden.
 
 ```{r, eval = FALSE}
+## gebruik eerste cijfer van postcode als een locatie variabele
 jaap = jaap %>% 
   mutate(PC1Positie = stringr::str_sub(PC,1,1)) %>% 
   filter(!is.na(PC1Positie))
@@ -174,7 +175,11 @@ library(ggplot2)
 library(dplyr)
 library(splines)
 
-jaap %>% filter(prijs < 1000000, Oppervlakte < 1500) %>%ggplot(aes(x=Oppervlakte, y= prijs)) + geom_point()
+## In een scatterplot kan je wellicht enige vorm van niet lineariteit zijn.
+jaap %>% 
+  filter(prijs < 1000000, Oppervlakte < 1500) %>%
+  ggplot(aes(x=Oppervlakte, y= prijs)) +
+  geom_point()
 
 mybreaks = seq(0,1000, by = 25)
 jaap = jaap %>% mutate(OppervlakteBucket = cut(Oppervlakte, breaks = mybreaks))
