@@ -97,6 +97,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul></li>
 <li><a href="#unsupervised-learning"><span class="toc-section-number">4</span> Unsupervised learning</a><ul>
 <li><a href="#k-means-clustering"><span class="toc-section-number">4.1</span> k-means Clustering</a></li>
+<li><a href="#dbscan"><span class="toc-section-number">4.2</span> DBSCAN</a></li>
 </ul></li>
 <li><a href="#market-basket-analyse"><span class="toc-section-number">5</span> Market basket analyse</a><ul>
 <li><a href="#interactive-mba-graphs"><span class="toc-section-number">5.1</span> interactive MBA graphs</a></li>
@@ -126,7 +127,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <span class="co"># some obvious outliers</span>
 jaap =<span class="st"> </span>jaap <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>( prijs <span class="op">&lt;</span><span class="st"> </span><span class="fl">1e7</span> )</code></pre></div>
-<p>Een tweetal simepele modellen.</p>
+<p>Een tweetal simpele modellen.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">modelout  =<span class="st"> </span><span class="kw">lm</span>( prijs <span class="op">~</span><span class="st"> </span>kamers               , <span class="dt">data =</span> jaap)
 modelout2 =<span class="st"> </span><span class="kw">lm</span>( prijs <span class="op">~</span><span class="st"> </span>kamers <span class="op">+</span><span class="st"> </span>Oppervlakte , <span class="dt">data =</span> jaap) 
 
@@ -151,7 +152,8 @@ modelout2 =<span class="st"> </span><span class="kw">lm</span>( prijs <span clas
 <div id="formula-objects" class="section level3">
 <h3><span class="header-section-number">1.1.1</span> formula objects</h3>
 <p>Modellen in R kan je specificeren met zogenaamde de formula objects. Hieronder zie je een aantal voorbeelden.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">jaap =<span class="st"> </span>jaap <span class="op">%&gt;%</span><span class="st"> </span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## gebruik eerste cijfer van postcode als een locatie variabele
+jaap =<span class="st"> </span>jaap <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">PC1Positie =</span> stringr<span class="op">::</span><span class="kw">str_sub</span>(PC,<span class="dv">1</span>,<span class="dv">1</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(PC1Positie))
 
@@ -197,7 +199,11 @@ m6 =<span class="st"> </span><span class="kw">lm</span>(f6, <span class="dt">dat
 <span class="kw">library</span>(dplyr)
 <span class="kw">library</span>(splines)
 
-jaap <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(prijs <span class="op">&lt;</span><span class="st"> </span><span class="dv">1000000</span>, Oppervlakte <span class="op">&lt;</span><span class="st"> </span><span class="dv">1500</span>) <span class="op">%&gt;%</span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x=</span>Oppervlakte, <span class="dt">y=</span> prijs)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()
+## In een scatterplot kan je wellicht enige vorm van niet lineariteit zijn.
+jaap <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(prijs <span class="op">&lt;</span><span class="st"> </span><span class="dv">1000000</span>, Oppervlakte <span class="op">&lt;</span><span class="st"> </span><span class="dv">1500</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x=</span>Oppervlakte, <span class="dt">y=</span> prijs)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>()
 
 mybreaks =<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">1000</span>, <span class="dt">by =</span> <span class="dv">25</span>)
 jaap =<span class="st"> </span>jaap <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">OppervlakteBucket =</span> <span class="kw">cut</span>(Oppervlakte, <span class="dt">breaks =</span> mybreaks))
@@ -744,6 +750,33 @@ cluster_membership =<span class="st"> </span><span class="kw">h2o.predict</span>
   <span class="dt">newdata =</span> cars.h2o
   ) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">as.data.frame</span>()</code></pre></div>
+</div>
+<div id="dbscan" class="section level2">
+<h2><span class="header-section-number">4.2</span> DBSCAN</h2>
+<p>Density-based Spatial Clustering of Applications with Noise (DBSCAN), which does not make assumptions about spherical clusters like k-means, nor does it partition the dataset into hierarchies that require a manual cut-off point. As its name implies, density-based clustering assigns cluster labels based on dense regions of points.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dbscan)
+
+## wat data, halve manen, hoeveel clusrers zijn dit?
+x =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">100</span>,<span class="dv">0</span>,pi)
+y =<span class="st"> </span><span class="kw">sin</span>(x) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>,<span class="dv">0</span>,<span class="fl">0.1</span>)
+
+x1 =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">100</span>,<span class="op">-</span>pi<span class="op">/</span><span class="dv">2</span>,pi<span class="op">/</span><span class="dv">2</span>)
+y1 =<span class="st"> </span><span class="kw">sin</span>(x1<span class="op">-</span>pi<span class="op">/</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>,<span class="dv">0</span>,<span class="fl">0.1</span>)
+
+<span class="kw">plot</span>(<span class="kw">c</span>(x,x1),<span class="kw">c</span>(y,y1))</code></pre></div>
+<p>De data moet in een matrix zitten om dbscan te kunnen runnen.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">X =<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">c</span>(x,x1),<span class="kw">c</span>(y,y1))
+db &lt;-<span class="st"> </span><span class="kw">dbscan</span>(X, <span class="dt">eps =</span> .<span class="dv">4</span>, <span class="dt">minPts =</span> <span class="dv">4</span>)
+db
+
+<span class="kw">pairs</span>(X, <span class="dt">col =</span> db<span class="op">$</span>cluster <span class="op">+</span><span class="st"> </span>1L)
+
+### NOISE POINTS....
+X =<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">c</span>(x,x1,<span class="op">-</span><span class="dv">1</span>, <span class="dv">3</span>),<span class="kw">c</span>(y,y1, <span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>))
+db &lt;-<span class="st"> </span><span class="kw">dbscan</span>(X, <span class="dt">eps =</span> .<span class="dv">4</span>, <span class="dt">minPts =</span> <span class="dv">4</span>)
+db
+
+<span class="kw">pairs</span>(X, <span class="dt">col =</span> db<span class="op">$</span>cluster <span class="op">+</span><span class="st"> </span>1L)</code></pre></div>
 </div>
 </div>
 <div id="market-basket-analyse" class="section level1">
