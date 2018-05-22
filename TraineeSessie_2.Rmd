@@ -943,6 +943,11 @@ db <- dbscan(X, eps = .4, minPts = 4)
 db
 
 pairs(X, col = db$cluster + 1L)
+
+## local outlier factor score
+pairs(X, col = db$cluster + 1L)
+lof <- lof(X, k = 4)
+pairs(X, cex = lof)
 ```
 
 
