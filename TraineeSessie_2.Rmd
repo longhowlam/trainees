@@ -911,6 +911,41 @@ cluster_membership = h2o.predict(
 ```
 
 
+## DBSCAN
+
+Density-based Spatial Clustering of Applications with Noise (DBSCAN), which does not make assumptions about spherical clusters like k-means, nor does it partition the dataset into hierarchies that require a manual cut-off point. As its name implies, density-based clustering assigns cluster labels based on dense regions of points.
+
+```{r, eval = FALSE}
+library(dbscan)
+
+## wat data, halve manen, hoeveel clusrers zijn dit?
+x = runif(100,0,pi)
+y = sin(x) + rnorm(100,0,0.1)
+
+x1 = runif(100,-pi/2,pi/2)
+y1 = sin(x1-pi/2) + rnorm(100,0,0.1)
+
+plot(c(x,x1),c(y,y1))
+```
+
+De data moet in een matrix zitten om dbscan te kunnen runnen.
+
+```{r, eval = FALSE}
+X = cbind(c(x,x1),c(y,y1))
+db <- dbscan(X, eps = .4, minPts = 4)
+db
+
+pairs(X, col = db$cluster + 1L)
+
+### NOISE POINTS....
+X = cbind(c(x,x1,-1, 3),c(y,y1, 1, -1))
+db <- dbscan(X, eps = .4, minPts = 4)
+db
+
+pairs(X, col = db$cluster + 1L)
+```
+
+
 # Market basket analyse
 
 Met market basket analyse (ook wel association rules mining genoemd) kan je uit "transacties van klanten" vaak voorkomende combinaties of juiste hele "sterke combinaties" van producten bepalen. Hieronder volgt een voorbeeldje op een fictief grocery (boodschappen transacties) data setje.
