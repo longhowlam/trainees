@@ -578,14 +578,32 @@ Herordenen van factor levels, factor levels kunnen een order bevatten, deze kan 
 ```{r, eval=FALSE}
 test = test %>% 
   mutate(
-    z2 = fct_reorder(type, gewicht, mean)
+    type2 = fct_reorder(type, gewicht, mean)
   )
 
 table(test$type)
-table(test$z2)
+table(test$type2)
 
 levels(test$type)
-levels(test$z2)
+levels(test$type2)
+
+## hier een voorbeeld van het verschil in plaatjes
+
+library(ggplot2)
+
+test2 = test %>% 
+  group_by(type) %>% 
+  summarise( gewicht = mean(gewicht))
+
+ggplot(test2, aes(x=type)) + geom_bar(aes(weight=gewicht))
+
+test2 = test %>% 
+  group_by(type2) %>% 
+  summarise( gewicht = mean(gewicht))
+
+ggplot(test2, aes(x=type2)) + geom_bar(aes(weight=gewicht))
+
+
 ```
 
 <br>

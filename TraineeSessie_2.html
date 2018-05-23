@@ -761,9 +761,16 @@ x =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">100</
 y =<span class="st"> </span><span class="kw">sin</span>(x) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>,<span class="dv">0</span>,<span class="fl">0.1</span>)
 
 x1 =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">100</span>,<span class="op">-</span>pi<span class="op">/</span><span class="dv">2</span>,pi<span class="op">/</span><span class="dv">2</span>)
-y1 =<span class="st"> </span><span class="kw">sin</span>(x1<span class="op">-</span>pi<span class="op">/</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>,<span class="dv">0</span>,<span class="fl">0.1</span>)
+y1 =<span class="st"> </span><span class="fl">0.4</span><span class="op">+</span><span class="st"> </span><span class="kw">sin</span>(x1<span class="op">-</span>pi<span class="op">/</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>,<span class="dv">0</span>,<span class="fl">0.1</span>)
 
 <span class="kw">plot</span>(<span class="kw">c</span>(x,x1),<span class="kw">c</span>(y,y1))</code></pre></div>
+<p>k-means werkt niet echt hier….</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df  =<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(x,x1), <span class="dt">y =</span> <span class="kw">c</span>(y,y1))
+df.cluster =<span class="st"> </span><span class="kw">kmeans</span>(df, <span class="dv">2</span>)
+df.cluster
+
+<span class="kw">plot</span>(df<span class="op">$</span>x, df<span class="op">$</span>y, <span class="dt">col =</span> df.cluster<span class="op">$</span>cluster )
+<span class="kw">points</span>(df.cluster<span class="op">$</span>centers, <span class="dt">col =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">pch =</span> <span class="dv">8</span>, <span class="dt">cex =</span> <span class="dv">2</span>)</code></pre></div>
 <p>De data moet in een matrix zitten om dbscan te kunnen runnen.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">X =<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">c</span>(x,x1),<span class="kw">c</span>(y,y1))
 db &lt;-<span class="st"> </span><span class="kw">dbscan</span>(X, <span class="dt">eps =</span> .<span class="dv">4</span>, <span class="dt">minPts =</span> <span class="dv">4</span>)
@@ -776,7 +783,12 @@ X =<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">c</sp
 db &lt;-<span class="st"> </span><span class="kw">dbscan</span>(X, <span class="dt">eps =</span> .<span class="dv">4</span>, <span class="dt">minPts =</span> <span class="dv">4</span>)
 db
 
-<span class="kw">pairs</span>(X, <span class="dt">col =</span> db<span class="op">$</span>cluster <span class="op">+</span><span class="st"> </span>1L)</code></pre></div>
+<span class="kw">pairs</span>(X, <span class="dt">col =</span> db<span class="op">$</span>cluster <span class="op">+</span><span class="st"> </span>1L)
+
+## local outlier factor score
+<span class="kw">pairs</span>(X, <span class="dt">col =</span> db<span class="op">$</span>cluster <span class="op">+</span><span class="st"> </span>1L)
+lof &lt;-<span class="st"> </span><span class="kw">lof</span>(X, <span class="dt">k =</span> <span class="dv">4</span>)
+<span class="kw">pairs</span>(X, <span class="dt">cex =</span> lof)</code></pre></div>
 </div>
 </div>
 <div id="market-basket-analyse" class="section level1">
