@@ -923,9 +923,20 @@ x = runif(100,0,pi)
 y = sin(x) + rnorm(100,0,0.1)
 
 x1 = runif(100,-pi/2,pi/2)
-y1 = sin(x1-pi/2) + rnorm(100,0,0.1)
+y1 = 0.4+ sin(x1-pi/2) + rnorm(100,0,0.1)
 
 plot(c(x,x1),c(y,y1))
+```
+
+k-means werkt niet echt hier....
+
+```{r, eval = FALSE}
+df  = data.frame(x = c(x,x1), y = c(y,y1))
+df.cluster = kmeans(df, 2)
+df.cluster
+
+plot(df$x, df$y, col = df.cluster$cluster )
+points(df.cluster$centers, col = 1:5, pch = 8, cex = 2)
 ```
 
 De data moet in een matrix zitten om dbscan te kunnen runnen.
