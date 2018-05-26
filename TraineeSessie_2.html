@@ -85,7 +85,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li><a href="#xgboost"><span class="toc-section-number">1.6</span> xgboost</a></li>
 <li><a href="#predictie-en-validatie"><span class="toc-section-number">1.7</span> predictie en validatie</a></li>
 </ul></li>
-<li><a href="#the-h2o-package"><span class="toc-section-number">2</span> The h2o package</a></li>
+<li><a href="#the-h2o-package"><span class="toc-section-number">2</span> The h2o package</a><ul>
+<li><a href="#h2o-automl"><span class="toc-section-number">2.1</span> h2o automl</a></li>
+</ul></li>
 <li><a href="#the-mlr-package"><span class="toc-section-number">3</span> The mlr package</a><ul>
 <li><a href="#specificeren-van-technieken-en-hun-opties"><span class="toc-section-number">3.1</span> specificeren van technieken en hun opties</a></li>
 <li><a href="#imputeren-van-missende-waarden"><span class="toc-section-number">3.2</span> Imputeren van missende waarden</a></li>
@@ -420,12 +422,13 @@ TTest <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="kw">h2o.init</span>()
 
 ### upload een R data set naar h2o: titanic train en test voorbeeldje
-
+myTitan =<span class="st"> </span>myTitan <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate_if</span>(is.character, as.factor)
 TTrain =<span class="st"> </span>TTrain <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate_if</span>(is.character, as.factor)
 TTest =<span class="st"> </span>TTest <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate_if</span>(is.character, as.factor)
 TTrain<span class="op">$</span>Survived =<span class="st"> </span><span class="kw">as.factor</span>(TTrain<span class="op">$</span>Survived)
 TTest<span class="op">$</span>Survived =<span class="st"> </span><span class="kw">as.factor</span>(TTest<span class="op">$</span>Survived)
 
+myTitan.h2o =<span class="st"> </span><span class="kw">as.h2o</span>(myTitan)
 ttrain.h2o =<span class="st"> </span><span class="kw">as.h2o</span>(TTrain) 
 ttest.h2o =<span class="st"> </span><span class="kw">as.h2o</span>(TTest)
 ### Je kan ook direct text files inlezen in h2o met 
@@ -479,9 +482,26 @@ RFmodel
 
 <span class="co">#overzicht van het grid, gesorteerd op logloss</span>
 RFmodelGrid</code></pre></div>
+<div id="h2o-automl" class="section level2">
+<h2><span class="header-section-number">2.1</span> h2o automl</h2>
+<p>h2o automl maakt het je helemaal makkelijk…..</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lb =<span class="st"> </span><span class="kw">h2o.automl</span>(
+    <span class="dt">x =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">5</span><span class="op">:</span><span class="dv">6</span>),
+  <span class="dt">y =</span> <span class="st">&quot;Survived&quot;</span>,
+  <span class="dt">training_frame  =</span> ttrain.h2o,
+  <span class="dt">validation_frame =</span> ttest.h2o,
+  <span class="dt">max_runtime_secs =</span> <span class="dv">30</span>
+)
+
+lb
+
+lb<span class="op">@</span>leaderboard
+
+lb<span class="op">@</span>leader</code></pre></div>
 <p>Geef resources terug door h2o af te sluiten als je het niet meer nodig hebt.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">h2o.shutdown</span>(<span class="dt">prompt =</span> <span class="ot">FALSE</span>)</code></pre></div>
 <p><br></p>
+</div>
 </div>
 <div id="the-mlr-package" class="section level1">
 <h1><span class="header-section-number">3</span> The mlr package</h1>

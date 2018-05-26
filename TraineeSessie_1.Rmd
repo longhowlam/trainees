@@ -2,17 +2,18 @@
 title: "Refresher data prep & interactive data visualiatie"
 author: "Longhow Lam"
 subtitle: "Trainee Sessie 01"
+always_allow_html: yes
 output:
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+    number_sections: yes
   prettydoc::html_pretty:
     highlight: github
     number_sections: yes
     theme: cayman
     toc: yes
     toc_depth: 2
-  pdf_document:
-    toc: yes
-    toc_depth: '2'
-    number_sections: yes
   html_notebook:
     number_sections: yes
     theme: sandstone
@@ -76,6 +77,16 @@ Een package kan je detatchen van je huidige sessie met het commando:
 detach(package:raster)
 detach(package:plotly)
 ```
+
+# Data importeren en exporteren
+
+
+## CSV files
+
+## RDS files
+
+## feather format
+
 
 
 # De dplyr library
@@ -1326,6 +1337,218 @@ m
 
 groupColors <- c("#000000", "#FFDD89", "#957244", "#F26223")
 chorddiag(m, groupColors = groupColors, groupnamePadding = 20)
+```
+
+
+# Web Scraping met rvest
+
+## Basis voorbeelden
+
+In R kan je web sites scrapen met het package `rvest`, dit is een heel handig package. Eerst de basics.
+
+```{r, eval = FALSE}
+library(rvest)
+
+## Geef een URL op
+baseurl = "http://www.jaap.nl/koophuizen/p1"
+out = read_html(baseurl)
+   
+## out is een zogenaamde xml_document object 
+class(out)
+```
+
+Met verschillende functies kan je nu een xml_document parsen, bestudeer de site met chrome om een idee te krijgen van de elementen en structuur. Met behulp van CSS of  XPath (XML Path-taal of XML Path Language), een querytaal voor het adresseren van onderdelen van XML-documenten, kan je verschillende elementen uit een xml_document krijgen.
+
+Een kort overzicht vind je <a href="https://msdn.microsoft.com/en-us/library/ms256086(v=vs.110).aspx"> hier </a>. Gebruik dubbel slash `//` om alle elementen in een document te vinden, bijvoorbeeld `//h2` om alle h2 elementen in een docuemnt te pakken. Gebruik `@` om attributen te selecteren.
+
+
+![](rvest01.png)
+
+Neem als voorbeeld de straat van het huis, rechts klik op de straat en klik inspect element, het is een `h2` object met een bepaalde `class` property. Deze kan je dan met Xpath als volgt opgeven:
+
+```{r, eval=FALSE}
+## pak als voorbeeld de straat
+strout  = html_nodes(out,xpath='//h2[@class="property-address-street"]')
+
+## Er zijn 30 van de straat objecten gevonden in de pagina
+length(strout)
+
+## Het is een zogenaamde xml_nodeset
+class(strout)
+strout
+
+## met de `html_text` functie kan je de tekst er uit halen
+straat = strout %>% html_text()
+straat
+```
+
+Nog een voorbeeldje, de prijs van een huis.
+
+```{r, eval=FALSE}
+price =  html_nodes(out, xpath='//div[@class="property-price"]') %>% html_text()
+
+## De prijs is zichtbaar maar het is niet handig om te gebruiken
+price
+```
+
+Gebruik reguliere expressies om de prijs er uit te pulleken en als bruikbaar numeriek veld te hebben.
+
+```{r, eval=FALSE}
+library(stringr)
+prijs = str_extract(
+  price,
+  "[:digit:]+[\\.][:digit:]+[\\.]*[:digit:]*"
+) %>%
+str_replace_all("\\." , "") %>%
+  as.numeric()
+prijs
+```
+
+In de huizen data staan ook per huis een link, deze kan je er ook uit halen.
+
+![](rvest02.png)
+
+Het is een `a` tag met `class`="property-inner" waarvan je de href moet hebben, dat kan je als volgt met xpath opgeven.
+
+```{r, eval = FALSE}
+linkhuis =  html_nodes(out, xpath='//a[@class="property-inner"]/@href') %>% html_text()
+linkhuis
+```
+
+In een `for` loop zou je al deze links weer kunnen scrapen.
+
+
+## Verder voorbeelden
+
+```{r, eval = FALSE}
+tmp = html_form(read_html("https://hadley.wufoo.com/forms/libraryrequire-quiz/"))
+class(tmp)
+tmp[[1]]$fields$clickOrEnter$name
+```
+
+Zie ook de Environment browser waar je het object `tmp` kan browsen. Soms bevat een html pagina een tabel, deze kan je makkelijk vertalen naar een R data set met `html_table`.
+
+```{r, eval = FALSE}
+## op deze pagina staan interessante geboorte statistieken
+births <- read_html("https://www.ssa.gov/oact/babynames/numberUSbirths.html")
+
+out = html_nodes(births, "table")
+
+## er zijn twee tabellen op de pagina, de tweede bevat aantal M en F geboortes per jaar
+out[[2]] %>% html_table()
+```
+
+## Het jaap scrape script
+
+Een compleet script om jaap.nl te scapen zie je [hier](https://github.com/longhowlam/jaap). Switch naar jaap project.
+
+## NOS nieuws site scrapen
+
+Nog een voorbeeld, nieuws archief berichten van de NOS site scrapen. De archieven zijn per dag georganiseerd. Zie bijvoorbeeld de links:
+
+* https://nos.nl/nieuws/archief/2017-10-23/
+* https://nos.nl/nieuws/archief/2017-10-22/
+* https://nos.nl/nieuws/archief/2017-10-21/
+* https://nos.nl/nieuws/archief/2016-10-23/
+* etc.
+
+Laten we als voorbeeld de laatste 10 dagen pakken
+
+```{r, eval=FALSE}
+library(purrr)
+library(dplyr)
+
+OUT = data.frame()
+
+## we kunnen handmatig 1 iteratie uitvoeren om te zien of het werkt
+j=1
+
+## en nu de rest :-)
+for(j in 1:3){
+  
+  ### Maak de juiste URL aan
+  datum = as.character(Sys.Date() - j)
+  nieuwslinks = paste0("https://nos.nl/nieuws/archief/", datum)
+  
+  ### Lees de link in
+  out = read_html(nieuwslinks)
+
+  ### dit is een nodeset met artikelen, maar daar moeten we de links uit pulleken
+  artikels = html_nodes(
+    out, 
+    xpath = "//a[contains(@href, 'artikel')]"
+  )
+  
+  ## maak een lijst van attributen waarbij je alleen de href genaamde list objecten pakt
+  lijst = artikels %>%   html_attrs()
+  
+  ## gebruik uit purrr map_chr, waarbij je een lijst langs kan gaan en alleen bepaalde elementen kan pakken
+  artikels = lijst %>%  map_chr("href") %>%  unique()
+  
+  artikels = paste0("https://nos.nl", artikels)
+
+  ### loop nu langs alle artiekelen links 
+  
+ for(i in 1:length(artikels))
+ {
+    print(i)
+    out2 = read_html(artikels[i])
+    art = html_nodes(out2, xpath = '//div[@class="article_textwrap"]') %>% html_text %>% paste(collapse = " ")
+    titel = html_nodes(out2, xpath = '//h1[@class="article__title"]') %>% html_text()
+    datum = html_nodes(out2, xpath = '//time') %>% html_attrs() %>% .[[1]]
+    categorie = html_nodes(out2, xpath='//a[@class="link-grey"]') %>% html_text
+    tmp = data.frame(datum, titel, art, link = artikels[i], categorie)
+    OUT = rbind(OUT,tmp)
+  }
+  OUT = OUT %>% distinct()
+  print(j)
+  print(datum)
+  saveRDS(OUT, "nosnieuws.RDs")
+  Sys.sleep(2*runif(1))
+}
+```
+
+## SelectorGadget in chrome
+
+Met de selector gadget plugin (in Chrome) kan je elementen selecteren op een web pagina, je krijgt dan de CSS te zien en kan deze gebruiken in de functie `html_nodes`. Een aantal voorbeelden:
+
+### Hema voorbeeldje 
+
+```{r, eval=FALSE}
+### HEMA producten
+clean_string = function(x){
+  x %>%
+    str_remove_all("\n") %>% 
+    str_remove_all("\r") %>% 
+    str_remove_all("\t") %>% 
+    str_trim()
+}
+
+hema = "https://www.hema.nl/winkel/baby/babyspeelgoed"
+out = read_html(hema)
+speelgoed = html_nodes(out, "h4") %>% html_text() %>% clean_string()
+prijs = html_nodes(out, ".price") %>% html_text() 
+```
+
+### Mediamarkt voorbeeldje
+
+```{r, eval=FALSE}
+### Media Markt laptops, scrape 1 pagina....
+MM = "http://www.mediamarkt.nl/nl/category/_laptops-482723.html?searchParams=&sort=&view=PRODUCTLIST&page=3"
+
+out = read_html(MM)
+
+price = html_nodes(out, ".product-wrapper") %>%
+  html_nodes(".price-box") %>%
+  html_text() %>%
+  clean_string() %>% 
+  str_extract("\\d+") %>%
+    as.numeric()
+
+merk = html_nodes(out, ".product-wrapper") %>%
+  html_nodes("h2") %>%
+  html_text() %>%
+  clean_string()
 ```
 
 EINDE SESSIE

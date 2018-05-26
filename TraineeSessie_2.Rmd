@@ -2,16 +2,17 @@
 title: 'Machine learning in R'
 author: "Longhow Lam"
 subtitle: "Trainee sessie 02"
+always_allow_html: yes
 output:
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+    number_sections: true
   prettydoc::html_pretty:
     highlight: github
     theme: cayman
     toc: true
     toc_depth: 2
-    number_sections: true
-  pdf_document:
-    toc: yes
-    toc_depth: '2'
     number_sections: true
   html_notebook:
     theme: sandstone
@@ -471,12 +472,13 @@ library(h2o)
 h2o.init()
 
 ### upload een R data set naar h2o: titanic train en test voorbeeldje
-
+myTitan = myTitan %>% mutate_if(is.character, as.factor)
 TTrain = TTrain %>% mutate_if(is.character, as.factor)
 TTest = TTest %>% mutate_if(is.character, as.factor)
 TTrain$Survived = as.factor(TTrain$Survived)
 TTest$Survived = as.factor(TTest$Survived)
 
+myTitan.h2o = as.h2o(myTitan)
 ttrain.h2o = as.h2o(TTrain) 
 ttest.h2o = as.h2o(TTest)
 ### Je kan ook direct text files inlezen in h2o met 
@@ -545,6 +547,26 @@ RFmodelGrid = h2o.grid(
 
 #overzicht van het grid, gesorteerd op logloss
 RFmodelGrid
+```
+
+## h2o automl
+
+h2o automl maakt het je helemaal makkelijk.....
+
+```{r, eval=FALSE}
+lb = h2o.automl(
+    x = c(3,5:6),
+  y = "Survived",
+  training_frame  = ttrain.h2o,
+  validation_frame = ttest.h2o,
+  max_runtime_secs = 30
+)
+
+lb
+
+lb@leaderboard
+
+lb@leader
 ```
 
 Geef resources terug door h2o af te sluiten als je het niet meer nodig hebt.
