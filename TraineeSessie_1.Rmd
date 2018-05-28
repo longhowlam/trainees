@@ -1545,7 +1545,9 @@ speelgoed = html_nodes(out, "h4") %>% html_text() %>% clean_string()
 prijs = html_nodes(out, ".price") %>% html_text() 
 ```
 
-### Mediamarkt voorbeeldje
+### Mediamarkt laptops voorbeeldje
+
+Onderstaande code scrapet een pagina met laptops van mediamarkt.
 
 ```{r, eval=FALSE}
 ### Media Markt laptops, scrape 1 pagina....
@@ -1566,9 +1568,9 @@ merk = html_nodes(out, ".product-wrapper") %>%
   clean_string()
 ```
 
+Ze dit in een functie zodat we over de verschillende paginas kunnen itereren.
 
 ```{r eval=FALSE}
-
 MM_laptops = function(i)
 {
   MM = paste0(
@@ -1607,10 +1609,12 @@ MM_laptops(1)
 all_MM_laptops = purrr::map_df(1:16, MM_laptops)
 ```
 
+Maak een plaatje van de laptopprijzen per merk.
+
 ```{r}
 library(ggplot2)
 ggplot(all_MM_laptops, aes(x=merk2, y = price)) + 
-    geom_boxplot(notch = TRUE) +
+    geom_boxplot() +
     ggtitle("Price distributions of laptops on www.mediamarkt.nl")
 ```
 

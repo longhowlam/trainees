@@ -1190,9 +1190,9 @@ library(keras)
 We maken met keras eerst een simpel model, 1 hidden layer, niks fancy nog. Download en prepareer eerst de data.
 
 ```{r, eval=FALSE}
-batch_size <- 128
-num_classes <- 10
-epochs <- 10
+batch_size = 128
+num_classes = 10
+epochs = 10
 
 # The data, shuffled and split between train and test sets
 c(c(x_train, y_train), c(x_test, y_test)) %<-% dataset_mnist()
@@ -1210,8 +1210,14 @@ Zo'n 28 bij 28 plaatje is ook te plotten
 
 ```{r, eval = FALSE}
 # bekijk plaatje n
-n = 110
-image(  x_train[n,,] )
+n = 2301
+m = x_train[n,,]
+
+image(m)
+## rotate 90 degrees clockwise
+m = t(m)[, nrow(m):1]
+image(m)
+
 y_train[n]
 ```
 
@@ -1243,8 +1249,12 @@ Defineer het model.
 ```{r, eval = FALSE}
 model <- keras_model_sequential()
 model %>% 
-  layer_dense(units = 256, activation = 'relu', input_shape = c(784)) %>% 
-  layer_dense(units = 10, activation = 'softmax')
+  layer_dense(
+    units = 256, activation = 'relu', input_shape = c(784)
+  ) %>% 
+  layer_dense(
+    units = 10, activation = 'softmax'
+  )
 
 summary(model)
 
@@ -1287,9 +1297,13 @@ We kunnen nu nog een tweede hidden layer toevoegen met drop outs om overfitten t
 ```{r, eval=FALSE}
 model <- keras_model_sequential()
 model %>% 
-  layer_dense(units = 512, activation = 'relu', input_shape = c(784)) %>% 
+  layer_dense(
+    units = 512, activation = 'relu', input_shape = c(784)
+  ) %>% 
   layer_dropout(rate=0.2) %>%
-  layer_dense(units = 512, activation = 'relu', input_shape = c(784)) %>%
+  layer_dense(
+    units = 512, activation = 'relu', input_shape = c(784)
+  ) %>%
   layer_dropout(rate=0.2) %>%
   layer_dense(units = 10, activation = 'softmax')
 
