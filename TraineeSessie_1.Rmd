@@ -80,13 +80,28 @@ detach(package:plotly)
 
 # Data importeren en exporteren
 
+---
 
 ## CSV files
 
+In R kan je CSV files importeren met verschillende functies. Mijn voorkeur gaat uit naar de `read_csv` functie in het `readr` package. In base R heb je ook de functie read.csv, alleen deze is veel langzamer dan read_csv.
+
+```{r eval=FALSE}
+library(readr)
+write_csv(mtcars, "mtcars.csv")
+mtcars = read_csv("mtcars.csv")
+```
+
+
 ## RDS files
 
-## feather format
+```{r, eval=FALSE}
+saveRDS(mtcars, "mtcars.RDs")
+mtcars = readRDS("mtcars.RDs")
+```
 
+
+Als je een R object hebt gemaakt, niet alleen een data frame maar elk object kan je deze afzonderlijk saven in een binair formaat (RDS) met de functie `saveRDS`.
 
 
 # De dplyr library

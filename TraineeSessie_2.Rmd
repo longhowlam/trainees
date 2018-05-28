@@ -467,27 +467,36 @@ Als je h2o opstart is er ook een eigen GUI, daar kan je naar toe localhost:54321
 library(h2o)
 
 # initialiseer h2o via R
-
 #h2o.init(nthreads=-1, port=54323, startH2O = FALSE)
 h2o.init()
+```
 
-### upload een R data set naar h2o: titanic train en test voorbeeldje
-myTitan = myTitan %>% mutate_if(is.character, as.factor)
-TTrain = TTrain %>% mutate_if(is.character, as.factor)
-TTest = TTest %>% mutate_if(is.character, as.factor)
+Upload een R data set naar h2o: titanic train en test voorbeeldje. Zorg ervoor dat  categorische kolommen in je data van het type factor zijn als je ze wilt meenmenem voor modeling.
+
+```{r, eval = FALSE}
+TTrain = TTrain %>% 
+  mutate_if(
+    is.character, as.factor
+  )
+
+TTest = TTest %>% 
+  mutate_if(
+    is.character, as.factor
+  )
+
 TTrain$Survived = as.factor(TTrain$Survived)
 TTest$Survived = as.factor(TTest$Survived)
 
-myTitan.h2o = as.h2o(myTitan)
+### breng R data naar h2o. (Er is nu dubbel data in R en in h2o !!!)
 ttrain.h2o = as.h2o(TTrain) 
 ttest.h2o = as.h2o(TTest)
+
 ### Je kan ook direct text files inlezen in h2o met 
 #h2o.importFile(path="C:\een file.txt", sep=",")
 
 ### welke files zijn er in h2o
 h2o.ls()
 ```
-
 
 Er zijn diverse modellen die je kan trainen, we zullen hier een aantal laten zien, neural netwerks, boosting en random forests.
 
@@ -509,7 +518,6 @@ h2o.varimp(NNmodel)
 
 
 ```{r, eval = FALSE}
-
 GBMmodel = h2o.gbm(
   x = c(3,5:6),
   y = "Survived",
@@ -528,7 +536,6 @@ RFmodel
 
 h2o.varimp_plot(RFmodel)
 ```
-
 
 Grid search in h2o. Je kan makkelijk modellen fine-tunen, in een grid kan je verschillende waarden van hyperparameters proberen.
 
@@ -551,10 +558,11 @@ RFmodelGrid
 
 ## h2o automl
 
-h2o automl maakt het je helemaal makkelijk.....
+De `automl` functionaliteit in h2o maakt het je helemaal makkelijk als je op zoek bent naar het beste voorspellende model. Deze functie traint en cross valideert random forests, extremely randomized forests, GBM's, Neural Nets en stacked ensembles.
 
 ```{r, eval=FALSE}
-lb = h2o.automl(
+## Geef het maximaal 30 seconden tijd
+out = h2o.automl(
     x = c(3,5:6),
   y = "Survived",
   training_frame  = ttrain.h2o,
@@ -562,13 +570,28 @@ lb = h2o.automl(
   max_runtime_secs = 30
 )
 
-lb
+## out is nu een zgn H2OAutoML object met alle resultaten
+out
 
-lb@leaderboard
+## iets overzichtelijker output is de leaderboard
+out@leaderboard
 
-lb@leader
+WINNER = out@leader
+WINNER
 ```
 
+Overleef ik de titanic?
+
+```{r, eval =  FALSE}
+ik = data.frame(
+  Pclass = 3, 
+  Sex = "male", 
+  Age = 44
+  ) %>% 
+  as.h2o
+
+predict(WINNER, ik)
+```
 Geef resources terug door h2o af te sluiten als je het niet meer nodig hebt.
 
 ```{r, eval = FALSE}
@@ -941,19 +964,19 @@ Density-based Spatial Clustering of Applications with Noise (DBSCAN), which does
 library(dbscan)
 
 ## wat data, halve manen, hoeveel clusrers zijn dit?
-x = runif(100,0,pi)
-y = sin(x) + rnorm(100,0,0.1)
+x1 = runif(100,0,pi)
+y1 = sin(x1) + rnorm(100,0,0.1)
 
-x1 = runif(100,-pi/2,pi/2)
-y1 = 0.4+ sin(x1-pi/2) + rnorm(100,0,0.1)
+x2 = runif(100,-pi/2,pi/2)
+y2 = 0.4+ sin(x2-pi/2) + rnorm(100,0,0.1)
 
-plot(c(x,x1),c(y,y1))
+plot(c(x1,x2),c(y1,y2))
 ```
 
 k-means werkt niet echt hier....
 
 ```{r, eval = FALSE}
-df  = data.frame(x = c(x,x1), y = c(y,y1))
+df  = data.frame(x = c(x1,x2), y = c(y1,y2))
 df.cluster = kmeans(df, 2)
 df.cluster
 
@@ -964,24 +987,59 @@ points(df.cluster$centers, col = 1:5, pch = 8, cex = 2)
 De data moet in een matrix zitten om dbscan te kunnen runnen.
 
 ```{r, eval = FALSE}
-X = cbind(c(x,x1),c(y,y1))
-db <- dbscan(X, eps = .4, minPts = 4)
+X = cbind(
+  c(x1,x2),
+  c(y1,y2)
+  )
+
+db = dbscan(X, eps = .2, minPts = 4)
 db
 
 pairs(X, col = db$cluster + 1L)
 
 ### NOISE POINTS....
-X = cbind(c(x,x1,-1, 3),c(y,y1, 1, -1))
-db <- dbscan(X, eps = .4, minPts = 4)
+X = cbind(c(x1, x2,-1, 3), c(y1, y2, 1, -1))
+db = dbscan(X, eps = .2, minPts = 4)
 db
 
 pairs(X, col = db$cluster + 1L)
+```
 
+Cluster analyse zou je ook voor outlier detecie kunnen gebruiken. Er is een afstand uit te rekenen tot andere punten.
+
+```{r, eval = TRUE}
 ## local outlier factor score
-pairs(X, col = db$cluster + 1L)
-lof <- lof(X, k = 4)
+lof = lof(X, k = 4)
 pairs(X, cex = lof)
 ```
+
+## Hierarchisch clusteren
+
+Een alternatief voor k-means en DBSCAN is hierarchisch clusteren. Je kan beginnen met 1 cluster waarin alle obeservaties zitten. Iteratief ga je deze cluster opsplitsen in sub clusters tot elke observatie 1 aparte cluster is (Divisive). Of je begint met de situatie dat elke observatie een cluster is en iteratief ga je clusters samenvoegen totdat alle observaties 1 cluster vormen (Aglomerative).
+
+```{r eval = FALSE}
+## Agglomerative clusrting with hclust
+# EEn distance matrix is eerst nodig voordat je het in hclust kan stoppen
+hc1 = dist(
+  mtcars, method = "euclidean"
+  ) %>% 
+  hclust(
+    method = "complete" 
+  )
+
+# Plot the obtained dendrogram
+plot(hc1, cex = 0.6, hang = -1)
+```
+
+Naast een lelijk statisch old school plaatje kan je ook een interactive tree krijgen met visNetwork.
+
+```{r eval = FALSE}
+library(visNetwork)
+visHclust(iris, cutree = 3, colorEdges = "red")
+
+```
+
+Zie voor een kort overzicht ook deze [blog](https://www.r-bloggers.com/how-to-perform-hierarchical-clustering-using-r/)
 
 
 # Market basket analyse
