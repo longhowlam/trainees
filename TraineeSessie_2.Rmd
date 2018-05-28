@@ -602,297 +602,6 @@ h2o.shutdown(prompt = FALSE)
 
 <br>
 
-# The mlr package
-
----
-
-Met het `mlr` package kan je makkelijk verschillende modellen trainen en testen op een meer uniforme manier. In R hebben alle machine learning technieken net weer verschillende aanroepen en de uitkomst is vaak een object met net steeds weer andere componenten. Dit zagen we bijvoorbeeld in de bovenstaande code voor ranger en xgboost.
-
-Met het `mlr` package kan je dit uniform stroomlijnen. Het maken van een predictive model (welk model dan ook)  bestaat altijd uit een aantal stappen. Bijvoorbeeld:
-
-
-* specificeren van de target,
-* specificeren van inputs,
-* specificeren van variabelen die je niet wilt gebruiken,
-* splitsen data,
-* het model / algoritme
-
-Deze zijn te beschrijven en uit te voeren in mlr.
-
-We gebruiken de `titanic` data set als test in `mlr` en doorlopen een aantal stappen on een aantal modellen te benchmarken. De modellen die we willen benchmarken zijn:
-
-* neuraal netwerk,
-* gradient boosting,
-* random forest
-* xgboost
-* decision tree,
-* logistic regression via glmnet
-
-
-
-## specificeren van technieken en hun opties
-
-In mlr kan je een aantal algemene parameters weergeven.
-
-```{r, eval = FALSE}
-## parameters die geen beschrijving hebben willen we ook kunnen opgeven
-configureMlr(on.par.without.desc = "warn")
-
-## we kijken naar maximaal dertig variabelen
-n.importance = 30
-
-## voorspel type, we willen kansen uitrekenen
-ptype = "prob"
-
-## aantal crossvalidation splitsingen
-N_CV_iter = 10
-```
-
-Naast algemene parameters, heeft elk model bepaalde parameters die je kan zetten. Dit hoeft niet, dan worden default waarden gekozen.
-
-
-```{r, eval = FALSE}
-parameters_rf = list(
-  num.trees  = 500
-)
-
-parameters_rpart = list(
-  cp=0.0001
-)
-
-parameters_glmnet = list(
-  alpha  = 1
-)
-
-parameters_NN = list(
-  hidden = c(15,15)
-)
-
-parameters_xgboost = list(
-  nrounds  = 5,
-  max.depth = 7
-)
-
-```
-
-Maak nu een Lijst van modelen (ook wel learners genomed) die je wilt trainen op je data.
-
-```{r, eval = FALSE}
-RF_Learner = makeLearner(
-  "classif.ranger",
-  predict.type = ptype,
-  par.vals = parameters_rf
-)
-
-xgboost_Learner = makeLearner(
-  "classif.xgboost",
-  predict.type = ptype,
-  par.vals = parameters_xgboost
-)
-
-rpart_Learner = makeLearner(
-  "classif.rpart",
-  predict.type = ptype,
-  par.vals = parameters_rpart
-)
-
-binomial_Learner = makeLearner(
-  "classif.binomial",
-  predict.type = ptype
-)
-
-glmnet_Learner = makeLearner(
-  "classif.cvglmnet", 
-  predict.type = ptype,
-  par.vals = parameters_glmnet
-)
-
-h2ogbm_Learner = makeLearner(
-  "classif.h2o.gbm", 
-  predict.type = "prob"
-)
-
-h2oNN_Learner = makeLearner(
-  "classif.h2o.deeplearning",
-  predict.type = ptype,
-  par.vals = parameters_NN
-)
-
-## lijst van de learners
-learners = list(
-  rpart_Learner,
-  RF_Learner,
-  binomial_Learner,
-  glmnet_Learner,
-  h2ogbm_Learner,
-  h2oNN_Learner
-)
-```
-
-Als je categorische variabelen in je voorspel model wilt gebruiken eist het mlr package dat ze `factor` zijn. En in het geval van een classificatie probleem moet de target variabele ook een factor variabele zijn.
-
-```{r, eval = FALSE}
-ABT = titanic_train
-ABT$Target = as.factor(ifelse(ABT$Survived < 1, "N", "Y"))
-ABT = ABT %>% mutate_if(is.character, as.factor)
-```
-
-## Imputeren van missende waarden
-
-Als er missende waarden zijn kan je mlr deze laten imputeren door een bepaalde waarde.
-
-```{r, eval = FALSE}
-impObject = impute(
-  ABT, 
-  classes = list(
-    integer = imputeMean(),
-    numeric = imputeMean(),
-    factor = imputeMode()
-    ),
-  dummy.classes = "integer"
-)
-
-ABT = impObject$data
-```
-
-## Het aanmaken van een task
-
-Maak nu een 'task' aan waarin je de data, de inputs en de target specificeert. Een classificatie taak voor categorische target of een regressie task voor een numerieke target.
-
-Wat wil je modelleren: Kans op level "Y", dan dien je positive = "Y" op te geven. Bij een binair target met Y en N levels wordt namelijk standaard "N"gebruik (alfabetisch)
-
-```{r, eval = FALSE}
-classify.task = makeClassifTask(id = "Titanic", data = ABT, target = "Target", positive = "Y")
-
-## Overzicht van de taak en kolom informatie
-
-print(classify.task)
-getTaskDescription(classify.task)
-summarizeColumns(classify.task)
-```
-
-## Variablen hard uitsluiten 
-
-Soms zijn er variabelen die je niet wilt meenemen in je model. Deze kan je hard uitsluiten.
-
-```{r, eval = FALSE}
-vars.to.drop = c("Name", "Survived", "Ticket")
-
-classify.task = dropFeatures(classify.task, vars.to.drop )
-
-## Weghalen van (bijna) constante variabelen 
-
-## Je kan ook 'bijna' constante variabelen weghalen: perc iets hoger zetten
-classify.task = removeConstantFeatures(classify.task, perc = 0.01)
-classify.task
-```
-
-Zeldzame levels van factors samenvoegen. Het is gebruikelijk om zeldzame levels te verwijderen of te mergen
-
-```{r, eval = FALSE}
-classify.task = mergeSmallFactorLevels (classify.task, min.perc = 0.02,  new.level = ".merged")
-summarizeColumns(classify.task)
-```
-
-Welke features hebben een effect op de target? Je kan de predictive power meten per input variable. Univariate, dus per feature kan je met mlr de relatie met de target berekenen. 
-
-Onderliggend heb je Rweka en Rjava dingen nodig daar kan je op linux wat issues mee krijgen. Dingen de je kan doen:
-
-* run in een shell: `sudo R CMD javareconf` en doe
-+ sudo rstudio-server stop
-+ export LD_LIBRARY_PATH=/usr/lib/jvm/jre/lib/amd64:/usr/lib/jvm/jre/lib/amd64/default
-+ sudo rstudio-server start
-
-Zie ook [stack overflow](https://stackoverflow.com/questions/28462302/libjvm-so-cannot-open-shared-object-file-no-such-file-or-directory)
-
-```{r, eval = FALSE}
-## Feature selection 
-fv = generateFilterValuesData(classify.task,  method = c("information.gain", "chi.squared"))
-
-## display en plot importance
-
-importance = fv$data %>% arrange(desc(information.gain))
-head(importance, n = n.importance)
-plotFilterValues(fv, n.show = 2*n.importance)
-```
-
-laat nog eens variabelen weg die helemaal niks doen.
-
-```{r, eval = FALSE}
-vars.to.drop = c("PassengerId", "Parch", "SibSp")
-classify.task = dropFeatures(classify.task, vars.to.drop )
-```
-
-## Sample schema 
-
-
-Met mlr kan je data splitsen, niet alleen in train / test maar ook cross validation. Dit heet een sample schema.
-
-```{r, eval = FALSE}
-SampleStrageyHO = makeResampleDesc("Holdout", split=0.75)
-SampleStrageyCV = makeResampleDesc("CV", iters = N_CV_iter)
-```
-
-## uitvoeren machine learning becnhamrk 
-
-Nu heb je de diverse stappen gespecificeerd en kan je een benchmark uitvoeren voor de verschillende learners,
-
-```{r, eval = FALSE}
-br1 = mlr::benchmark(learners, classify.task, SampleStrageyHO, measures = list(mlr::mmce, mlr::auc, mlr::f1))
-```
-
-
-## Vergelijking machine learning modellen
-Na het trainen van de modellen met mlr heb je een zogenaamde benchmark object, die kan je printen en plotten om wat meer info te krijgen.
-
-```{r, eval = FALSE}
-data.frame(br1) %>% arrange(desc(auc))
-plotBMRSummary(br1, measure = mlr::auc)
-```
-
-
-### ROC curves
-
-In het benchmark object zit eigenlijk nog veel meer data. Met onderstaande code pluk je alle stukjes data per model uit om deze vervolgens in een ROC grafiek te zetten.
-
-```{r, eval = FALSE}
-NModels = length(br1$results$Titanic)
-for(i in 1:NModels)
-{
-  tmp2  = br1$results$Titanic[[i]]$pred$data
-  rocResultTEST = roc(truth  ~ prob.Y, data = tmp2 )
-  if(i==1)
-  {
-    plot(rocResultTEST, col=i)
-  }else{
-    plot(rocResultTEST, col=i, add=TRUE)
-  }
-}
-
-legend( 0.6,0.6, names(br1$results$Titanic), col=1:NModels,lwd=2)
-title("Titanic model")
-```
-
-### model gebruiken om te scoren
-
-Als je een benchmark hebt gedaan heb je al de getrainde modellen in het benchmark object zitten. Die kan je al gebruiken om een data set te scoren. je dient dit model er wel 'eerst uit te halen'. 
-
-```{r, eval = FALSE}
-## haal model er uit
-titanmodel = br1$results$Titanic$classif.ranger$models[[1]]
-
-## dit zijn de feauteures in het model
-FT = titanmodel$features
-
-## Maak even een score set van de ABT met alleen de features
-ScoreSet = ABT[, FT]
-
-outpredict = predict(titanmodel, newdata = ScoreSet)
-outpredict
-```
-
-
-<br>
 
 # Unsupervised learning
 
@@ -1506,6 +1215,343 @@ cat('Test loss:', scores[[1]], '\n')
 cat('Test accuracy:', scores[[2]], '\n')
 
 ```
+
+
+# Tiijdreeks modellen met prophet
+
+Prophet is een facebook package voor tijdreeks data, die zij zelf ook intern gebruiken. In plaats van de traditionale manier van tijdreeks modellen maken met ARIMA, worden zogenaamde additieve regressie modellen gefit. Zie hier de [paper](https://peerj.com/preprints/3190.pdf).
+
+Hier een voorbeeld op gescrapte Billy verkopen van de Ikea website
+
+```{r eval=FALSE}
+library(prophet)
+
+## dagelijke ikea billy verkoop data
+DailyBilly = readRDS("data/DailyBilly.RDs")
+ggplot(DailyBilly, aes(x=ds, y = y)) + geom_line()
+
+## billy forcast, fit eerst het model
+BillyF = prophet(DailyBilly)
+
+## dan aantal dagen vooruit maken waarop je gaat forecastem
+future = make_future_dataframe(BillyF, periods = 90)
+forecast = predict(BillyF, future)
+
+plot(BillyF, forecast)
+```
+
+Bovenstaande werkt nog niet echt..... We zetten seasonality aan.
+
+```{r eval = FALSE}
+## billy forcast, fit eerst het model
+BillyF = prophet(
+  DailyBilly,
+  weekly.seasonality = TRUE ,
+  yearly.seasonality = TRUE, 
+  daily.seasonality = TRUE
+
+)
+
+## dan aantal dagen vooruit maken waarop je gaat forecastem
+future = make_future_dataframe(BillyF, periods = 90)
+forecast = predict(BillyF, future)
+
+plot(BillyF, forecast)
+prophet_plot_components(BillyF, forecast)
+```
+
+
+# The mlr package
+
+---
+
+Met het `mlr` package kan je makkelijk verschillende modellen trainen en testen op een meer uniforme manier. In R hebben alle machine learning technieken net weer verschillende aanroepen en de uitkomst is vaak een object met net steeds weer andere componenten. Dit zagen we bijvoorbeeld in de bovenstaande code voor ranger en xgboost.
+
+Met het `mlr` package kan je dit uniform stroomlijnen. Het maken van een predictive model (welk model dan ook)  bestaat altijd uit een aantal stappen. Bijvoorbeeld:
+
+
+* specificeren van de target,
+* specificeren van inputs,
+* specificeren van variabelen die je niet wilt gebruiken,
+* splitsen data,
+* het model / algoritme
+
+Deze zijn te beschrijven en uit te voeren in mlr.
+
+We gebruiken de `titanic` data set als test in `mlr` en doorlopen een aantal stappen on een aantal modellen te benchmarken. De modellen die we willen benchmarken zijn:
+
+* neuraal netwerk,
+* gradient boosting,
+* random forest
+* xgboost
+* decision tree,
+* logistic regression via glmnet
+
+
+
+## specificeren van technieken en hun opties
+
+In mlr kan je een aantal algemene parameters weergeven.
+
+```{r, eval = FALSE}
+## parameters die geen beschrijving hebben willen we ook kunnen opgeven
+configureMlr(on.par.without.desc = "warn")
+
+## we kijken naar maximaal dertig variabelen
+n.importance = 30
+
+## voorspel type, we willen kansen uitrekenen
+ptype = "prob"
+
+## aantal crossvalidation splitsingen
+N_CV_iter = 10
+```
+
+Naast algemene parameters, heeft elk model bepaalde parameters die je kan zetten. Dit hoeft niet, dan worden default waarden gekozen.
+
+
+```{r, eval = FALSE}
+parameters_rf = list(
+  num.trees  = 500
+)
+
+parameters_rpart = list(
+  cp=0.0001
+)
+
+parameters_glmnet = list(
+  alpha  = 1
+)
+
+parameters_NN = list(
+  hidden = c(15,15)
+)
+
+parameters_xgboost = list(
+  nrounds  = 5,
+  max.depth = 7
+)
+
+```
+
+Maak nu een Lijst van modelen (ook wel learners genomed) die je wilt trainen op je data.
+
+```{r, eval = FALSE}
+RF_Learner = makeLearner(
+  "classif.ranger",
+  predict.type = ptype,
+  par.vals = parameters_rf
+)
+
+xgboost_Learner = makeLearner(
+  "classif.xgboost",
+  predict.type = ptype,
+  par.vals = parameters_xgboost
+)
+
+rpart_Learner = makeLearner(
+  "classif.rpart",
+  predict.type = ptype,
+  par.vals = parameters_rpart
+)
+
+binomial_Learner = makeLearner(
+  "classif.binomial",
+  predict.type = ptype
+)
+
+glmnet_Learner = makeLearner(
+  "classif.cvglmnet", 
+  predict.type = ptype,
+  par.vals = parameters_glmnet
+)
+
+h2ogbm_Learner = makeLearner(
+  "classif.h2o.gbm", 
+  predict.type = "prob"
+)
+
+h2oNN_Learner = makeLearner(
+  "classif.h2o.deeplearning",
+  predict.type = ptype,
+  par.vals = parameters_NN
+)
+
+## lijst van de learners
+learners = list(
+  rpart_Learner,
+  RF_Learner,
+  binomial_Learner,
+  glmnet_Learner,
+  h2ogbm_Learner,
+  h2oNN_Learner
+)
+```
+
+Als je categorische variabelen in je voorspel model wilt gebruiken eist het mlr package dat ze `factor` zijn. En in het geval van een classificatie probleem moet de target variabele ook een factor variabele zijn.
+
+```{r, eval = FALSE}
+ABT = titanic_train
+ABT$Target = as.factor(ifelse(ABT$Survived < 1, "N", "Y"))
+ABT = ABT %>% mutate_if(is.character, as.factor)
+```
+
+## Imputeren van missende waarden
+
+Als er missende waarden zijn kan je mlr deze laten imputeren door een bepaalde waarde.
+
+```{r, eval = FALSE}
+impObject = impute(
+  ABT, 
+  classes = list(
+    integer = imputeMean(),
+    numeric = imputeMean(),
+    factor = imputeMode()
+    ),
+  dummy.classes = "integer"
+)
+
+ABT = impObject$data
+```
+
+## Het aanmaken van een task
+
+Maak nu een 'task' aan waarin je de data, de inputs en de target specificeert. Een classificatie taak voor categorische target of een regressie task voor een numerieke target.
+
+Wat wil je modelleren: Kans op level "Y", dan dien je positive = "Y" op te geven. Bij een binair target met Y en N levels wordt namelijk standaard "N"gebruik (alfabetisch)
+
+```{r, eval = FALSE}
+classify.task = makeClassifTask(id = "Titanic", data = ABT, target = "Target", positive = "Y")
+
+## Overzicht van de taak en kolom informatie
+
+print(classify.task)
+getTaskDescription(classify.task)
+summarizeColumns(classify.task)
+```
+
+## Variablen hard uitsluiten 
+
+Soms zijn er variabelen die je niet wilt meenemen in je model. Deze kan je hard uitsluiten.
+
+```{r, eval = FALSE}
+vars.to.drop = c("Name", "Survived", "Ticket")
+
+classify.task = dropFeatures(classify.task, vars.to.drop )
+
+## Weghalen van (bijna) constante variabelen 
+
+## Je kan ook 'bijna' constante variabelen weghalen: perc iets hoger zetten
+classify.task = removeConstantFeatures(classify.task, perc = 0.01)
+classify.task
+```
+
+Zeldzame levels van factors samenvoegen. Het is gebruikelijk om zeldzame levels te verwijderen of te mergen
+
+```{r, eval = FALSE}
+classify.task = mergeSmallFactorLevels (classify.task, min.perc = 0.02,  new.level = ".merged")
+summarizeColumns(classify.task)
+```
+
+Welke features hebben een effect op de target? Je kan de predictive power meten per input variable. Univariate, dus per feature kan je met mlr de relatie met de target berekenen. 
+
+Onderliggend heb je Rweka en Rjava dingen nodig daar kan je op linux wat issues mee krijgen. Dingen de je kan doen:
+
+* run in een shell: `sudo R CMD javareconf` en doe
++ sudo rstudio-server stop
++ export LD_LIBRARY_PATH=/usr/lib/jvm/jre/lib/amd64:/usr/lib/jvm/jre/lib/amd64/default
++ sudo rstudio-server start
+
+Zie ook [stack overflow](https://stackoverflow.com/questions/28462302/libjvm-so-cannot-open-shared-object-file-no-such-file-or-directory)
+
+```{r, eval = FALSE}
+## Feature selection 
+fv = generateFilterValuesData(classify.task,  method = c("information.gain", "chi.squared"))
+
+## display en plot importance
+
+importance = fv$data %>% arrange(desc(information.gain))
+head(importance, n = n.importance)
+plotFilterValues(fv, n.show = 2*n.importance)
+```
+
+laat nog eens variabelen weg die helemaal niks doen.
+
+```{r, eval = FALSE}
+vars.to.drop = c("PassengerId", "Parch", "SibSp")
+classify.task = dropFeatures(classify.task, vars.to.drop )
+```
+
+## Sample schema 
+
+
+Met mlr kan je data splitsen, niet alleen in train / test maar ook cross validation. Dit heet een sample schema.
+
+```{r, eval = FALSE}
+SampleStrageyHO = makeResampleDesc("Holdout", split=0.75)
+SampleStrageyCV = makeResampleDesc("CV", iters = N_CV_iter)
+```
+
+## uitvoeren machine learning becnhamrk 
+
+Nu heb je de diverse stappen gespecificeerd en kan je een benchmark uitvoeren voor de verschillende learners,
+
+```{r, eval = FALSE}
+br1 = mlr::benchmark(learners, classify.task, SampleStrageyHO, measures = list(mlr::mmce, mlr::auc, mlr::f1))
+```
+
+
+## Vergelijking machine learning modellen
+Na het trainen van de modellen met mlr heb je een zogenaamde benchmark object, die kan je printen en plotten om wat meer info te krijgen.
+
+```{r, eval = FALSE}
+data.frame(br1) %>% arrange(desc(auc))
+plotBMRSummary(br1, measure = mlr::auc)
+```
+
+
+### ROC curves
+
+In het benchmark object zit eigenlijk nog veel meer data. Met onderstaande code pluk je alle stukjes data per model uit om deze vervolgens in een ROC grafiek te zetten.
+
+```{r, eval = FALSE}
+NModels = length(br1$results$Titanic)
+for(i in 1:NModels)
+{
+  tmp2  = br1$results$Titanic[[i]]$pred$data
+  rocResultTEST = roc(truth  ~ prob.Y, data = tmp2 )
+  if(i==1)
+  {
+    plot(rocResultTEST, col=i)
+  }else{
+    plot(rocResultTEST, col=i, add=TRUE)
+  }
+}
+
+legend( 0.6,0.6, names(br1$results$Titanic), col=1:NModels,lwd=2)
+title("Titanic model")
+```
+
+### model gebruiken om te scoren
+
+Als je een benchmark hebt gedaan heb je al de getrainde modellen in het benchmark object zitten. Die kan je al gebruiken om een data set te scoren. je dient dit model er wel 'eerst uit te halen'. 
+
+```{r, eval = FALSE}
+## haal model er uit
+titanmodel = br1$results$Titanic$classif.ranger$models[[1]]
+
+## dit zijn de feauteures in het model
+FT = titanmodel$features
+
+## Maak even een score set van de ABT met alleen de features
+ScoreSet = ABT[, FT]
+
+outpredict = predict(titanmodel, newdata = ScoreSet)
+outpredict
+```
+
+
+<br>
 
 Einde Sessie
 
