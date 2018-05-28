@@ -1410,6 +1410,7 @@ Gebruik reguliere expressies om de prijs er uit te pulleken en als bruikbaar num
 
 ```{r, eval=FALSE}
 library(stringr)
+
 prijs = str_extract(
   price,
   "[:digit:]+[\\.][:digit:]+[\\.]*[:digit:]*"
@@ -1431,7 +1432,6 @@ linkhuis
 ```
 
 In een `for` loop zou je al deze links weer kunnen scrapen.
-
 
 ## Verder voorbeelden
 
@@ -1565,5 +1565,56 @@ merk = html_nodes(out, ".product-wrapper") %>%
   html_text() %>%
   clean_string()
 ```
+
+
+```{r eval=FALSE}
+
+MM_laptops = function(i)
+{
+  MM = paste0(
+    "http://www.mediamarkt.nl/nl/category/_laptops-482723.html?searchParams=&sort=&view=PRODUCTLIST&page=",
+    i
+  )
+
+  out = read_html(MM)
+
+  price = html_nodes(out, ".product-wrapper") %>%
+    html_nodes(".price-box") %>%
+    html_text() %>%
+    clean_string() %>% 
+    str_extract("\\d+") %>%
+    as.numeric()
+
+  merk = html_nodes(out, ".product-wrapper") %>%
+    html_nodes("h2") %>%
+    html_text() %>%
+    clean_string()
+  
+  merk2 = str_extract(merk, '\\w*')
+  if( length(price) == length(merk)){
+    return(tibble(price, merk, merk2))
+  }
+  else{
+    print(i)
+    return(tibble())
+  }
+}
+
+## een enkele pagina
+MM_laptops(1)
+
+## verwerk alle paginas
+all_MM_laptops = purrr::map_df(1:16, MM_laptops)
+```
+
+```{r}
+library(ggplot2)
+ggplot(all_MM_laptops, aes(x=merk2, y = price)) + 
+    geom_boxplot(notch = TRUE) +
+    ggtitle("Price distributions of laptops on www.mediamarkt.nl")
+```
+
+
+
 
 EINDE SESSIE
