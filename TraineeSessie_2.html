@@ -88,25 +88,27 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li><a href="#the-h2o-package"><span class="toc-section-number">2</span> The h2o package</a><ul>
 <li><a href="#h2o-automl"><span class="toc-section-number">2.1</span> h2o automl</a></li>
 </ul></li>
-<li><a href="#the-mlr-package"><span class="toc-section-number">3</span> The mlr package</a><ul>
-<li><a href="#specificeren-van-technieken-en-hun-opties"><span class="toc-section-number">3.1</span> specificeren van technieken en hun opties</a></li>
-<li><a href="#imputeren-van-missende-waarden"><span class="toc-section-number">3.2</span> Imputeren van missende waarden</a></li>
-<li><a href="#het-aanmaken-van-een-task"><span class="toc-section-number">3.3</span> Het aanmaken van een task</a></li>
-<li><a href="#variablen-hard-uitsluiten"><span class="toc-section-number">3.4</span> Variablen hard uitsluiten</a></li>
-<li><a href="#sample-schema"><span class="toc-section-number">3.5</span> Sample schema</a></li>
-<li><a href="#uitvoeren-machine-learning-becnhamrk"><span class="toc-section-number">3.6</span> uitvoeren machine learning becnhamrk</a></li>
-<li><a href="#vergelijking-machine-learning-modellen"><span class="toc-section-number">3.7</span> Vergelijking machine learning modellen</a></li>
+<li><a href="#unsupervised-learning"><span class="toc-section-number">3</span> Unsupervised learning</a><ul>
+<li><a href="#k-means-clustering"><span class="toc-section-number">3.1</span> k-means Clustering</a></li>
+<li><a href="#dbscan"><span class="toc-section-number">3.2</span> DBSCAN</a></li>
+<li><a href="#hierarchisch-clusteren"><span class="toc-section-number">3.3</span> Hierarchisch clusteren</a></li>
 </ul></li>
-<li><a href="#unsupervised-learning"><span class="toc-section-number">4</span> Unsupervised learning</a><ul>
-<li><a href="#k-means-clustering"><span class="toc-section-number">4.1</span> k-means Clustering</a></li>
-<li><a href="#dbscan"><span class="toc-section-number">4.2</span> DBSCAN</a></li>
+<li><a href="#market-basket-analyse"><span class="toc-section-number">4</span> Market basket analyse</a><ul>
+<li><a href="#interactive-mba-graphs"><span class="toc-section-number">4.1</span> interactive MBA graphs</a></li>
 </ul></li>
-<li><a href="#market-basket-analyse"><span class="toc-section-number">5</span> Market basket analyse</a><ul>
-<li><a href="#interactive-mba-graphs"><span class="toc-section-number">5.1</span> interactive MBA graphs</a></li>
+<li><a href="#deeplearning"><span class="toc-section-number">5</span> Deeplearning</a><ul>
+<li><a href="#een-simpel-model"><span class="toc-section-number">5.1</span> Een simpel model</a></li>
+<li><a href="#convolutional-model."><span class="toc-section-number">5.2</span> Convolutional model.</a></li>
 </ul></li>
-<li><a href="#deeplearning"><span class="toc-section-number">6</span> Deeplearning</a><ul>
-<li><a href="#een-simpel-model"><span class="toc-section-number">6.1</span> Een simpel model</a></li>
-<li><a href="#convolutional-model."><span class="toc-section-number">6.2</span> Convolutional model.</a></li>
+<li><a href="#tiijdreeks-modellen-met-prophet"><span class="toc-section-number">6</span> Tiijdreeks modellen met prophet</a></li>
+<li><a href="#the-mlr-package"><span class="toc-section-number">7</span> The mlr package</a><ul>
+<li><a href="#specificeren-van-technieken-en-hun-opties"><span class="toc-section-number">7.1</span> specificeren van technieken en hun opties</a></li>
+<li><a href="#imputeren-van-missende-waarden"><span class="toc-section-number">7.2</span> Imputeren van missende waarden</a></li>
+<li><a href="#het-aanmaken-van-een-task"><span class="toc-section-number">7.3</span> Het aanmaken van een task</a></li>
+<li><a href="#variablen-hard-uitsluiten"><span class="toc-section-number">7.4</span> Variablen hard uitsluiten</a></li>
+<li><a href="#sample-schema"><span class="toc-section-number">7.5</span> Sample schema</a></li>
+<li><a href="#uitvoeren-machine-learning-becnhamrk"><span class="toc-section-number">7.6</span> uitvoeren machine learning becnhamrk</a></li>
+<li><a href="#vergelijking-machine-learning-modellen"><span class="toc-section-number">7.7</span> Vergelijking machine learning modellen</a></li>
 </ul></li>
 </ul>
 </div>
@@ -417,20 +419,26 @@ TTest <span class="op">%&gt;%</span><span class="st"> </span>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(h2o)
 
 <span class="co"># initialiseer h2o via R</span>
-
 <span class="co">#h2o.init(nthreads=-1, port=54323, startH2O = FALSE)</span>
-<span class="kw">h2o.init</span>()
+<span class="kw">h2o.init</span>()</code></pre></div>
+<p>Upload een R data set naar h2o: titanic train en test voorbeeldje. Zorg ervoor dat categorische kolommen in je data van het type factor zijn als je ze wilt meenmenem voor modeling.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">TTrain =<span class="st"> </span>TTrain <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate_if</span>(
+    is.character, as.factor
+  )
 
-### upload een R data set naar h2o: titanic train en test voorbeeldje
-myTitan =<span class="st"> </span>myTitan <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate_if</span>(is.character, as.factor)
-TTrain =<span class="st"> </span>TTrain <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate_if</span>(is.character, as.factor)
-TTest =<span class="st"> </span>TTest <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate_if</span>(is.character, as.factor)
+TTest =<span class="st"> </span>TTest <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate_if</span>(
+    is.character, as.factor
+  )
+
 TTrain<span class="op">$</span>Survived =<span class="st"> </span><span class="kw">as.factor</span>(TTrain<span class="op">$</span>Survived)
 TTest<span class="op">$</span>Survived =<span class="st"> </span><span class="kw">as.factor</span>(TTest<span class="op">$</span>Survived)
 
-myTitan.h2o =<span class="st"> </span><span class="kw">as.h2o</span>(myTitan)
+### breng R data naar h2o. (Er is nu dubbel data in R en in h2o !!!)
 ttrain.h2o =<span class="st"> </span><span class="kw">as.h2o</span>(TTrain) 
 ttest.h2o =<span class="st"> </span><span class="kw">as.h2o</span>(TTest)
+
 ### Je kan ook direct text files inlezen in h2o met 
 <span class="co">#h2o.importFile(path=&quot;C:\een file.txt&quot;, sep=&quot;,&quot;)</span>
 
@@ -484,8 +492,9 @@ RFmodel
 RFmodelGrid</code></pre></div>
 <div id="h2o-automl" class="section level2">
 <h2><span class="header-section-number">2.1</span> h2o automl</h2>
-<p>h2o automl maakt het je helemaal makkelijk…..</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lb =<span class="st"> </span><span class="kw">h2o.automl</span>(
+<p>De <code>automl</code> functionaliteit in h2o maakt het je helemaal makkelijk als je op zoek bent naar het beste voorspellende model. Deze functie traint en cross valideert random forests, extremely randomized forests, GBM’s, Neural Nets en stacked ensembles.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Geef het maximaal 30 seconden tijd
+out =<span class="st"> </span><span class="kw">h2o.automl</span>(
     <span class="dt">x =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">5</span><span class="op">:</span><span class="dv">6</span>),
   <span class="dt">y =</span> <span class="st">&quot;Survived&quot;</span>,
   <span class="dt">training_frame  =</span> ttrain.h2o,
@@ -493,250 +502,34 @@ RFmodelGrid</code></pre></div>
   <span class="dt">max_runtime_secs =</span> <span class="dv">30</span>
 )
 
-lb
+## out is nu een zgn H2OAutoML object met alle resultaten
+out
 
-lb<span class="op">@</span>leaderboard
+## iets overzichtelijker output is de leaderboard
+out<span class="op">@</span>leaderboard
 
-lb<span class="op">@</span>leader</code></pre></div>
+WINNER =<span class="st"> </span>out<span class="op">@</span>leader
+WINNER</code></pre></div>
+<p>Overleef ik de titanic?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ik =<span class="st"> </span><span class="kw">data.frame</span>(
+  <span class="dt">Pclass =</span> <span class="dv">3</span>, 
+  <span class="dt">Sex =</span> <span class="st">&quot;male&quot;</span>, 
+  <span class="dt">Age =</span> <span class="dv">44</span>
+  ) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>as.h2o
+
+<span class="kw">predict</span>(WINNER, ik)</code></pre></div>
 <p>Geef resources terug door h2o af te sluiten als je het niet meer nodig hebt.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">h2o.shutdown</span>(<span class="dt">prompt =</span> <span class="ot">FALSE</span>)</code></pre></div>
 <p><br></p>
 </div>
 </div>
-<div id="the-mlr-package" class="section level1">
-<h1><span class="header-section-number">3</span> The mlr package</h1>
-<hr />
-<p>Met het <code>mlr</code> package kan je makkelijk verschillende modellen trainen en testen op een meer uniforme manier. In R hebben alle machine learning technieken net weer verschillende aanroepen en de uitkomst is vaak een object met net steeds weer andere componenten. Dit zagen we bijvoorbeeld in de bovenstaande code voor ranger en xgboost.</p>
-<p>Met het <code>mlr</code> package kan je dit uniform stroomlijnen. Het maken van een predictive model (welk model dan ook) bestaat altijd uit een aantal stappen. Bijvoorbeeld:</p>
-<ul>
-<li>specificeren van de target,</li>
-<li>specificeren van inputs,</li>
-<li>specificeren van variabelen die je niet wilt gebruiken,</li>
-<li>splitsen data,</li>
-<li>het model / algoritme</li>
-</ul>
-<p>Deze zijn te beschrijven en uit te voeren in mlr.</p>
-<p>We gebruiken de <code>titanic</code> data set als test in <code>mlr</code> en doorlopen een aantal stappen on een aantal modellen te benchmarken. De modellen die we willen benchmarken zijn:</p>
-<ul>
-<li>neuraal netwerk,</li>
-<li>gradient boosting,</li>
-<li>random forest</li>
-<li>xgboost</li>
-<li>decision tree,</li>
-<li>logistic regression via glmnet</li>
-</ul>
-<div id="specificeren-van-technieken-en-hun-opties" class="section level2">
-<h2><span class="header-section-number">3.1</span> specificeren van technieken en hun opties</h2>
-<p>In mlr kan je een aantal algemene parameters weergeven.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## parameters die geen beschrijving hebben willen we ook kunnen opgeven
-<span class="kw">configureMlr</span>(<span class="dt">on.par.without.desc =</span> <span class="st">&quot;warn&quot;</span>)
-
-## we kijken naar maximaal dertig variabelen
-n.importance =<span class="st"> </span><span class="dv">30</span>
-
-## voorspel type, we willen kansen uitrekenen
-ptype =<span class="st"> &quot;prob&quot;</span>
-
-## aantal crossvalidation splitsingen
-N_CV_iter =<span class="st"> </span><span class="dv">10</span></code></pre></div>
-<p>Naast algemene parameters, heeft elk model bepaalde parameters die je kan zetten. Dit hoeft niet, dan worden default waarden gekozen.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">parameters_rf =<span class="st"> </span><span class="kw">list</span>(
-  <span class="dt">num.trees  =</span> <span class="dv">500</span>
-)
-
-parameters_rpart =<span class="st"> </span><span class="kw">list</span>(
-  <span class="dt">cp=</span><span class="fl">0.0001</span>
-)
-
-parameters_glmnet =<span class="st"> </span><span class="kw">list</span>(
-  <span class="dt">alpha  =</span> <span class="dv">1</span>
-)
-
-parameters_NN =<span class="st"> </span><span class="kw">list</span>(
-  <span class="dt">hidden =</span> <span class="kw">c</span>(<span class="dv">15</span>,<span class="dv">15</span>)
-)
-
-parameters_xgboost =<span class="st"> </span><span class="kw">list</span>(
-  <span class="dt">nrounds  =</span> <span class="dv">5</span>,
-  <span class="dt">max.depth =</span> <span class="dv">7</span>
-)</code></pre></div>
-<p>Maak nu een Lijst van modelen (ook wel learners genomed) die je wilt trainen op je data.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">RF_Learner =<span class="st"> </span><span class="kw">makeLearner</span>(
-  <span class="st">&quot;classif.ranger&quot;</span>,
-  <span class="dt">predict.type =</span> ptype,
-  <span class="dt">par.vals =</span> parameters_rf
-)
-
-xgboost_Learner =<span class="st"> </span><span class="kw">makeLearner</span>(
-  <span class="st">&quot;classif.xgboost&quot;</span>,
-  <span class="dt">predict.type =</span> ptype,
-  <span class="dt">par.vals =</span> parameters_xgboost
-)
-
-rpart_Learner =<span class="st"> </span><span class="kw">makeLearner</span>(
-  <span class="st">&quot;classif.rpart&quot;</span>,
-  <span class="dt">predict.type =</span> ptype,
-  <span class="dt">par.vals =</span> parameters_rpart
-)
-
-binomial_Learner =<span class="st"> </span><span class="kw">makeLearner</span>(
-  <span class="st">&quot;classif.binomial&quot;</span>,
-  <span class="dt">predict.type =</span> ptype
-)
-
-glmnet_Learner =<span class="st"> </span><span class="kw">makeLearner</span>(
-  <span class="st">&quot;classif.cvglmnet&quot;</span>, 
-  <span class="dt">predict.type =</span> ptype,
-  <span class="dt">par.vals =</span> parameters_glmnet
-)
-
-h2ogbm_Learner =<span class="st"> </span><span class="kw">makeLearner</span>(
-  <span class="st">&quot;classif.h2o.gbm&quot;</span>, 
-  <span class="dt">predict.type =</span> <span class="st">&quot;prob&quot;</span>
-)
-
-h2oNN_Learner =<span class="st"> </span><span class="kw">makeLearner</span>(
-  <span class="st">&quot;classif.h2o.deeplearning&quot;</span>,
-  <span class="dt">predict.type =</span> ptype,
-  <span class="dt">par.vals =</span> parameters_NN
-)
-
-## lijst van de learners
-learners =<span class="st"> </span><span class="kw">list</span>(
-  rpart_Learner,
-  RF_Learner,
-  binomial_Learner,
-  glmnet_Learner,
-  h2ogbm_Learner,
-  h2oNN_Learner
-)</code></pre></div>
-<p>Als je categorische variabelen in je voorspel model wilt gebruiken eist het mlr package dat ze <code>factor</code> zijn. En in het geval van een classificatie probleem moet de target variabele ook een factor variabele zijn.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ABT =<span class="st"> </span>titanic_train
-ABT<span class="op">$</span>Target =<span class="st"> </span><span class="kw">as.factor</span>(<span class="kw">ifelse</span>(ABT<span class="op">$</span>Survived <span class="op">&lt;</span><span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;N&quot;</span>, <span class="st">&quot;Y&quot;</span>))
-ABT =<span class="st"> </span>ABT <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate_if</span>(is.character, as.factor)</code></pre></div>
-</div>
-<div id="imputeren-van-missende-waarden" class="section level2">
-<h2><span class="header-section-number">3.2</span> Imputeren van missende waarden</h2>
-<p>Als er missende waarden zijn kan je mlr deze laten imputeren door een bepaalde waarde.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">impObject =<span class="st"> </span><span class="kw">impute</span>(
-  ABT, 
-  <span class="dt">classes =</span> <span class="kw">list</span>(
-    <span class="dt">integer =</span> <span class="kw">imputeMean</span>(),
-    <span class="dt">numeric =</span> <span class="kw">imputeMean</span>(),
-    <span class="dt">factor =</span> <span class="kw">imputeMode</span>()
-    ),
-  <span class="dt">dummy.classes =</span> <span class="st">&quot;integer&quot;</span>
-)
-
-ABT =<span class="st"> </span>impObject<span class="op">$</span>data</code></pre></div>
-</div>
-<div id="het-aanmaken-van-een-task" class="section level2">
-<h2><span class="header-section-number">3.3</span> Het aanmaken van een task</h2>
-<p>Maak nu een ‘task’ aan waarin je de data, de inputs en de target specificeert. Een classificatie taak voor categorische target of een regressie task voor een numerieke target.</p>
-<p>Wat wil je modelleren: Kans op level “Y”, dan dien je positive = “Y” op te geven. Bij een binair target met Y en N levels wordt namelijk standaard “N”gebruik (alfabetisch)</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">classify.task =<span class="st"> </span><span class="kw">makeClassifTask</span>(<span class="dt">id =</span> <span class="st">&quot;Titanic&quot;</span>, <span class="dt">data =</span> ABT, <span class="dt">target =</span> <span class="st">&quot;Target&quot;</span>, <span class="dt">positive =</span> <span class="st">&quot;Y&quot;</span>)
-
-## Overzicht van de taak en kolom informatie
-
-<span class="kw">print</span>(classify.task)
-<span class="kw">getTaskDescription</span>(classify.task)
-<span class="kw">summarizeColumns</span>(classify.task)</code></pre></div>
-</div>
-<div id="variablen-hard-uitsluiten" class="section level2">
-<h2><span class="header-section-number">3.4</span> Variablen hard uitsluiten</h2>
-<p>Soms zijn er variabelen die je niet wilt meenemen in je model. Deze kan je hard uitsluiten.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">vars.to.drop =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Name&quot;</span>, <span class="st">&quot;Survived&quot;</span>, <span class="st">&quot;Ticket&quot;</span>)
-
-classify.task =<span class="st"> </span><span class="kw">dropFeatures</span>(classify.task, vars.to.drop )
-
-## Weghalen van (bijna) constante variabelen 
-
-## Je kan ook 'bijna' constante variabelen weghalen: perc iets hoger zetten
-classify.task =<span class="st"> </span><span class="kw">removeConstantFeatures</span>(classify.task, <span class="dt">perc =</span> <span class="fl">0.01</span>)
-classify.task</code></pre></div>
-<p>Zeldzame levels van factors samenvoegen. Het is gebruikelijk om zeldzame levels te verwijderen of te mergen</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">classify.task =<span class="st"> </span><span class="kw">mergeSmallFactorLevels</span> (classify.task, <span class="dt">min.perc =</span> <span class="fl">0.02</span>,  <span class="dt">new.level =</span> <span class="st">&quot;.merged&quot;</span>)
-<span class="kw">summarizeColumns</span>(classify.task)</code></pre></div>
-<p>Welke features hebben een effect op de target? Je kan de predictive power meten per input variable. Univariate, dus per feature kan je met mlr de relatie met de target berekenen.</p>
-<p>Onderliggend heb je Rweka en Rjava dingen nodig daar kan je op linux wat issues mee krijgen. Dingen de je kan doen:</p>
-<ul>
-<li>run in een shell: <code>sudo R CMD javareconf</code> en doe</li>
-<li>sudo rstudio-server stop</li>
-<li>export LD_LIBRARY_PATH=/usr/lib/jvm/jre/lib/amd64:/usr/lib/jvm/jre/lib/amd64/default</li>
-<li>sudo rstudio-server start</li>
-</ul>
-<p>Zie ook <a href="https://stackoverflow.com/questions/28462302/libjvm-so-cannot-open-shared-object-file-no-such-file-or-directory">stack overflow</a></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Feature selection 
-fv =<span class="st"> </span><span class="kw">generateFilterValuesData</span>(classify.task,  <span class="dt">method =</span> <span class="kw">c</span>(<span class="st">&quot;information.gain&quot;</span>, <span class="st">&quot;chi.squared&quot;</span>))
-
-## display en plot importance
-
-importance =<span class="st"> </span>fv<span class="op">$</span>data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">arrange</span>(<span class="kw">desc</span>(information.gain))
-<span class="kw">head</span>(importance, <span class="dt">n =</span> n.importance)
-<span class="kw">plotFilterValues</span>(fv, <span class="dt">n.show =</span> <span class="dv">2</span><span class="op">*</span>n.importance)</code></pre></div>
-<p>laat nog eens variabelen weg die helemaal niks doen.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">vars.to.drop =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;PassengerId&quot;</span>, <span class="st">&quot;Parch&quot;</span>, <span class="st">&quot;SibSp&quot;</span>)
-classify.task =<span class="st"> </span><span class="kw">dropFeatures</span>(classify.task, vars.to.drop )</code></pre></div>
-</div>
-<div id="sample-schema" class="section level2">
-<h2><span class="header-section-number">3.5</span> Sample schema</h2>
-<p>Met mlr kan je data splitsen, niet alleen in train / test maar ook cross validation. Dit heet een sample schema.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">SampleStrageyHO =<span class="st"> </span><span class="kw">makeResampleDesc</span>(<span class="st">&quot;Holdout&quot;</span>, <span class="dt">split=</span><span class="fl">0.75</span>)
-SampleStrageyCV =<span class="st"> </span><span class="kw">makeResampleDesc</span>(<span class="st">&quot;CV&quot;</span>, <span class="dt">iters =</span> N_CV_iter)</code></pre></div>
-</div>
-<div id="uitvoeren-machine-learning-becnhamrk" class="section level2">
-<h2><span class="header-section-number">3.6</span> uitvoeren machine learning becnhamrk</h2>
-<p>Nu heb je de diverse stappen gespecificeerd en kan je een benchmark uitvoeren voor de verschillende learners,</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">br1 =<span class="st"> </span>mlr<span class="op">::</span><span class="kw">benchmark</span>(learners, classify.task, SampleStrageyHO, <span class="dt">measures =</span> <span class="kw">list</span>(mlr<span class="op">::</span>mmce, mlr<span class="op">::</span>auc, mlr<span class="op">::</span>f1))</code></pre></div>
-</div>
-<div id="vergelijking-machine-learning-modellen" class="section level2">
-<h2><span class="header-section-number">3.7</span> Vergelijking machine learning modellen</h2>
-<p>Na het trainen van de modellen met mlr heb je een zogenaamde benchmark object, die kan je printen en plotten om wat meer info te krijgen.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data.frame</span>(br1) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">arrange</span>(<span class="kw">desc</span>(auc))
-<span class="kw">plotBMRSummary</span>(br1, <span class="dt">measure =</span> mlr<span class="op">::</span>auc)</code></pre></div>
-<div id="roc-curves" class="section level3">
-<h3><span class="header-section-number">3.7.1</span> ROC curves</h3>
-<p>In het benchmark object zit eigenlijk nog veel meer data. Met onderstaande code pluk je alle stukjes data per model uit om deze vervolgens in een ROC grafiek te zetten.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">NModels =<span class="st"> </span><span class="kw">length</span>(br1<span class="op">$</span>results<span class="op">$</span>Titanic)
-<span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>NModels)
-{
-  tmp2  =<span class="st"> </span>br1<span class="op">$</span>results<span class="op">$</span>Titanic[[i]]<span class="op">$</span>pred<span class="op">$</span>data
-  rocResultTEST =<span class="st"> </span><span class="kw">roc</span>(truth  <span class="op">~</span><span class="st"> </span>prob.Y, <span class="dt">data =</span> tmp2 )
-  <span class="cf">if</span>(i<span class="op">==</span><span class="dv">1</span>)
-  {
-    <span class="kw">plot</span>(rocResultTEST, <span class="dt">col=</span>i)
-  }<span class="cf">else</span>{
-    <span class="kw">plot</span>(rocResultTEST, <span class="dt">col=</span>i, <span class="dt">add=</span><span class="ot">TRUE</span>)
-  }
-}
-
-<span class="kw">legend</span>( <span class="fl">0.6</span>,<span class="fl">0.6</span>, <span class="kw">names</span>(br1<span class="op">$</span>results<span class="op">$</span>Titanic), <span class="dt">col=</span><span class="dv">1</span><span class="op">:</span>NModels,<span class="dt">lwd=</span><span class="dv">2</span>)
-<span class="kw">title</span>(<span class="st">&quot;Titanic model&quot;</span>)</code></pre></div>
-</div>
-<div id="model-gebruiken-om-te-scoren" class="section level3">
-<h3><span class="header-section-number">3.7.2</span> model gebruiken om te scoren</h3>
-<p>Als je een benchmark hebt gedaan heb je al de getrainde modellen in het benchmark object zitten. Die kan je al gebruiken om een data set te scoren. je dient dit model er wel ‘eerst uit te halen’.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## haal model er uit
-titanmodel =<span class="st"> </span>br1<span class="op">$</span>results<span class="op">$</span>Titanic<span class="op">$</span>classif.ranger<span class="op">$</span>models[[<span class="dv">1</span>]]
-
-## dit zijn de feauteures in het model
-FT =<span class="st"> </span>titanmodel<span class="op">$</span>features
-
-## Maak even een score set van de ABT met alleen de features
-ScoreSet =<span class="st"> </span>ABT[, FT]
-
-outpredict =<span class="st"> </span><span class="kw">predict</span>(titanmodel, <span class="dt">newdata =</span> ScoreSet)
-outpredict</code></pre></div>
-<p><br></p>
-</div>
-</div>
-</div>
 <div id="unsupervised-learning" class="section level1">
-<h1><span class="header-section-number">4</span> Unsupervised learning</h1>
+<h1><span class="header-section-number">3</span> Unsupervised learning</h1>
 <hr />
 <p>De bovenstaande code was gericht op predictive modeling, ook wel supervised learning genoemd: met input variabelen een target variable proberen te voorspellen. In deze sectie zullen we een tweetal technieken laten zien waar geen target variabele is, ook wel unsupervised learning genoemd.</p>
 <div id="k-means-clustering" class="section level2">
-<h2><span class="header-section-number">4.1</span> k-means Clustering</h2>
+<h2><span class="header-section-number">3.1</span> k-means Clustering</h2>
 <p>Dit is een van de bekendste clustering methode. Je dient een aantal clusters van te voren op te geven, de <em>k</em>, het algoritme gaat dan elke observatie aan een van de k clusters toekennen.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mycars =<span class="st"> </span>mtcars <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span> (mpg, wt)
 cars.cluster =<span class="st"> </span><span class="kw">kmeans</span>(mycars, <span class="dv">5</span>)
@@ -772,47 +565,69 @@ cluster_membership =<span class="st"> </span><span class="kw">h2o.predict</span>
 <span class="st">  </span><span class="kw">as.data.frame</span>()</code></pre></div>
 </div>
 <div id="dbscan" class="section level2">
-<h2><span class="header-section-number">4.2</span> DBSCAN</h2>
+<h2><span class="header-section-number">3.2</span> DBSCAN</h2>
 <p>Density-based Spatial Clustering of Applications with Noise (DBSCAN), which does not make assumptions about spherical clusters like k-means, nor does it partition the dataset into hierarchies that require a manual cut-off point. As its name implies, density-based clustering assigns cluster labels based on dense regions of points.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dbscan)
 
 ## wat data, halve manen, hoeveel clusrers zijn dit?
-x =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">100</span>,<span class="dv">0</span>,pi)
-y =<span class="st"> </span><span class="kw">sin</span>(x) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>,<span class="dv">0</span>,<span class="fl">0.1</span>)
+x1 =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">100</span>,<span class="dv">0</span>,pi)
+y1 =<span class="st"> </span><span class="kw">sin</span>(x1) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>,<span class="dv">0</span>,<span class="fl">0.1</span>)
 
-x1 =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">100</span>,<span class="op">-</span>pi<span class="op">/</span><span class="dv">2</span>,pi<span class="op">/</span><span class="dv">2</span>)
-y1 =<span class="st"> </span><span class="fl">0.4</span><span class="op">+</span><span class="st"> </span><span class="kw">sin</span>(x1<span class="op">-</span>pi<span class="op">/</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>,<span class="dv">0</span>,<span class="fl">0.1</span>)
+x2 =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">100</span>,<span class="op">-</span>pi<span class="op">/</span><span class="dv">2</span>,pi<span class="op">/</span><span class="dv">2</span>)
+y2 =<span class="st"> </span><span class="fl">0.4</span><span class="op">+</span><span class="st"> </span><span class="kw">sin</span>(x2<span class="op">-</span>pi<span class="op">/</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>,<span class="dv">0</span>,<span class="fl">0.1</span>)
 
-<span class="kw">plot</span>(<span class="kw">c</span>(x,x1),<span class="kw">c</span>(y,y1))</code></pre></div>
+<span class="kw">plot</span>(<span class="kw">c</span>(x1,x2),<span class="kw">c</span>(y1,y2))</code></pre></div>
 <p>k-means werkt niet echt hier….</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df  =<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(x,x1), <span class="dt">y =</span> <span class="kw">c</span>(y,y1))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df  =<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(x1,x2), <span class="dt">y =</span> <span class="kw">c</span>(y1,y2))
 df.cluster =<span class="st"> </span><span class="kw">kmeans</span>(df, <span class="dv">2</span>)
 df.cluster
 
 <span class="kw">plot</span>(df<span class="op">$</span>x, df<span class="op">$</span>y, <span class="dt">col =</span> df.cluster<span class="op">$</span>cluster )
 <span class="kw">points</span>(df.cluster<span class="op">$</span>centers, <span class="dt">col =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">pch =</span> <span class="dv">8</span>, <span class="dt">cex =</span> <span class="dv">2</span>)</code></pre></div>
 <p>De data moet in een matrix zitten om dbscan te kunnen runnen.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">X =<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">c</span>(x,x1),<span class="kw">c</span>(y,y1))
-db &lt;-<span class="st"> </span><span class="kw">dbscan</span>(X, <span class="dt">eps =</span> .<span class="dv">4</span>, <span class="dt">minPts =</span> <span class="dv">4</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">X =<span class="st"> </span><span class="kw">cbind</span>(
+  <span class="kw">c</span>(x1,x2),
+  <span class="kw">c</span>(y1,y2)
+  )
+
+db =<span class="st"> </span><span class="kw">dbscan</span>(X, <span class="dt">eps =</span> .<span class="dv">2</span>, <span class="dt">minPts =</span> <span class="dv">4</span>)
 db
 
 <span class="kw">pairs</span>(X, <span class="dt">col =</span> db<span class="op">$</span>cluster <span class="op">+</span><span class="st"> </span>1L)
 
 ### NOISE POINTS....
-X =<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">c</span>(x,x1,<span class="op">-</span><span class="dv">1</span>, <span class="dv">3</span>),<span class="kw">c</span>(y,y1, <span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>))
-db &lt;-<span class="st"> </span><span class="kw">dbscan</span>(X, <span class="dt">eps =</span> .<span class="dv">4</span>, <span class="dt">minPts =</span> <span class="dv">4</span>)
+X =<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">c</span>(x1, x2,<span class="op">-</span><span class="dv">1</span>, <span class="dv">3</span>), <span class="kw">c</span>(y1, y2, <span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>))
+db =<span class="st"> </span><span class="kw">dbscan</span>(X, <span class="dt">eps =</span> .<span class="dv">2</span>, <span class="dt">minPts =</span> <span class="dv">4</span>)
 db
 
-<span class="kw">pairs</span>(X, <span class="dt">col =</span> db<span class="op">$</span>cluster <span class="op">+</span><span class="st"> </span>1L)
-
-## local outlier factor score
-<span class="kw">pairs</span>(X, <span class="dt">col =</span> db<span class="op">$</span>cluster <span class="op">+</span><span class="st"> </span>1L)
-lof &lt;-<span class="st"> </span><span class="kw">lof</span>(X, <span class="dt">k =</span> <span class="dv">4</span>)
+<span class="kw">pairs</span>(X, <span class="dt">col =</span> db<span class="op">$</span>cluster <span class="op">+</span><span class="st"> </span>1L)</code></pre></div>
+<p>Cluster analyse zou je ook voor outlier detecie kunnen gebruiken. Er is een afstand uit te rekenen tot andere punten.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## local outlier factor score
+lof =<span class="st"> </span><span class="kw">lof</span>(X, <span class="dt">k =</span> <span class="dv">4</span>)
 <span class="kw">pairs</span>(X, <span class="dt">cex =</span> lof)</code></pre></div>
+</div>
+<div id="hierarchisch-clusteren" class="section level2">
+<h2><span class="header-section-number">3.3</span> Hierarchisch clusteren</h2>
+<p>Een alternatief voor k-means en DBSCAN is hierarchisch clusteren. Je kan beginnen met 1 cluster waarin alle obeservaties zitten. Iteratief ga je deze cluster opsplitsen in sub clusters tot elke observatie 1 aparte cluster is (Divisive). Of je begint met de situatie dat elke observatie een cluster is en iteratief ga je clusters samenvoegen totdat alle observaties 1 cluster vormen (Aglomerative).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Agglomerative clusrting with hclust
+<span class="co"># EEn distance matrix is eerst nodig voordat je het in hclust kan stoppen</span>
+hc1 =<span class="st"> </span><span class="kw">dist</span>(
+  mtcars, <span class="dt">method =</span> <span class="st">&quot;euclidean&quot;</span>
+  ) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">hclust</span>(
+    <span class="dt">method =</span> <span class="st">&quot;complete&quot;</span> 
+  )
+
+<span class="co"># Plot the obtained dendrogram</span>
+<span class="kw">plot</span>(hc1, <span class="dt">cex =</span> <span class="fl">0.6</span>, <span class="dt">hang =</span> <span class="op">-</span><span class="dv">1</span>)</code></pre></div>
+<p>Naast een lelijk statisch old school plaatje kan je ook een interactive tree krijgen met visNetwork.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(visNetwork)
+<span class="kw">visHclust</span>(iris, <span class="dt">cutree =</span> <span class="dv">3</span>, <span class="dt">colorEdges =</span> <span class="st">&quot;red&quot;</span>)</code></pre></div>
+<p>Zie voor een kort overzicht ook deze <a href="https://www.r-bloggers.com/how-to-perform-hierarchical-clustering-using-r/">blog</a></p>
 </div>
 </div>
 <div id="market-basket-analyse" class="section level1">
-<h1><span class="header-section-number">5</span> Market basket analyse</h1>
+<h1><span class="header-section-number">4</span> Market basket analyse</h1>
 <p>Met market basket analyse (ook wel association rules mining genoemd) kan je uit “transacties van klanten” vaak voorkomende combinaties of juiste hele “sterke combinaties” van producten bepalen. Hieronder volgt een voorbeeldje op een fictief grocery (boodschappen transacties) data setje.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(arules)
 
@@ -871,7 +686,7 @@ rulesMatch &lt;-<span class="st"> </span><span class="kw">is.subset</span>(rules
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(arulesViz)
 <span class="kw">plot</span>(<span class="kw">head</span>(<span class="kw">sort</span>(rules, <span class="dt">by =</span> <span class="st">&quot;lift&quot;</span>), <span class="dt">n=</span><span class="dv">50</span>), <span class="dt">method =</span> <span class="st">&quot;graph&quot;</span>, <span class="dt">control=</span><span class="kw">list</span>(<span class="dt">cex=</span>.<span class="dv">8</span>))</code></pre></div>
 <div id="interactive-mba-graphs" class="section level2">
-<h2><span class="header-section-number">5.1</span> interactive MBA graphs</h2>
+<h2><span class="header-section-number">4.1</span> interactive MBA graphs</h2>
 <p>You can visualise rules in interactive plotly plots or interactive visNetwork plots. First, an interactive scatter plot of the rules can be made. Each rule is plotted as a point, where the x axis represents the support and the y axis represent the confidence of the rule.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rules &lt;-<span class="st"> </span><span class="kw">apriori</span>(Groceries, <span class="dt">parameter =</span> <span class="kw">list</span>(<span class="dt">supp =</span> <span class="fl">0.001</span>, <span class="dt">conf =</span> <span class="fl">0.8</span>) )
 rulesDF =<span class="st"> </span>rules <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">DATAFRAME</span>()
@@ -916,7 +731,7 @@ nodes =<span class="st"> </span><span class="kw">data.frame</span>(
 </div>
 </div>
 <div id="deeplearning" class="section level1">
-<h1><span class="header-section-number">6</span> Deeplearning</h1>
+<h1><span class="header-section-number">5</span> Deeplearning</h1>
 <p>In R kan je deeplearning modellen trainen met Keras met een Tensorflow back-end, we geven hier een simpel voorbeeld. Je kan vanuit het <code>keras</code> package tensorflow installeren. Zie ook mijn slides op <a href="https://www.slideshare.net/LonghowLam/keras-on-tensorflow-in-r-python">slideshare</a> voor wat verdere uitleg en bekijk dit ‘fantastische’ boek: <a href="https://www.manning.com/books/deep-learning-with-r">deep learning in R</a></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(keras)
 ## De library keras bevat een makkelijke functie om de tensorflow backend  installeren, 
@@ -924,11 +739,11 @@ nodes =<span class="st"> </span><span class="kw">data.frame</span>(
 
 <span class="co"># keras::install_keras()</span></code></pre></div>
 <div id="een-simpel-model" class="section level2">
-<h2><span class="header-section-number">6.1</span> Een simpel model</h2>
+<h2><span class="header-section-number">5.1</span> Een simpel model</h2>
 <p>We maken met keras eerst een simpel model, 1 hidden layer, niks fancy nog. Download en prepareer eerst de data.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">batch_size &lt;-<span class="st"> </span><span class="dv">128</span>
-num_classes &lt;-<span class="st"> </span><span class="dv">10</span>
-epochs &lt;-<span class="st"> </span><span class="dv">10</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">batch_size =<span class="st"> </span><span class="dv">128</span>
+num_classes =<span class="st"> </span><span class="dv">10</span>
+epochs =<span class="st"> </span><span class="dv">10</span>
 
 <span class="co"># The data, shuffled and split between train and test sets</span>
 <span class="kw">c</span>(<span class="kw">c</span>(x_train, y_train), <span class="kw">c</span>(x_test, y_test)) <span class="op">%&lt;-%</span><span class="st"> </span><span class="kw">dataset_mnist</span>()
@@ -942,8 +757,14 @@ x_train[<span class="dv">1</span>,,]
 y_train[<span class="dv">1</span>]</code></pre></div>
 <p>Zo’n 28 bij 28 plaatje is ook te plotten</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># bekijk plaatje n</span>
-n =<span class="st"> </span><span class="dv">110</span>
-<span class="kw">image</span>(  x_train[n,,] )
+n =<span class="st"> </span><span class="dv">2301</span>
+m =<span class="st"> </span>x_train[n,,]
+
+<span class="kw">image</span>(m)
+## rotate 90 degrees clockwise
+m =<span class="st"> </span><span class="kw">t</span>(m)[, <span class="kw">nrow</span>(m)<span class="op">:</span><span class="dv">1</span>]
+<span class="kw">image</span>(m)
+
 y_train[n]</code></pre></div>
 <p>We gaan nu de data wat reshapen voor het model</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Sla de matrices plat tot een vector (array) van 784 = (28*28)</span>
@@ -966,8 +787,12 @@ y_test &lt;-<span class="st"> </span><span class="kw">to_categorical</span>(y_te
 <p>Defineer het model.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">keras_model_sequential</span>()
 model <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">256</span>, <span class="dt">activation =</span> <span class="st">'relu'</span>, <span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">784</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">10</span>, <span class="dt">activation =</span> <span class="st">'softmax'</span>)
+<span class="st">  </span><span class="kw">layer_dense</span>(
+    <span class="dt">units =</span> <span class="dv">256</span>, <span class="dt">activation =</span> <span class="st">'relu'</span>, <span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">784</span>)
+  ) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_dense</span>(
+    <span class="dt">units =</span> <span class="dv">10</span>, <span class="dt">activation =</span> <span class="st">'softmax'</span>
+  )
 
 <span class="kw">summary</span>(model)
 
@@ -1000,9 +825,13 @@ score &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span cl
 <p>We kunnen nu nog een tweede hidden layer toevoegen met drop outs om overfitten te voorkomen.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">keras_model_sequential</span>()
 model <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">512</span>, <span class="dt">activation =</span> <span class="st">'relu'</span>, <span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">784</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">layer_dense</span>(
+    <span class="dt">units =</span> <span class="dv">512</span>, <span class="dt">activation =</span> <span class="st">'relu'</span>, <span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">784</span>)
+  ) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">layer_dropout</span>(<span class="dt">rate=</span><span class="fl">0.2</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">512</span>, <span class="dt">activation =</span> <span class="st">'relu'</span>, <span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">784</span>)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">layer_dense</span>(
+    <span class="dt">units =</span> <span class="dv">512</span>, <span class="dt">activation =</span> <span class="st">'relu'</span>, <span class="dt">input_shape =</span> <span class="kw">c</span>(<span class="dv">784</span>)
+  ) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">layer_dropout</span>(<span class="dt">rate=</span><span class="fl">0.2</span>) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">layer_dense</span>(<span class="dt">units =</span> <span class="dv">10</span>, <span class="dt">activation =</span> <span class="st">'softmax'</span>)
 
@@ -1015,7 +844,7 @@ model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">co
 )</code></pre></div>
 </div>
 <div id="convolutional-model." class="section level2">
-<h2><span class="header-section-number">6.2</span> Convolutional model.</h2>
+<h2><span class="header-section-number">5.2</span> Convolutional model.</h2>
 <p>Maak nu een meer fancy convolutional deeplearning model, input is nu een array van getallen ipv een plat geslagen vector zoals in vorige voorbeeld. En laten we nu de Fashion MNIST nemen, een leuk alternative voor de cijfers, het zijn kledingplaatjes door zalando beschikbaar gesteld.</p>
 <p><a href="https://github.com/zalandoresearch/fashion-mnist">Fashion MNIST</a></p>
 <p>Data kan je krijgen door de git repo te clonen. en in data dir zitten gz files die je moet uitpakken, dit zijn binaire files die je mer R kan inlezen, gebruikmakend van de functie <code>readBin</code>.</p>
@@ -1162,7 +991,308 @@ scores &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span c
 
 <span class="kw">cat</span>(<span class="st">'Test loss:'</span>, scores[[<span class="dv">1</span>]], <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)
 <span class="kw">cat</span>(<span class="st">'Test accuracy:'</span>, scores[[<span class="dv">2</span>]], <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</code></pre></div>
+<p><br></p>
+</div>
+</div>
+<div id="tiijdreeks-modellen-met-prophet" class="section level1">
+<h1><span class="header-section-number">6</span> Tiijdreeks modellen met prophet</h1>
+<hr />
+<p>Prophet is een facebook package voor tijdreeks data, die zij zelf ook intern gebruiken. In plaats van de traditionale manier van tijdreeks modellen maken met ARIMA, worden zogenaamde additieve regressie modellen gefit. Zie hier de <a href="https://peerj.com/preprints/3190.pdf">paper</a>.</p>
+<p>Hier een voorbeeld op gescrapte Billy verkopen van de Ikea website</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(prophet)
+
+## dagelijke ikea billy verkoop data
+DailyBilly =<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;data/DailyBilly.RDs&quot;</span>)
+<span class="kw">ggplot</span>(DailyBilly, <span class="kw">aes</span>(<span class="dt">x=</span>ds, <span class="dt">y =</span> y)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>()
+
+## billy forcast, fit eerst het model
+BillyF =<span class="st"> </span><span class="kw">prophet</span>(DailyBilly)
+
+## dan aantal dagen vooruit maken waarop je gaat forecastem
+future =<span class="st"> </span><span class="kw">make_future_dataframe</span>(BillyF, <span class="dt">periods =</span> <span class="dv">90</span>)
+forecast =<span class="st"> </span><span class="kw">predict</span>(BillyF, future)
+
+<span class="kw">plot</span>(BillyF, forecast)</code></pre></div>
+<p>Bovenstaande werkt nog niet echt….. We zetten seasonality aan.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## billy forcast, fit eerst het model
+BillyF =<span class="st"> </span><span class="kw">prophet</span>(
+  DailyBilly,
+  <span class="dt">weekly.seasonality =</span> <span class="ot">TRUE</span> ,
+  <span class="dt">yearly.seasonality =</span> <span class="ot">TRUE</span>, 
+  <span class="dt">daily.seasonality =</span> <span class="ot">TRUE</span>
+)
+
+## dan aantal dagen vooruit maken waarop je gaat forecastem
+future =<span class="st"> </span><span class="kw">make_future_dataframe</span>(BillyF, <span class="dt">periods =</span> <span class="dv">90</span>)
+forecast =<span class="st"> </span><span class="kw">predict</span>(BillyF, future)
+
+<span class="kw">plot</span>(BillyF, forecast)
+<span class="kw">prophet_plot_components</span>(BillyF, forecast)</code></pre></div>
+<p>Met prohet kan je ook externe regressors toevoegen aan het model. Laten we eens wat KNMI data bekijken.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(readr)
+<span class="kw">library</span>(ggplot2)
+
+KNMI_<span class="dv">20180101</span> =<span class="st"> </span><span class="kw">read_csv</span>(
+   <span class="st">&quot;data/KNMI_20180101.txt&quot;</span>, 
+   <span class="dt">col_types =</span> <span class="kw">cols</span>(<span class="dt">YYYYMMDD =</span> <span class="kw">col_date</span>(<span class="dt">format =</span> <span class="st">&quot;%Y%m%d&quot;</span>))
+)
+
+DailyBilly2 =<span class="st"> </span>DailyBilly <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">left_join</span>(
+    KNMI_<span class="dv">20180101</span>, 
+    <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;ds&quot;</span> =<span class="st"> &quot;YYYYMMDD&quot;</span>)
+  )
+
+## het model moet nog niet gefit worden voordat je de regressor er aan toevoegt.
+BillyF =<span class="st"> </span><span class="kw">prophet</span>(
+  <span class="dt">weekly.seasonality =</span> <span class="ot">TRUE</span> ,
+  <span class="dt">yearly.seasonality =</span> <span class="ot">TRUE</span>, 
+  <span class="dt">daily.seasonality =</span> <span class="ot">TRUE</span>,
+  <span class="dt">fit =</span> <span class="ot">FALSE</span>
+)  <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">add_regressor</span>(<span class="st">&quot;FHX&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">fit.prophet</span>(<span class="dt">df =</span> DailyBilly2)
+
+## voorspel Billy Verkopen voor lage en hoge windwaarden.
+future =<span class="st"> </span><span class="kw">make_future_dataframe</span>(BillyF, <span class="dt">periods =</span> <span class="dv">30</span>)
+future<span class="op">$</span>FHX =<span class="st"> </span><span class="dv">40</span>
+future =<span class="st"> </span>future <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">filter</span>(ds <span class="op">&gt;</span><span class="st"> &quot;2017-10-01&quot;</span>)
+forecast1 =<span class="st"> </span><span class="kw">predict</span>(BillyF, future)
+future<span class="op">$</span>FHX =<span class="st"> </span><span class="dv">120</span>
+forecast2 =<span class="st"> </span><span class="kw">predict</span>(BillyF, future)
+
+### zet de twee voorspellingen uit.
+<span class="kw">ggplot</span>(forecast1, <span class="kw">aes</span>(ds,yhat)) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data =</span> forecast2, <span class="kw">aes</span>(ds,yhat), <span class="dt">col=</span><span class="dv">2</span>)</code></pre></div>
+</div>
+<div id="the-mlr-package" class="section level1">
+<h1><span class="header-section-number">7</span> The mlr package</h1>
+<hr />
+<p>Met het <code>mlr</code> package kan je makkelijk verschillende modellen trainen en testen op een meer uniforme manier. In R hebben alle machine learning technieken net weer verschillende aanroepen en de uitkomst is vaak een object met net steeds weer andere componenten. Dit zagen we bijvoorbeeld in de bovenstaande code voor ranger en xgboost.</p>
+<p>Met het <code>mlr</code> package kan je dit uniform stroomlijnen. Het maken van een predictive model (welk model dan ook) bestaat altijd uit een aantal stappen. Bijvoorbeeld:</p>
+<ul>
+<li>specificeren van de target,</li>
+<li>specificeren van inputs,</li>
+<li>specificeren van variabelen die je niet wilt gebruiken,</li>
+<li>splitsen data,</li>
+<li>het model / algoritme</li>
+</ul>
+<p>Deze zijn te beschrijven en uit te voeren in mlr.</p>
+<p>We gebruiken de <code>titanic</code> data set als test in <code>mlr</code> en doorlopen een aantal stappen on een aantal modellen te benchmarken. De modellen die we willen benchmarken zijn:</p>
+<ul>
+<li>neuraal netwerk,</li>
+<li>gradient boosting,</li>
+<li>random forest</li>
+<li>xgboost</li>
+<li>decision tree,</li>
+<li>logistic regression via glmnet</li>
+</ul>
+<div id="specificeren-van-technieken-en-hun-opties" class="section level2">
+<h2><span class="header-section-number">7.1</span> specificeren van technieken en hun opties</h2>
+<p>In mlr kan je een aantal algemene parameters weergeven.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## parameters die geen beschrijving hebben willen we ook kunnen opgeven
+<span class="kw">configureMlr</span>(<span class="dt">on.par.without.desc =</span> <span class="st">&quot;warn&quot;</span>)
+
+## we kijken naar maximaal dertig variabelen
+n.importance =<span class="st"> </span><span class="dv">30</span>
+
+## voorspel type, we willen kansen uitrekenen
+ptype =<span class="st"> &quot;prob&quot;</span>
+
+## aantal crossvalidation splitsingen
+N_CV_iter =<span class="st"> </span><span class="dv">10</span></code></pre></div>
+<p>Naast algemene parameters, heeft elk model bepaalde parameters die je kan zetten. Dit hoeft niet, dan worden default waarden gekozen.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">parameters_rf =<span class="st"> </span><span class="kw">list</span>(
+  <span class="dt">num.trees  =</span> <span class="dv">500</span>
+)
+
+parameters_rpart =<span class="st"> </span><span class="kw">list</span>(
+  <span class="dt">cp=</span><span class="fl">0.0001</span>
+)
+
+parameters_glmnet =<span class="st"> </span><span class="kw">list</span>(
+  <span class="dt">alpha  =</span> <span class="dv">1</span>
+)
+
+parameters_NN =<span class="st"> </span><span class="kw">list</span>(
+  <span class="dt">hidden =</span> <span class="kw">c</span>(<span class="dv">15</span>,<span class="dv">15</span>)
+)
+
+parameters_xgboost =<span class="st"> </span><span class="kw">list</span>(
+  <span class="dt">nrounds  =</span> <span class="dv">5</span>,
+  <span class="dt">max.depth =</span> <span class="dv">7</span>
+)</code></pre></div>
+<p>Maak nu een Lijst van modelen (ook wel learners genomed) die je wilt trainen op je data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">RF_Learner =<span class="st"> </span><span class="kw">makeLearner</span>(
+  <span class="st">&quot;classif.ranger&quot;</span>,
+  <span class="dt">predict.type =</span> ptype,
+  <span class="dt">par.vals =</span> parameters_rf
+)
+
+xgboost_Learner =<span class="st"> </span><span class="kw">makeLearner</span>(
+  <span class="st">&quot;classif.xgboost&quot;</span>,
+  <span class="dt">predict.type =</span> ptype,
+  <span class="dt">par.vals =</span> parameters_xgboost
+)
+
+rpart_Learner =<span class="st"> </span><span class="kw">makeLearner</span>(
+  <span class="st">&quot;classif.rpart&quot;</span>,
+  <span class="dt">predict.type =</span> ptype,
+  <span class="dt">par.vals =</span> parameters_rpart
+)
+
+binomial_Learner =<span class="st"> </span><span class="kw">makeLearner</span>(
+  <span class="st">&quot;classif.binomial&quot;</span>,
+  <span class="dt">predict.type =</span> ptype
+)
+
+glmnet_Learner =<span class="st"> </span><span class="kw">makeLearner</span>(
+  <span class="st">&quot;classif.cvglmnet&quot;</span>, 
+  <span class="dt">predict.type =</span> ptype,
+  <span class="dt">par.vals =</span> parameters_glmnet
+)
+
+h2ogbm_Learner =<span class="st"> </span><span class="kw">makeLearner</span>(
+  <span class="st">&quot;classif.h2o.gbm&quot;</span>, 
+  <span class="dt">predict.type =</span> <span class="st">&quot;prob&quot;</span>
+)
+
+h2oNN_Learner =<span class="st"> </span><span class="kw">makeLearner</span>(
+  <span class="st">&quot;classif.h2o.deeplearning&quot;</span>,
+  <span class="dt">predict.type =</span> ptype,
+  <span class="dt">par.vals =</span> parameters_NN
+)
+
+## lijst van de learners
+learners =<span class="st"> </span><span class="kw">list</span>(
+  rpart_Learner,
+  RF_Learner,
+  binomial_Learner,
+  glmnet_Learner,
+  h2ogbm_Learner,
+  h2oNN_Learner
+)</code></pre></div>
+<p>Als je categorische variabelen in je voorspel model wilt gebruiken eist het mlr package dat ze <code>factor</code> zijn. En in het geval van een classificatie probleem moet de target variabele ook een factor variabele zijn.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ABT =<span class="st"> </span>titanic_train
+ABT<span class="op">$</span>Target =<span class="st"> </span><span class="kw">as.factor</span>(<span class="kw">ifelse</span>(ABT<span class="op">$</span>Survived <span class="op">&lt;</span><span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;N&quot;</span>, <span class="st">&quot;Y&quot;</span>))
+ABT =<span class="st"> </span>ABT <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate_if</span>(is.character, as.factor)</code></pre></div>
+</div>
+<div id="imputeren-van-missende-waarden" class="section level2">
+<h2><span class="header-section-number">7.2</span> Imputeren van missende waarden</h2>
+<p>Als er missende waarden zijn kan je mlr deze laten imputeren door een bepaalde waarde.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">impObject =<span class="st"> </span><span class="kw">impute</span>(
+  ABT, 
+  <span class="dt">classes =</span> <span class="kw">list</span>(
+    <span class="dt">integer =</span> <span class="kw">imputeMean</span>(),
+    <span class="dt">numeric =</span> <span class="kw">imputeMean</span>(),
+    <span class="dt">factor =</span> <span class="kw">imputeMode</span>()
+    ),
+  <span class="dt">dummy.classes =</span> <span class="st">&quot;integer&quot;</span>
+)
+
+ABT =<span class="st"> </span>impObject<span class="op">$</span>data</code></pre></div>
+</div>
+<div id="het-aanmaken-van-een-task" class="section level2">
+<h2><span class="header-section-number">7.3</span> Het aanmaken van een task</h2>
+<p>Maak nu een ‘task’ aan waarin je de data, de inputs en de target specificeert. Een classificatie taak voor categorische target of een regressie task voor een numerieke target.</p>
+<p>Wat wil je modelleren: Kans op level “Y”, dan dien je positive = “Y” op te geven. Bij een binair target met Y en N levels wordt namelijk standaard “N”gebruik (alfabetisch)</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">classify.task =<span class="st"> </span><span class="kw">makeClassifTask</span>(<span class="dt">id =</span> <span class="st">&quot;Titanic&quot;</span>, <span class="dt">data =</span> ABT, <span class="dt">target =</span> <span class="st">&quot;Target&quot;</span>, <span class="dt">positive =</span> <span class="st">&quot;Y&quot;</span>)
+
+## Overzicht van de taak en kolom informatie
+
+<span class="kw">print</span>(classify.task)
+<span class="kw">getTaskDescription</span>(classify.task)
+<span class="kw">summarizeColumns</span>(classify.task)</code></pre></div>
+</div>
+<div id="variablen-hard-uitsluiten" class="section level2">
+<h2><span class="header-section-number">7.4</span> Variablen hard uitsluiten</h2>
+<p>Soms zijn er variabelen die je niet wilt meenemen in je model. Deze kan je hard uitsluiten.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">vars.to.drop =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Name&quot;</span>, <span class="st">&quot;Survived&quot;</span>, <span class="st">&quot;Ticket&quot;</span>)
+
+classify.task =<span class="st"> </span><span class="kw">dropFeatures</span>(classify.task, vars.to.drop )
+
+## Weghalen van (bijna) constante variabelen 
+
+## Je kan ook 'bijna' constante variabelen weghalen: perc iets hoger zetten
+classify.task =<span class="st"> </span><span class="kw">removeConstantFeatures</span>(classify.task, <span class="dt">perc =</span> <span class="fl">0.01</span>)
+classify.task</code></pre></div>
+<p>Zeldzame levels van factors samenvoegen. Het is gebruikelijk om zeldzame levels te verwijderen of te mergen</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">classify.task =<span class="st"> </span><span class="kw">mergeSmallFactorLevels</span> (classify.task, <span class="dt">min.perc =</span> <span class="fl">0.02</span>,  <span class="dt">new.level =</span> <span class="st">&quot;.merged&quot;</span>)
+<span class="kw">summarizeColumns</span>(classify.task)</code></pre></div>
+<p>Welke features hebben een effect op de target? Je kan de predictive power meten per input variable. Univariate, dus per feature kan je met mlr de relatie met de target berekenen.</p>
+<p>Onderliggend heb je Rweka en Rjava dingen nodig daar kan je op linux wat issues mee krijgen. Dingen de je kan doen:</p>
+<ul>
+<li>run in een shell: <code>sudo R CMD javareconf</code> en doe</li>
+<li>sudo rstudio-server stop</li>
+<li>export LD_LIBRARY_PATH=/usr/lib/jvm/jre/lib/amd64:/usr/lib/jvm/jre/lib/amd64/default</li>
+<li>sudo rstudio-server start</li>
+</ul>
+<p>Zie ook <a href="https://stackoverflow.com/questions/28462302/libjvm-so-cannot-open-shared-object-file-no-such-file-or-directory">stack overflow</a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Feature selection 
+fv =<span class="st"> </span><span class="kw">generateFilterValuesData</span>(classify.task,  <span class="dt">method =</span> <span class="kw">c</span>(<span class="st">&quot;information.gain&quot;</span>, <span class="st">&quot;chi.squared&quot;</span>))
+
+## display en plot importance
+
+importance =<span class="st"> </span>fv<span class="op">$</span>data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">arrange</span>(<span class="kw">desc</span>(information.gain))
+<span class="kw">head</span>(importance, <span class="dt">n =</span> n.importance)
+<span class="kw">plotFilterValues</span>(fv, <span class="dt">n.show =</span> <span class="dv">2</span><span class="op">*</span>n.importance)</code></pre></div>
+<p>laat nog eens variabelen weg die helemaal niks doen.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">vars.to.drop =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;PassengerId&quot;</span>, <span class="st">&quot;Parch&quot;</span>, <span class="st">&quot;SibSp&quot;</span>)
+classify.task =<span class="st"> </span><span class="kw">dropFeatures</span>(classify.task, vars.to.drop )</code></pre></div>
+</div>
+<div id="sample-schema" class="section level2">
+<h2><span class="header-section-number">7.5</span> Sample schema</h2>
+<p>Met mlr kan je data splitsen, niet alleen in train / test maar ook cross validation. Dit heet een sample schema.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">SampleStrageyHO =<span class="st"> </span><span class="kw">makeResampleDesc</span>(<span class="st">&quot;Holdout&quot;</span>, <span class="dt">split=</span><span class="fl">0.75</span>)
+SampleStrageyCV =<span class="st"> </span><span class="kw">makeResampleDesc</span>(<span class="st">&quot;CV&quot;</span>, <span class="dt">iters =</span> N_CV_iter)</code></pre></div>
+</div>
+<div id="uitvoeren-machine-learning-becnhamrk" class="section level2">
+<h2><span class="header-section-number">7.6</span> uitvoeren machine learning becnhamrk</h2>
+<p>Nu heb je de diverse stappen gespecificeerd en kan je een benchmark uitvoeren voor de verschillende learners,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">br1 =<span class="st"> </span>mlr<span class="op">::</span><span class="kw">benchmark</span>(learners, classify.task, SampleStrageyHO, <span class="dt">measures =</span> <span class="kw">list</span>(mlr<span class="op">::</span>mmce, mlr<span class="op">::</span>auc, mlr<span class="op">::</span>f1))</code></pre></div>
+</div>
+<div id="vergelijking-machine-learning-modellen" class="section level2">
+<h2><span class="header-section-number">7.7</span> Vergelijking machine learning modellen</h2>
+<p>Na het trainen van de modellen met mlr heb je een zogenaamde benchmark object, die kan je printen en plotten om wat meer info te krijgen.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data.frame</span>(br1) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">arrange</span>(<span class="kw">desc</span>(auc))
+<span class="kw">plotBMRSummary</span>(br1, <span class="dt">measure =</span> mlr<span class="op">::</span>auc)</code></pre></div>
+<div id="roc-curves" class="section level3">
+<h3><span class="header-section-number">7.7.1</span> ROC curves</h3>
+<p>In het benchmark object zit eigenlijk nog veel meer data. Met onderstaande code pluk je alle stukjes data per model uit om deze vervolgens in een ROC grafiek te zetten.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">NModels =<span class="st"> </span><span class="kw">length</span>(br1<span class="op">$</span>results<span class="op">$</span>Titanic)
+<span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>NModels)
+{
+  tmp2  =<span class="st"> </span>br1<span class="op">$</span>results<span class="op">$</span>Titanic[[i]]<span class="op">$</span>pred<span class="op">$</span>data
+  rocResultTEST =<span class="st"> </span><span class="kw">roc</span>(truth  <span class="op">~</span><span class="st"> </span>prob.Y, <span class="dt">data =</span> tmp2 )
+  <span class="cf">if</span>(i<span class="op">==</span><span class="dv">1</span>)
+  {
+    <span class="kw">plot</span>(rocResultTEST, <span class="dt">col=</span>i)
+  }<span class="cf">else</span>{
+    <span class="kw">plot</span>(rocResultTEST, <span class="dt">col=</span>i, <span class="dt">add=</span><span class="ot">TRUE</span>)
+  }
+}
+
+<span class="kw">legend</span>( <span class="fl">0.6</span>,<span class="fl">0.6</span>, <span class="kw">names</span>(br1<span class="op">$</span>results<span class="op">$</span>Titanic), <span class="dt">col=</span><span class="dv">1</span><span class="op">:</span>NModels,<span class="dt">lwd=</span><span class="dv">2</span>)
+<span class="kw">title</span>(<span class="st">&quot;Titanic model&quot;</span>)</code></pre></div>
+</div>
+<div id="model-gebruiken-om-te-scoren" class="section level3">
+<h3><span class="header-section-number">7.7.2</span> model gebruiken om te scoren</h3>
+<p>Als je een benchmark hebt gedaan heb je al de getrainde modellen in het benchmark object zitten. Die kan je al gebruiken om een data set te scoren. je dient dit model er wel ‘eerst uit te halen’.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## haal model er uit
+titanmodel =<span class="st"> </span>br1<span class="op">$</span>results<span class="op">$</span>Titanic<span class="op">$</span>classif.ranger<span class="op">$</span>models[[<span class="dv">1</span>]]
+
+## dit zijn de feauteures in het model
+FT =<span class="st"> </span>titanmodel<span class="op">$</span>features
+
+## Maak even een score set van de ABT met alleen de features
+ScoreSet =<span class="st"> </span>ABT[, FT]
+
+outpredict =<span class="st"> </span><span class="kw">predict</span>(titanmodel, <span class="dt">newdata =</span> ScoreSet)
+outpredict</code></pre></div>
+<p><br></p>
 <p>Einde Sessie</p>
+</div>
 </div>
 </div>
 </section>

@@ -4,15 +4,15 @@ author: "Longhow Lam"
 subtitle: "Trainee sessie 02"
 always_allow_html: yes
 output:
-  pdf_document:
-    toc: yes
-    toc_depth: '2'
-    number_sections: true
   prettydoc::html_pretty:
     highlight: github
     theme: cayman
     toc: true
     toc_depth: 2
+    number_sections: true
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
     number_sections: true
   html_notebook:
     theme: sandstone
@@ -716,7 +716,7 @@ pairs(X, col = db$cluster + 1L)
 
 Cluster analyse zou je ook voor outlier detecie kunnen gebruiken. Er is een afstand uit te rekenen tot andere punten.
 
-```{r, eval = TRUE}
+```{r, eval = FALSE}
 ## local outlier factor score
 lof = lof(X, k = 4)
 pairs(X, cex = lof)
@@ -1252,7 +1252,6 @@ BillyF = prophet(
   weekly.seasonality = TRUE ,
   yearly.seasonality = TRUE, 
   daily.seasonality = TRUE
-
 )
 
 ## dan aantal dagen vooruit maken waarop je gaat forecastem
@@ -1263,6 +1262,46 @@ plot(BillyF, forecast)
 prophet_plot_components(BillyF, forecast)
 ```
 
+Met prohet kan je ook externe regressors toevoegen aan het model. Laten we eens wat KNMI data bekijken.
+
+```{r eval = FALSE}
+library(readr)
+library(ggplot2)
+
+KNMI_20180101 = read_csv(
+   "data/KNMI_20180101.txt", 
+   col_types = cols(YYYYMMDD = col_date(format = "%Y%m%d"))
+)
+
+DailyBilly2 = DailyBilly %>%
+  left_join(
+    KNMI_20180101, 
+    by = c("ds" = "YYYYMMDD")
+  )
+
+## het model moet nog niet gefit worden voordat je de regressor er aan toevoegt.
+BillyF = prophet(
+  weekly.seasonality = TRUE ,
+  yearly.seasonality = TRUE, 
+  daily.seasonality = TRUE,
+  fit = FALSE
+)  %>%
+  add_regressor("FHX") %>% 
+  fit.prophet(df = DailyBilly2)
+
+## voorspel Billy Verkopen voor lage en hoge windwaarden.
+future = make_future_dataframe(BillyF, periods = 30)
+future$FHX = 40
+future = future %>%  filter(ds > "2017-10-01")
+forecast1 = predict(BillyF, future)
+future$FHX = 120
+forecast2 = predict(BillyF, future)
+
+### zet de twee voorspellingen uit.
+ggplot(forecast1, aes(ds,yhat)) + 
+  geom_line() + 
+  geom_line(data = forecast2, aes(ds,yhat), col=2)
+```
 
 # The mlr package
 

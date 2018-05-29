@@ -4,16 +4,16 @@ author: "Longhow Lam"
 subtitle: "Trainee Sessie 01"
 always_allow_html: yes
 output:
-  pdf_document:
-    toc: yes
-    toc_depth: '2'
-    number_sections: yes
   prettydoc::html_pretty:
     highlight: github
     number_sections: yes
     theme: cayman
     toc: yes
     toc_depth: 2
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+    number_sections: yes
   html_notebook:
     number_sections: yes
     theme: sandstone
@@ -22,7 +22,58 @@ output:
     toc_float: yes
 ---
 
+# Inleiding.
+
 ---
+
+## De RStudio omgeving
+
+Begin met powerpoint slides over R gevolgd door intro in RStudio:
+
+* Console,
+* Script windows,
+* Environment tab (Object browser),
+* Packages.
+
+![](RStudio.png)
+
+## R Projecten
+
+Organiseer je R werk in projecten. Een project kan bestaan uit verschillende scripts, notebooks, data en output, deze wil je handig in 1 folder hebben. In RStudio kan je heel handig met verschillende R projecten werken. Via de GUI kun je nieuwe projecten aanmaken en beheren: File > New Project...
+
+
+
+## Scripts 
+
+Scripts, zijn gewone tekst files (*.R) met R code. In RStudio kan je meerdere scripts openen en bewerken. Scripts die bij elkaar horen kan je in een R Project zetten. Via het File menu > New File > R Script kan je in RStudio een nieuw R script file maken. Of gebruik de short cut: Ctrl+Shift+N.
+
+In een script type je R code en als je met de cursor op een regel staat kan je die regel code runnen door Ctrl+Enter in te drukken. Je kan ook meerdere regels selecteren en deze regels runnen door Crtl+Enter. Zie voor meer opties het Code menu en 'Run Region'.
+
+
+## R Notebooks / Markdown files
+
+R notebooks bevatten meer dan alleen R code, het is een 'compleet' document met R code, output en een beschrijvende verhaallijn. In een R project kun je ook meerdere van deze notebooks en scripts beheren. Notebooks maak je met Rmarkdown, een soort light weight markup language waarin je bijvoorbeeld headers, figuren en vet gedrukt kan specificeren. Deze R cursus werkt met R notebooks. Een notebook bevat **R code chunks** die je kan runnen.
+
+Als je op de 'Preview' knop drukt boven het R notebook krijg je een apart window te zien met het **resultaat van het R notebook**. Er wordt dan ook door RStudio een aparte file gemaakt die de naam <file_naam>.nb.html heeft. Dit is een html file die je kan delen met anderen.
+ 
+Naast de nb.html, kan je een R notebook ook "knit" ('breien') tot een html, pdf of Word document. De header van het markdown document vertelt hoe het een en ander gebreid moet worden. Zie bijvoorbeeld dit document. Naast de 'Preview' knop zie je een pijltje waaruit je kan kiezen.
+
+Latex formules in markdown, geen probleem....
+
+$$ \lim_{x \to \infty} \exp(-x) = 0 $$
+
+
+## De R Console
+
+De R Console is een plek waar je snel even een kort stukje code wilt runnen. Type daar een R expressie in en Enter om te runnen. Output van scripts verschijnt ook in de R Console.
+
+## Git version controle
+
+Git is een version control systeem. In RStudio kan je makkelijk git gebruiken. Je zult het wel eerst moeten installeren. Op windows kan je git installeren via [de git site](https://git-scm.com/download/win). We gaan hier in deze cursus verder niet op in.
+
+
+
+
 
 <br>
 
@@ -1611,7 +1662,7 @@ all_MM_laptops = purrr::map_df(1:16, MM_laptops)
 
 Maak een plaatje van de laptopprijzen per merk.
 
-```{r}
+```{r, eval = FALSE}
 library(ggplot2)
 ggplot(all_MM_laptops, aes(x=merk2, y = price)) + 
     geom_boxplot() +
