@@ -1216,8 +1216,11 @@ cat('Test accuracy:', scores[[2]], '\n')
 
 ```
 
+<br>
 
 # Tiijdreeks modellen met prophet
+
+---
 
 Prophet is een facebook package voor tijdreeks data, die zij zelf ook intern gebruiken. In plaats van de traditionale manier van tijdreeks modellen maken met ARIMA, worden zogenaamde additieve regressie modellen gefit. Zie hier de [paper](https://peerj.com/preprints/3190.pdf).
 
