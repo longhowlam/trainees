@@ -1262,7 +1262,7 @@ plot(BillyF, forecast)
 prophet_plot_components(BillyF, forecast)
 ```
 
-Met prohet kan je ook externe regressors toevoegen aan het model. Laten we eens wat KNMI data bekijken.
+Met prohet kan je ook externe regressors toevoegen aan het model. Laten we eens wat KNMI data bekijken (Wind, temperatauur, zonnestraling en neerslag)
 
 ```{r eval = FALSE}
 library(readr)
@@ -1279,6 +1279,27 @@ DailyBilly2 = DailyBilly %>%
     by = c("ds" = "YYYYMMDD")
   )
 
+```
+
+Check eerst even of er wat correlatie is tussen y (de billy verkopen) en KNMI variabelen.
+
+```{r eval = FALSE}
+library(corrplot)
+M = cor(
+  DailyBilly2 %>% 
+    select(y, FHVEC, FHX, TG, TN, Q, RH)
+  )
+
+corrplot(
+  M, 
+  method = "ellipse",
+  diag = FALSE,
+  addCoef.col = "black"
+)
+```
+
+
+```{r eval = FALSE}
 ## het model moet nog niet gefit worden voordat je de regressor er aan toevoegt.
 BillyF = prophet(
   weekly.seasonality = TRUE ,
@@ -1286,15 +1307,15 @@ BillyF = prophet(
   daily.seasonality = TRUE,
   fit = FALSE
 )  %>%
-  add_regressor("FHX") %>% 
+  add_regressor("TG") %>% 
   fit.prophet(df = DailyBilly2)
 
-## voorspel Billy Verkopen voor lage en hoge windwaarden.
+## voorspel Billy Verkopen voor 10 graden C en 25 graden C.
 future = make_future_dataframe(BillyF, periods = 30)
-future$FHX = 40
+future$TG = 100
 future = future %>%  filter(ds > "2017-10-01")
 forecast1 = predict(BillyF, future)
-future$FHX = 120
+future$TG = 250
 forecast2 = predict(BillyF, future)
 
 ### zet de twee voorspellingen uit.
