@@ -1408,6 +1408,37 @@ chorddiag(m, groupColors = groupColors, groupnamePadding = 20)
 
 # Web Scraping met rvest
 
+## Een mini uitstapje naar purrr eerst
+
+Het package `purrr` verbeterd de functional programming tools van R. Een simpel voorbeeldje
+
+```{r eval = FALSE}
+myf = function(x)
+{
+  x^2
+}
+
+## list output, soms niet handig
+map(1:100, myf)
+
+## vector output
+map_dbl(1:100, myf)
+```
+
+Ook data frames / tibbles kunnen geretourneerd worden.
+
+```{r, eval = FALSE}
+myf = function(i){
+  x = rnorm(10)
+  y = rnorm(10)
+  tibble(x,y,iter  = i) 
+}
+
+myf(7)
+
+out = map_df(1:10, myf)
+```
+
 ## Basis voorbeelden
 
 In R kan je web sites scrapen met het package `rvest`, dit is een heel handig package. Eerst de basics.
@@ -1484,7 +1515,7 @@ linkhuis
 
 In een `for` loop zou je al deze links weer kunnen scrapen.
 
-## Verder voorbeelden
+## Verdere voorbeelden
 
 ```{r, eval = FALSE}
 tmp = html_form(read_html("https://hadley.wufoo.com/forms/libraryrequire-quiz/"))
@@ -1530,7 +1561,7 @@ OUT = data.frame()
 j=1
 
 ## en nu de rest :-)
-for(j in 1:3){
+for(j in 1:1){
   
   ### Maak de juiste URL aan
   datum = as.character(Sys.Date() - j)
@@ -1619,7 +1650,7 @@ merk = html_nodes(out, ".product-wrapper") %>%
   clean_string()
 ```
 
-Ze dit in een functie zodat we over de verschillende paginas kunnen itereren.
+Zet dit in een functie zodat we over de verschillende paginas kunnen itereren.
 
 ```{r eval=FALSE}
 MM_laptops = function(i)
