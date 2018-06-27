@@ -1413,9 +1413,11 @@ chorddiag(m, groupColors = groupColors, groupnamePadding = 20)
 Het package `purrr` verbeterd de functional programming tools van R. Een simpel voorbeeldje
 
 ```{r eval = FALSE}
-myf = function(x)
+library(purrr)
+
+myf = function(x, power = 2)
 {
-  x^2
+  x^power
 }
 
 ## list output, soms niet handig
@@ -1423,6 +1425,9 @@ map(1:100, myf)
 
 ## vector output
 map_dbl(1:100, myf)
+
+
+map_dbl(1:100, myf, power = 3)
 ```
 
 Ook data frames / tibbles kunnen geretourneerd worden.
@@ -1439,7 +1444,20 @@ myf(7)
 out = map_df(1:10, myf)
 ```
 
-## Basis voorbeelden
+Volgende voorbeeld leest alle files in die in een directory staan
+
+```{r, eval= FALSE}
+## De dir functie zit in nase R maar geeft niet pad mee
+impfiles = dir("testimport/")
+
+## het fs package is een uitgebreid package met File System utilities
+impfiles = fs::dir_ls("testimport/")
+out = map_df(impfiles, readr::read_csv)
+```
+
+
+
+## Basis voorbeelden scrapen
 
 In R kan je web sites scrapen met het package `rvest`, dit is een heel handig package. Eerst de basics.
 
