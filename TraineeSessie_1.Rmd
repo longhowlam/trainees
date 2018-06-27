@@ -1426,7 +1426,7 @@ map(1:100, myf)
 ## vector output
 map_dbl(1:100, myf)
 
-
+## extra argumenten aan de functie kunnen aan de map functie worden gegeven.
 map_dbl(1:100, myf, power = 3)
 ```
 
