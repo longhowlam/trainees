@@ -589,7 +589,7 @@ str_locate(testset$Name, "Mr")
 
 <br>
 
-# Factor maniuplatie met forcats
+# Factor manipulatie met forcats
 
 ---
 
@@ -679,8 +679,6 @@ test2 = test %>%
   summarise( gewicht = mean(gewicht))
 
 ggplot(test2, aes(x=type2)) + geom_bar(aes(weight=gewicht))
-
-
 ```
 
 <br>
@@ -780,12 +778,10 @@ class(testduur)
 
 MeetData = MeetData %>% 
   mutate(
-   t2 = Meettijdstip + dyears(2),
-   t3 = Meettijdstip + dseconds(1800),
-   t4 = Meettijdstip + dweeks(3)
-   
+    t2 = Meettijdstip + dyears(2),
+    t3 = Meettijdstip + dseconds(1800),
+    t4 = Meettijdstip + dweeks(3)
   )
-
 ```
 
 
@@ -883,7 +879,6 @@ dbDisconnect(con_sql)
 ---
 Naast de statistische grafieken die we hierboven hebben gemaakt kan je in R ook interactieve grafieken maken. We geven in deze sectie een aantal voorbeelden.
 
-
 ## Het plotly package
 
 Plotly is een zeer mooie library voor het maken van interactieve visualisaties. Zie voor meer info [plotly](https://plot.ly/r/). We zullen een aantal voorbeelden hieronder laten zien.
@@ -898,8 +893,6 @@ mtcars$naampjes = row.names(mtcars)
 plot_ly(data = mtcars, x=~mpg, y = ~wt)
 plot_ly(data = mtcars, x=~mpg, y = ~wt, color = ~cyl)
 plot_ly(data = mtcars, x=~mpg, y = ~wt, text = ~naampjes)
-
-
 ```
 
 
@@ -957,7 +950,6 @@ A matrix with values can be plotted as a 3D surface plot
 volcano
 plot_ly(z = ~volcano) %>% add_surface()
 ```
-
 
 ### ggplot integratie
 
