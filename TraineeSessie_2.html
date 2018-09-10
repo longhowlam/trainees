@@ -1028,7 +1028,7 @@ forecast =<span class="st"> </span><span class="kw">predict</span>(BillyF, futur
 
 <span class="kw">plot</span>(BillyF, forecast)
 <span class="kw">prophet_plot_components</span>(BillyF, forecast)</code></pre></div>
-<p>Met prohet kan je ook externe regressors toevoegen aan het model. Laten we eens wat KNMI data bekijken.</p>
+<p>Met prohet kan je ook externe regressors toevoegen aan het model. Laten we eens wat KNMI data bekijken (Wind, temperatauur, zonnestraling en neerslag)</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(readr)
 <span class="kw">library</span>(ggplot2)
 
@@ -1041,24 +1041,36 @@ DailyBilly2 =<span class="st"> </span>DailyBilly <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">left_join</span>(
     KNMI_<span class="dv">20180101</span>, 
     <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;ds&quot;</span> =<span class="st"> &quot;YYYYMMDD&quot;</span>)
+  )</code></pre></div>
+<p>Check eerst even of er wat correlatie is tussen y (de billy verkopen) en KNMI variabelen.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(corrplot)
+M =<span class="st"> </span><span class="kw">cor</span>(
+  DailyBilly2 <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">select</span>(y, FHVEC, FHX, TG, TN, Q, RH)
   )
 
-## het model moet nog niet gefit worden voordat je de regressor er aan toevoegt.
+<span class="kw">corrplot</span>(
+  M, 
+  <span class="dt">method =</span> <span class="st">&quot;ellipse&quot;</span>,
+  <span class="dt">diag =</span> <span class="ot">FALSE</span>,
+  <span class="dt">addCoef.col =</span> <span class="st">&quot;black&quot;</span>
+)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## het model moet nog niet gefit worden voordat je de regressor er aan toevoegt.
 BillyF =<span class="st"> </span><span class="kw">prophet</span>(
   <span class="dt">weekly.seasonality =</span> <span class="ot">TRUE</span> ,
   <span class="dt">yearly.seasonality =</span> <span class="ot">TRUE</span>, 
   <span class="dt">daily.seasonality =</span> <span class="ot">TRUE</span>,
   <span class="dt">fit =</span> <span class="ot">FALSE</span>
 )  <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">add_regressor</span>(<span class="st">&quot;FHX&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">add_regressor</span>(<span class="st">&quot;TG&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">fit.prophet</span>(<span class="dt">df =</span> DailyBilly2)
 
-## voorspel Billy Verkopen voor lage en hoge windwaarden.
+## voorspel Billy Verkopen voor 10 graden C en 25 graden C.
 future =<span class="st"> </span><span class="kw">make_future_dataframe</span>(BillyF, <span class="dt">periods =</span> <span class="dv">30</span>)
-future<span class="op">$</span>FHX =<span class="st"> </span><span class="dv">40</span>
+future<span class="op">$</span>TG =<span class="st"> </span><span class="dv">100</span>
 future =<span class="st"> </span>future <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">filter</span>(ds <span class="op">&gt;</span><span class="st"> &quot;2017-10-01&quot;</span>)
 forecast1 =<span class="st"> </span><span class="kw">predict</span>(BillyF, future)
-future<span class="op">$</span>FHX =<span class="st"> </span><span class="dv">120</span>
+future<span class="op">$</span>TG =<span class="st"> </span><span class="dv">250</span>
 forecast2 =<span class="st"> </span><span class="kw">predict</span>(BillyF, future)
 
 ### zet de twee voorspellingen uit.
