@@ -139,6 +139,7 @@ In R kan je CSV files importeren met verschillende functies. Mijn voorkeur gaat 
 
 ```{r eval=FALSE}
 library(readr)
+
 write_csv(mtcars, "mtcars.csv")
 mtcars = read_csv("mtcars.csv")
 ```
@@ -172,6 +173,9 @@ library(dplyr)
 ## enkele kolommen selecteren
 my.cars = select(mtcars, hp, mpg, drat)
 
+cos(sin(8))
+
+sin(8) %>% cos()
 ## via de chain operator, dit is niet alleen handig maar zo kan je verschillende operaties achter elkaar plakken.
 my.cars = mtcars %>% 
   select(
@@ -210,7 +214,7 @@ Maar met `mutate` kan je dit veel eleganter doen
 
 ```{r, eval=FALSE}
 mycars = mtcars %>%
-  select(
+  select(   
     disp, 
     mpg 
   ) %>%
@@ -238,6 +242,8 @@ normalize <- function(x){
     return((x- mean(x))/(max(x)-min(x)))
 }
 
+normalize(1:1000)
+
 # test run van de functie
 normalize(1:10) 
 
@@ -264,8 +270,16 @@ ABT2 = ABT %>%
     4:8, funs(. / sum)
   )
 
+ABT2 = ABT %>% 
+  mutate_at(
+    4:8, log
+  )
+
+
 ## deel alleen door de sum als de kolom som groter is dan 500
 LARGE = function(x) {sum(x) > 500}
+LARGE(1:100)
+
 ABT3 = ABT %>% 
   mutate_if(
     LARGE, funs(. / sum)
@@ -325,6 +339,8 @@ Met `slice` kan je op basis van row numbers data selecteren. Als voorbeeld, de e
 ```{r, eval=FALSE}
 slice(mtcars, 1:8)
 slice(mtcars, 8:n())
+
+head(mtcars)
 ```
 
 
@@ -335,6 +351,8 @@ Aggregeren met de functie `group_by` en `summarise` deze gaan vaak hand in hand 
 ```{r, eval=FALSE}
 ## apart aanroep van group_by en summarise... zo kan je zien wat group_by oplevert
 by_cyl = group_by(mtcars, cyl) 
+
+
 class(by_cyl)
 
 summarise(by_cyl, Naampje1 = mean(disp), Naampje2 = mean(hp))
@@ -346,7 +364,9 @@ out = mtcars %>%
   ) %>% 
   summarise(
     mdisp = mean(disp),
-    mhp = mean(hp)
+    mhp = mean(hp),
+    n = n()
+    nd = n_distinct(mpg)
   )
 
 
@@ -361,7 +381,8 @@ out = filter(
     N = n(), 
     MeanDisp = mean(disp),
     SD_HP = sd(hp)
-  )
+  ) %>% 
+  filter( N > 1)
 ```
 
 
@@ -467,7 +488,7 @@ Soms is het handig om data waarden in 1 kolom te hebben en een aparte variabele 
 
 ```{r, eval=FALSE}
 stocksm <- stocks %>% gather(stock, price, -time)
-stocksm
+stocksm %>% group_by(stock) %>%  summarise(m = mean(price))
 ```
 
 en spread is het omgekeerde proces
@@ -492,6 +513,7 @@ Een handige functie in tidyr is `separate`, dit kan je gebruiken om een kolom ui
 
 ```{r, eval=FALSE}
 df = tibble(x = c("A.B", "C.P", "P.Q"))
+
 df %>% separate(x, c("Kol1", "Kol2"))
 
 ## Er kunnen tw weinig of teveel kolommen zijn.
@@ -500,7 +522,7 @@ df %>% separate(x, c("Kol1", "Kol2"))
 
 
 df = tibble(x = c("A.B", "C.P", "P.Q", "pp", "P.2.4"))
-df %>% separate(x, c("Kol1", "Kol2", "Kol3"))
+df %>% separate(x, paste0("kol", 1:10))
 ```
 
 <br>
@@ -714,6 +736,7 @@ testdata = tibble(DoB = y)
 testdata = testdata %>%
   mutate(
     GeboorteDatum = anytime::anydate(DoB)
+    lubridate::ym
   )
 ```
 
@@ -789,7 +812,7 @@ In R heb je ook zogenaamde `interval` objecten, dit is de tijdsperiode tussen ee
 
 ```{r, eval = FALSE}
 
-y = c("1973-09-12", "1973-01-09")
+y = c("1973-10-12", "1973-01-09")
 
 testdata = tibble(DoB = y)
 
@@ -806,6 +829,8 @@ testdata
 # NB %/% is de integer division in R
 13 / 6
 13 %/% 6
+
+`+`(9,1)
 ```
 
 
@@ -1400,7 +1425,7 @@ chorddiag(m, groupColors = groupColors, groupnamePadding = 20)
 
 # Web Scraping met rvest
 
-## Een mini uitstapje naar purrr eerst
+## Een mini uitstapje naar purrr en furrr eerst
 
 Het package `purrr` verbeterd de functional programming tools van R. Een simpel voorbeeldje
 
@@ -1412,6 +1437,7 @@ myf = function(x, power = 2)
   x^power
 }
 
+myf(7)
 ## list output, soms niet handig
 map(1:100, myf)
 
@@ -1447,6 +1473,29 @@ impfiles = fs::dir_ls("testimport/")
 out = map_df(impfiles, readr::read_csv)
 ```
 
+Met het package `furrr` kan je min of meer het zelfde doen als `purrr`. Het verschil is dat op de achtergrond gebruik wordt gemaakt van het future package. Die stelt je in staat om berekeningen naar de achtergond te duwen en processen in parallele uit te voeren.
+
+```{r}
+library(furrr)
+library(future)
+
+myf = function(x){
+  Sys.sleep(2.5)
+  x
+}
+
+t0 = proc.time()
+purrr::map(1:2, myf)
+proc.time() - t0
+
+## zorg ervoor dat de future backend multiprocess is, anders wordt nog steeds
+## sequentieel uitgerekend
+
+plan(multiprocess) 
+t0 = proc.time()
+furrr::future_map(1:4, myf)
+proc.time() - t0
+```
 
 
 ## Basis voorbeelden scrapen
@@ -1542,7 +1591,7 @@ births <- read_html("https://www.ssa.gov/oact/babynames/numberUSbirths.html")
 out = html_nodes(births, "table")
 
 ## er zijn twee tabellen op de pagina, de tweede bevat aantal M en F geboortes per jaar
-out[[2]] %>% html_table()
+mydata = out[[2]] %>% html_table()
 ```
 
 ## Het jaap scrape script
@@ -1698,7 +1747,13 @@ MM_laptops = function(i)
 MM_laptops(1)
 
 ## verwerk alle paginas
+t0 = proc.time()
 all_MM_laptops = purrr::map_df(1:16, MM_laptops)
+proc.time() - t0
+
+t0 = proc.time()
+all_MM_laptops = furrr::future_map_dfr (1:16, MM_laptops)
+proc.time() - t0
 ```
 
 Maak een plaatje van de laptopprijzen per merk.
