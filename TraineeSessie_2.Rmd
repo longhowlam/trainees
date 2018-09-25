@@ -107,6 +107,8 @@ Je ziet dat er wat outliers in de data zitten, die kunnen we nog eens er uit fil
 jaap = jaap %>% filter( prijs < 1500000 )
 modelout  = lm( prijs ~ kamers               , data = jaap)
 modelout2 = lm( prijs ~ kamers + Oppervlakte , data = jaap) 
+
+summary(modelout2)
 ```
 
 
@@ -121,6 +123,8 @@ jaap = jaap %>%
   filter(!is.na(PC1Positie))
 
 f0 = prijs ~ Oppervlakte + kamers 
+
+f0
 m0 = lm(f0, data = jaap)
 summary(m0)
 
@@ -156,7 +160,8 @@ Nog een paar voorbeelden van formule objecten.
 
 ```{r, eval=FALSE}
 ##  termen weglaten
-f5 = prijs ~ Oppervlakte*kamers*PC1Positie - Oppervlakte:kamers:PC1Positie
+f5 = prijs ~ Oppervlakte*kamers*PC1Positie -
+  Oppervlakte:kamers:PC1Positie 
 m5 = lm(f5, data = jaap)
 summary(m5)
 
@@ -356,7 +361,7 @@ Met een test set kan je bepalen hoe goed een model is. Gebruik het model object 
 Voor binaire classificaties is het handig om response kansen uit te rekenen. Voor logistische regressie met `glm` gebeurt dit niet automatisch, we zetten extra `type = response`
 
 ```{r, eval = FALSE}
-pred_GLM = predict(out.glm, data = TTest, type='response')
+pred_GLM = predict(out.glm, newdata = TTest, type='response')
 hist(pred_GLM)
 ```
 
@@ -393,7 +398,7 @@ Als je een tree of ensemble van trees hebt getrained kan je een idee krijgen wel
 tree.out$variable.importance
 
 # ranger random forest
-ranger.out$variable.importance
+ranger.out$predict
 
 # xgboost
 xgb.importance( colnames(Titan_Inputmatrix), model =xgboost.out2)
@@ -1231,7 +1236,10 @@ library(prophet)
 
 ## dagelijke ikea billy verkoop data
 DailyBilly = readRDS("data/DailyBilly.RDs")
-ggplot(DailyBilly, aes(x=ds, y = y)) + geom_line()
+ggplot(DailyBilly, aes(x=ds, y = y)) +  
+  geom_point() +
+  geom_line(col="grey", alpha = 0.85) + 
+  scale_x_date(breaks = "1 month")
 
 ## billy forcast, fit eerst het model
 BillyF = prophet(DailyBilly)
@@ -1251,7 +1259,7 @@ BillyF = prophet(
   DailyBilly,
   weekly.seasonality = TRUE ,
   yearly.seasonality = TRUE, 
-  daily.seasonality = TRUE
+  daily.seasonality = FALSE
 )
 
 ## dan aantal dagen vooruit maken waarop je gaat forecastem
