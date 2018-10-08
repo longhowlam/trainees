@@ -142,6 +142,7 @@ library(readr)
 
 write_csv(mtcars, "mtcars.csv")
 mtcars = read_csv("mtcars.csv")
+
 ```
 
 
@@ -169,6 +170,13 @@ Het mooie is dat deze sleutel woorden ook achter elkaar gebruikt kunnen worden m
 
 ```{r, eval=FALSE}
 library(dplyr)
+### geneste functie calls vermijden met chain operator
+tan(cos(sin(8)))
+
+8 %>% 
+  sin() %>% 
+  cos() %>% 
+  tan()
 
 ## enkele kolommen selecteren
 my.cars = select(mtcars, hp, mpg, drat)
@@ -193,8 +201,10 @@ test1 = iris %>%
 ## bepaalde kolommen selecteren
 test2 = mtcars %>% 
   select(
-    contains("pg"),
-    starts_with("c")
+    contains("pg")
+  ) %>% 
+  select(
+      starts_with("c")
   )
 
 ## kolommen selecteren op basis van positie
@@ -219,7 +229,7 @@ mycars = mtcars %>%
     mpg 
   ) %>%
   mutate(
-    displ_l = disp / 61.0237,
+    displ_l = disp / 61.0237 ,
     tmp = mpg *1000
   )
 ```
@@ -238,11 +248,11 @@ mycars = mtcars %>%
 Je kan ook zelf gemaakte functies gebruiken in mutate.
 
 ```{r, eval=FALSE}
-normalize <- function(x){
+normalize = function(x){
     return((x- mean(x))/(max(x)-min(x)))
 }
 
-normalize(1:1000)
+normalize( 1:1000 )
 
 # test run van de functie
 normalize(1:10) 
@@ -267,6 +277,11 @@ ABT = ABT %>% mutate(sum = rowSums(.[1:10]))
 ## verander alleen kolom 4 t/m 8, ze worden door sum gedeeld
 ABT2 = ABT %>% 
   mutate_at(
+    4:8, sin
+  )
+
+ABT2 = ABT %>% 
+  mutate_at(
     4:8, funs(. / sum)
   )
 
@@ -278,7 +293,8 @@ ABT2 = ABT %>%
 
 ## deel alleen door de sum als de kolom som groter is dan 500
 LARGE = function(x) {sum(x) > 500}
-LARGE(1:100)
+
+LARGE(1:10)
 
 ABT3 = ABT %>% 
   mutate_if(
@@ -303,8 +319,7 @@ distinct(select(mtcars, 10,11))
 
 ### pipe / chain operatie
 myset = mtcars %>% 
-  select(10,11) %>%
-  distinct
+  distinct()
 ```
 
 
@@ -340,7 +355,7 @@ Met `slice` kan je op basis van row numbers data selecteren. Als voorbeeld, de e
 slice(mtcars, 1:8)
 slice(mtcars, 8:n())
 
-head(mtcars)
+tail(mtcars, 10)
 ```
 
 
@@ -365,7 +380,7 @@ out = mtcars %>%
   summarise(
     mdisp = mean(disp),
     mhp = mean(hp),
-    n = n()
+    n = n(),
     nd = n_distinct(mpg)
   )
 
@@ -488,6 +503,8 @@ Soms is het handig om data waarden in 1 kolom te hebben en een aparte variabele 
 
 ```{r, eval=FALSE}
 stocksm <- stocks %>% gather(stock, price, -time)
+
+
 stocksm %>% group_by(stock) %>%  summarise(m = mean(price))
 ```
 
@@ -521,8 +538,8 @@ df = tibble(x = c("A.B", "C.P", "P.Q", "pp", "P.2.4"))
 df %>% separate(x, c("Kol1", "Kol2"))
 
 
-df = tibble(x = c("A.B", "C.P", "P.Q", "pp", "P.2.4"))
-df %>% separate(x, paste0("kol", 1:10))
+df = tibble(x = c("A.B", "C,P", "P.Q", "pp", "P.2.4"), sep = "a")
+df %>% separate(x,    paste0("kol", 1:10))
 ```
 
 <br>
@@ -736,7 +753,6 @@ testdata = tibble(DoB = y)
 testdata = testdata %>%
   mutate(
     GeboorteDatum = anytime::anydate(DoB)
-    lubridate::ym
   )
 ```
 
@@ -915,7 +931,8 @@ library(plotly)
 mtcars = mtcars
 mtcars$naampjes = row.names(mtcars)
 
-plot_ly(data = mtcars, x=~mpg, y = ~wt)
+plot_ly(data = mtcars, x = ~mpg, y = ~wt)
+
 plot_ly(data = mtcars, x=~mpg, y = ~wt, color = ~cyl)
 plot_ly(data = mtcars, x=~mpg, y = ~wt, text = ~naampjes)
 ```
@@ -1438,8 +1455,9 @@ myf = function(x, power = 2)
 }
 
 myf(7)
+
 ## list output, soms niet handig
-map(1:100, myf)
+map (  1:100, myf)
 
 ## vector output
 map_dbl(1:100, myf)
@@ -1709,7 +1727,7 @@ merk = html_nodes(out, ".product-wrapper") %>%
   clean_string()
 ```
 
-Zet dit in een functie zodat we over de verschillende paginas kunnen itereren.
+Zet deze code in een functie zodat we over de verschillende paginas kunnen itereren met purrr of furrr.
 
 ```{r eval=FALSE}
 MM_laptops = function(i)
@@ -1756,7 +1774,7 @@ all_MM_laptops = furrr::future_map_dfr (1:16, MM_laptops)
 proc.time() - t0
 ```
 
-Maak een plaatje van de laptopprijzen per merk.
+Maak een plaatje van de laptop prijzen per merk met ggplot.
 
 ```{r, eval = FALSE}
 library(ggplot2)
@@ -1764,7 +1782,6 @@ ggplot(all_MM_laptops, aes(x=merk2, y = price)) +
     geom_boxplot() +
     ggtitle("Price distributions of laptops on www.mediamarkt.nl")
 ```
-
 
 
 
