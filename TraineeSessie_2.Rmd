@@ -1621,8 +1621,11 @@ outpredict = predict(titanmodel, newdata = ScoreSet)
 outpredict
 ```
 
-
 <br>
 
-Einde Sessie
+Let's test our learned R skills on www.kahoot.it
+
+EINDE SESSIE 
+
+
 

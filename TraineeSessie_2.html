@@ -152,7 +152,9 @@ ggplot2<span class="op">::</span><span class="kw">autoplot</span>(modelout)</cod
 <p>Je ziet dat er wat outliers in de data zitten, die kunnen we nog eens er uit filteren</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">jaap =<span class="st"> </span>jaap <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>( prijs <span class="op">&lt;</span><span class="st"> </span><span class="dv">1500000</span> )
 modelout  =<span class="st"> </span><span class="kw">lm</span>( prijs <span class="op">~</span><span class="st"> </span>kamers               , <span class="dt">data =</span> jaap)
-modelout2 =<span class="st"> </span><span class="kw">lm</span>( prijs <span class="op">~</span><span class="st"> </span>kamers <span class="op">+</span><span class="st"> </span>Oppervlakte , <span class="dt">data =</span> jaap) </code></pre></div>
+modelout2 =<span class="st"> </span><span class="kw">lm</span>( prijs <span class="op">~</span><span class="st"> </span>kamers <span class="op">+</span><span class="st"> </span>Oppervlakte , <span class="dt">data =</span> jaap) 
+
+<span class="kw">summary</span>(modelout2)</code></pre></div>
 <div id="formula-objects" class="section level3">
 <h3><span class="header-section-number">1.1.1</span> formula objects</h3>
 <p>Modellen in R kan je specificeren met zogenaamde de formula objects. Hieronder zie je een aantal voorbeelden.</p>
@@ -162,6 +164,8 @@ jaap =<span class="st"> </span>jaap <span class="op">%&gt;%</span><span class="s
 <span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(PC1Positie))
 
 f0 =<span class="st"> </span>prijs <span class="op">~</span><span class="st"> </span>Oppervlakte <span class="op">+</span><span class="st"> </span>kamers 
+
+f0
 m0 =<span class="st"> </span><span class="kw">lm</span>(f0, <span class="dt">data =</span> jaap)
 <span class="kw">summary</span>(m0)
 
@@ -187,7 +191,8 @@ m4 =<span class="st"> </span><span class="kw">lm</span>(f4, <span class="dt">dat
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">anova</span>(m0, m1, m2, m3, m4)</code></pre></div>
 <p>Nog een paar voorbeelden van formule objecten.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##  termen weglaten
-f5 =<span class="st"> </span>prijs <span class="op">~</span><span class="st"> </span>Oppervlakte<span class="op">*</span>kamers<span class="op">*</span>PC1Positie <span class="op">-</span><span class="st"> </span>Oppervlakte<span class="op">:</span>kamers<span class="op">:</span>PC1Positie
+f5 =<span class="st"> </span>prijs <span class="op">~</span><span class="st"> </span>Oppervlakte<span class="op">*</span>kamers<span class="op">*</span>PC1Positie <span class="op">-</span>
+<span class="st">  </span>Oppervlakte<span class="op">:</span>kamers<span class="op">:</span>PC1Positie 
 m5 =<span class="st"> </span><span class="kw">lm</span>(f5, <span class="dt">data =</span> jaap)
 <span class="kw">summary</span>(m5)
 
@@ -335,7 +340,7 @@ xgboost.out2 =<span class="st"> </span><span class="kw">xgboost</span>(
 <div id="predicties-1" class="section level3">
 <h3><span class="header-section-number">1.7.1</span> predicties</h3>
 <p>Voor binaire classificaties is het handig om response kansen uit te rekenen. Voor logistische regressie met <code>glm</code> gebeurt dit niet automatisch, we zetten extra <code>type = response</code></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pred_GLM =<span class="st"> </span><span class="kw">predict</span>(out.glm, <span class="dt">data =</span> TTest, <span class="dt">type=</span><span class="st">'response'</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pred_GLM =<span class="st"> </span><span class="kw">predict</span>(out.glm, <span class="dt">newdata =</span> TTest, <span class="dt">type=</span><span class="st">'response'</span>)
 <span class="kw">hist</span>(pred_GLM)</code></pre></div>
 <p>Voorspelling van de decision tree, en random forest ranger.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## LET OP! prediecties van tree zitten in een matrix
@@ -361,7 +366,7 @@ pred_xgboost =<span class="st"> </span><span class="kw">predict</span>(xgboost.o
 tree.out<span class="op">$</span>variable.importance
 
 <span class="co"># ranger random forest</span>
-ranger.out<span class="op">$</span>variable.importance
+ranger.out<span class="op">$</span>predict
 
 <span class="co"># xgboost</span>
 <span class="kw">xgb.importance</span>( <span class="kw">colnames</span>(Titan_Inputmatrix), <span class="dt">model =</span>xgboost.out2)</code></pre></div>
@@ -1003,7 +1008,10 @@ scores &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span c
 
 ## dagelijke ikea billy verkoop data
 DailyBilly =<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;data/DailyBilly.RDs&quot;</span>)
-<span class="kw">ggplot</span>(DailyBilly, <span class="kw">aes</span>(<span class="dt">x=</span>ds, <span class="dt">y =</span> y)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>()
+<span class="kw">ggplot</span>(DailyBilly, <span class="kw">aes</span>(<span class="dt">x=</span>ds, <span class="dt">y =</span> y)) <span class="op">+</span><span class="st">  </span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">col=</span><span class="st">&quot;grey&quot;</span>, <span class="dt">alpha =</span> <span class="fl">0.85</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">scale_x_date</span>(<span class="dt">breaks =</span> <span class="st">&quot;1 month&quot;</span>)
 
 ## billy forcast, fit eerst het model
 BillyF =<span class="st"> </span><span class="kw">prophet</span>(DailyBilly)
@@ -1019,7 +1027,7 @@ BillyF =<span class="st"> </span><span class="kw">prophet</span>(
   DailyBilly,
   <span class="dt">weekly.seasonality =</span> <span class="ot">TRUE</span> ,
   <span class="dt">yearly.seasonality =</span> <span class="ot">TRUE</span>, 
-  <span class="dt">daily.seasonality =</span> <span class="ot">TRUE</span>
+  <span class="dt">daily.seasonality =</span> <span class="ot">FALSE</span>
 )
 
 ## dan aantal dagen vooruit maken waarop je gaat forecastem
@@ -1303,7 +1311,8 @@ ScoreSet =<span class="st"> </span>ABT[, FT]
 outpredict =<span class="st"> </span><span class="kw">predict</span>(titanmodel, <span class="dt">newdata =</span> ScoreSet)
 outpredict</code></pre></div>
 <p><br></p>
-<p>Einde Sessie</p>
+<p>Let’s test our learned R skills on www.kahoot.it</p>
+<p>EINDE SESSIE</p>
 </div>
 </div>
 </div>
