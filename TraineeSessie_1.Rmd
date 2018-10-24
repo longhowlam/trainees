@@ -71,8 +71,15 @@ De R Console is een plek waar je snel even een kort stukje code wilt runnen. Typ
 
 Git is een version control systeem. In RStudio kan je makkelijk git gebruiken. Je zult het wel eerst moeten installeren. Op windows kan je git installeren via [de git site](https://git-scm.com/download/win). We gaan hier in deze cursus verder niet op in.
 
+<br>
 
+***
 
+### **OEFENING **
+
+Maak een eerste RStudio project aan met een script file, een markdown file en het object `x` met waarde 123
+
+***
 
 
 <br>
@@ -307,6 +314,18 @@ ABT3
 ```
 
 
+<br>
+
+***
+
+### **OEFENING **
+
+doe iets
+
+***
+
+<br>
+
 
 ## distinct rows
 
@@ -445,6 +464,18 @@ df6 = df1 %>% anti_join(
 full_join(df1, df2, by = c("col1" = "col1"))
 ```
 
+
+<br>
+
+***
+
+### **OEFENING **
+
+doe iets
+
+***
+
+<br>
 <br>
 
 ## data frames stapelen of plakken
@@ -545,6 +576,18 @@ df %>% separate(x,    paste0("kol", 1:10))
 <br>
 
 
+<br>
+
+***
+
+### **OEFENING **
+
+doe iets
+
+***
+
+<br>
+
 # Character data bewerken met het package `stringr`.
 
 ---
@@ -626,6 +669,18 @@ testset = testset %>%
 str_locate(testset$Name, "Mr")
 ```
 
+
+<br>
+
+***
+
+### **OEFENING **
+
+doe iets
+
+***
+
+<br>
 <br>
 
 # Factor manipulatie met forcats
@@ -850,6 +905,18 @@ testdata
 ```
 
 
+<br>
+
+***
+
+### **OEFENING **
+
+doe iets
+
+***
+
+<br>
+
 # dplyr met externe data
 
 Je kan `dplyr` niet alleen gebruiken op data frames in R, ook kan je `dplyr` gebruiken op externe data in databases en, ook data in Spark. We geven hier eerst het Spark voorbeeld met het package `sparklyr`, en dan een MySQL voorbeeldje.
@@ -918,6 +985,7 @@ dbDisconnect(con_sql)
 # Interactive grafieken
 
 ---
+
 Naast de statistische grafieken die we hierboven hebben gemaakt kan je in R ook interactieve grafieken maken. We geven in deze sectie een aantal voorbeelden.
 
 ## Het plotly package
@@ -1013,6 +1081,18 @@ p
 ggplotly(p)
 ```
 
+
+<br>
+
+***
+
+### **OEFENING **
+
+doe iets
+
+***
+
+<br>
 
 ## Kaartjes met leaflet
 
@@ -1215,6 +1295,20 @@ pc2_lf
 
 
 popup texts in leaflets kunnen ook images en animated animated images bevatten. See as an example [this leaflet of Amsterdam](http://www.lhldsd.nl/AmsterdamWijkenOverzichtAnimated.html) en [this shiny app](http://145.131.21.163:3838/sample-apps/amsterdam_panoramaimages/)
+
+
+
+<br>
+
+---
+
+### **OEFENING **
+
+doe iets
+
+---
+
+<br>
 
 
 ## Netwerk grafieken, visnetwork
@@ -1628,7 +1722,7 @@ Nog een voorbeeld, nieuws archief berichten van de NOS site scrapen. De archieve
 
 Laten we als voorbeeld de laatste 10 dagen pakken
 
-```{r, eval=FALSE}
+```{r eval=FALSE}
 library(purrr)
 library(dplyr)
 

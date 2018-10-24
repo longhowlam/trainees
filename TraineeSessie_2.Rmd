@@ -88,6 +88,7 @@ class(modelout)
 names(modelout)
 modelout$coefficients
 
+modelout
 summary(modelout)
 plot(modelout)
 ```
@@ -160,8 +161,7 @@ Nog een paar voorbeelden van formule objecten.
 
 ```{r, eval=FALSE}
 ##  termen weglaten
-f5 = prijs ~ Oppervlakte*kamers*PC1Positie -
-  Oppervlakte:kamers:PC1Positie 
+f5 = prijs ~ Oppervlakte*kamers*PC1Positie -  Oppervlakte:kamers:PC1Positie 
 m5 = lm(f5, data = jaap)
 summary(m5)
 
@@ -171,6 +171,18 @@ m6 = lm(f6, data = jaap)
 summary(m6)
 ```
 
+
+<br>
+
+***
+
+### **OEFENING **
+
+doe iets
+
+***
+
+<br>
 
 ### Buckets / linear constant  en splines 
 
@@ -229,6 +241,18 @@ ggplot(NieuweHuizen, aes(x=Oppervlakte, y = prijs2)) + geom_point() + geom_point
 
 ```
 
+
+<br>
+
+***
+
+### **OEFENING **
+
+doe iets
+
+***
+
+<br>
 
 ## Splitsen in train en test
 
@@ -289,6 +313,7 @@ summary(out.glm)
 Een decision tree genereert op basis van een algoritme regels die je kan gebruiken om te classificeren. Het is een eenvoudig algoritme dat per variabele kijkt hoe deze te gebruiken om de data set in twee stukken te splitsen (kan ook meer, maar gebruikelijk is twee). 
 
 ```{r, eval = FALSE}
+library(rpart)
 tree.out = rpart(Survived ~ Sex + Age +Pclass, data = TTrain)
 
 plot(tree.out)
@@ -301,6 +326,18 @@ tree.out2 = rpart(Survived ~ Sex + Age +Pclass, data = TTrain, control = list(cp
 fancyRpartPlot(tree.out2)
 ```
 
+
+<br>
+
+***
+
+### **OEFENING **
+
+doe iets
+
+***
+
+<br>
 
 Met visNetwork kan je nog een mooiere interactieve decison tree maken.
 
@@ -350,6 +387,19 @@ xgboost.out2 = xgboost(
   label = as.integer(TTrain$Survived) -1 , nrounds = 25)
 
 ```
+
+
+<br>
+
+***
+
+### **OEFENING **
+
+doe iets
+
+***
+
+<br>
 
 
 ## predictie en validatie
@@ -457,6 +507,18 @@ TTest %>%
   ggtitle("survived rate rate on test set") + scale_y_continuous(limits=c(0,1))
 ````
 
+
+<br>
+
+***
+
+### **OEFENING **
+
+doe iets
+
+***
+
+<br>
 
 <br>
 
@@ -589,9 +651,9 @@ Overleef ik de titanic?
 
 ```{r, eval =  FALSE}
 ik = data.frame(
-  Pclass = 3, 
-  Sex = "male", 
-  Age = 44
+  Pclass = 1, 
+  Sex = "female", 
+  Age = 26
   ) %>% 
   as.h2o
 
@@ -604,6 +666,17 @@ h2o.shutdown(prompt = FALSE)
 ```
 
 
+<br>
+
+***
+
+### **OEFENING **
+
+doe iets
+
+***
+
+<br>
 
 <br>
 
@@ -755,6 +828,18 @@ visHclust(iris, cutree = 3, colorEdges = "red")
 
 Zie voor een kort overzicht ook deze [blog](https://www.r-bloggers.com/how-to-perform-hierarchical-clustering-using-r/)
 
+
+<br>
+
+***
+
+### **OEFENING **
+
+doe iets
+
+***
+
+<br>
 
 # Market basket analyse
 
@@ -1202,7 +1287,7 @@ model %>% compile(
   optimizer = optimizer_adadelta(),
   metrics = c('accuracy')
 )
-
+lm()
 # train and evaluate
 model %>% fit(
   x_train, y_train,
