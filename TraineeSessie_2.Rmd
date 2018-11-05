@@ -356,7 +356,7 @@ ranger.out = ranger( Survived ~ Sex + Age + Pclass, data = TTrain , probability 
 ranger.out
 ```
 
-## xgboost
+## XGboost
 
 Extreme gradient boosting wordt de laatste tijd ook veel gebruikt in Kaggle competities. Zoals bij random forests is een xgboost model ook een ensemble van decision trees, maar de trees zijn nu niet onafhankelijk van elkaar. Eerst wordt een tree gefit, daarna een andere op basis van de eerste, etc.
 
@@ -370,7 +370,7 @@ Titan_Inputmatrix = sparse.model.matrix( Survived ~ Sex + Age + Pclass, data = T
 Titan_Inputmatrix[1:15,]
 
 ## nu kan je de xgboost aanroepen met input matrix en label
-xgboost.out = xgboost(Titan_Inputmatrix, label = TTrain$Survived, nrounds = 25)
+xgboost.out = xgboost(data = Titan_Inputmatrix, label = TTrain$Survived, nrounds = 25)
 ```
 
 Bovenstaande aanroep fit een regression tree, dat is niet wat we willen we willen een binairy classificatie, label moet dan wel numeriek 0 / 1 zijn.
@@ -451,9 +451,18 @@ tree.out$variable.importance
 ranger.out$predict
 
 # xgboost
-xgb.importance( colnames(Titan_Inputmatrix), model =xgboost.out2)
-
+imp = xgb.importance( colnames(Titan_Inputmatrix), model = xgboost.out2)
+imp
+xgb.plot.importance(imp)
 ```
+
+SHAP SHapley Additive exPlanation values per feature
+
+```{r}
+xgb.plot.shap(  Titan_Inputmatrix, model = xgboost.out2, top_n=100)
+```
+
+
 
 ### Lift percentages
 
@@ -506,6 +515,8 @@ TTest %>%
   geom_abline(slope = 1,intercept = 0) +
   ggtitle("survived rate rate on test set") + scale_y_continuous(limits=c(0,1))
 ````
+
+
 
 
 <br>
