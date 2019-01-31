@@ -75,7 +75,7 @@ Git is een version control systeem. In RStudio kan je makkelijk git gebruiken. J
 
 ***
 
-### **OEFENING **
+### **OEFENING 1**
 
 Maak een eerste RStudio project aan met een script file, een markdown file en het object `x` met waarde 123
 
@@ -318,10 +318,13 @@ ABT3
 
 ***
 
-### **OEFENING **
+### **OEFENING 2 **
 
-doe iets
+1. Importeer de data in de file boodschappen.RDs en importeer de data in de file Restaurants.csv
 
+2. De restaurant data set bevat een kolom aantalreviews, maak een kolom arvLog als log(aantalreviews)
+
+3. De kolom straat hebben we niet nodig, laat die kolom weg in de data set
 ***
 
 <br>
@@ -469,9 +472,11 @@ full_join(df1, df2, by = c("col1" = "col1"))
 
 ***
 
-### **OEFENING **
+### **OEFENING 3**
 
-doe iets
+1. Er zijn een aantal restaurants zonder reviews (NA waard) haal deze uit de data set
+2. Hoeveel restaurants zijn er in Zwolle?
+3. Maak een data set waarin per keuken het gemiddeld aantal reviews wordt weergeven.
 
 ***
 
@@ -573,18 +578,7 @@ df = tibble(x = c("A.B", "C,P", "P.Q", "pp", "P.2.4"), sep = "a")
 df %>% separate(x,    paste0("kol", 1:10))
 ```
 
-<br>
 
-
-<br>
-
-***
-
-### **OEFENING **
-
-doe iets
-
-***
 
 <br>
 
@@ -674,9 +668,11 @@ str_locate(testset$Name, "Mr")
 
 ***
 
-### **OEFENING **
+### **OEFENING 4**
 
-doe iets
+1. Welk restaurant heeft de langste naam? En welke de kortste?
+2. Zijn er restaurantnamen die met een Q beginnen? Welke?
+3. Zijn er restaurantnamen met een Q in de naam en niet met Q beginnen? Welke? 
 
 ***
 
@@ -1297,6 +1293,9 @@ pc2_lf
 popup texts in leaflets kunnen ook images en animated animated images bevatten. See as an example [this leaflet of Amsterdam](http://www.lhldsd.nl/AmsterdamWijkenOverzichtAnimated.html) en [this shiny app](http://145.131.21.163:3838/sample-apps/amsterdam_panoramaimages/)
 
 
+## Extra openstreetmap data met library osm en verschillende iconen
+
+Zie het script osm_test.R en leaflet_icons.R
 
 <br>
 
