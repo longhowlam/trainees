@@ -1,4 +1,6 @@
-## Oefening 2 #######################################################
+#### SESSIE 1 #####################################################################################
+
+####  * Oefening 2 #######################################################
 
 boodschappen <- readRDS("data/boodschappen.RDs")
 
@@ -11,7 +13,7 @@ Restaurants = Restaurants %>% mutate(arvLog = log(aantalreviews))
 Restaurants = Restaurants %>% select(-straat)
 
 
-## Oefening 3 #######################################################
+## * Oefening 3 ###############################################################
 
 Restaurants = Restaurants %>% filter(!is.na(aantalreviews))
 
@@ -22,7 +24,7 @@ keuken = Restaurants %>%
   summarise(gem = mean(aantalreviews))
 
 
-## Oefening 4 #######################################################
+## * Oefening 4 ###############################################################
 
 library(stringr)
 test = Restaurants %>% mutate(lengte = str_length(restNamen)) %>%  arrange(desc(lengte))
@@ -36,3 +38,15 @@ Restaurants %>%
   )
            
            
+
+#### Sessie 2 #####################################################################################
+
+
+## * Oefening 1 ###############################################################
+
+
+
+
+
+
+

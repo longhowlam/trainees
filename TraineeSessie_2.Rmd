@@ -176,9 +176,11 @@ summary(m6)
 
 ***
 
-### **OEFENING **
+### **OEFENING 1**
 
-doe iets
+1. Importeer de AllCarsGasPedaal.Rds auto data set
+2. Maak een paar linear regressie modellen om de VraagPrijs te voorspellen,
+probeer wat verschillende variabelen al dan niet mee te nemen.
 
 ***
 
@@ -246,9 +248,10 @@ ggplot(NieuweHuizen, aes(x=Oppervlakte, y = prijs2)) + geom_point() + geom_point
 
 ***
 
-### **OEFENING **
+### **OEFENING 2**
 
-doe iets
+1. Als je een spline model voor KMStand gebruikt, maakt dat veel verschil vergeleken met gewoon KMStand?
+
 
 ***
 
@@ -327,17 +330,6 @@ fancyRpartPlot(tree.out2)
 ```
 
 
-<br>
-
-***
-
-### **OEFENING **
-
-doe iets
-
-***
-
-<br>
 
 Met visNetwork kan je nog een mooiere interactieve decison tree maken.
 
@@ -393,9 +385,9 @@ xgboost.out2 = xgboost(
 
 ***
 
-### **OEFENING **
+### **OEFENING 3**
 
-doe iets
+1. Gebruik de autos weer, train nu ook een decision tree en maak een interactieve tree plot 
 
 ***
 
@@ -456,7 +448,7 @@ imp
 xgb.plot.importance(imp)
 ```
 
-SHAP SHapley Additive exPlanation values per feature
+SHAP (SHapley Additive exPlanation values) per feature
 
 ```{r}
 xgb.plot.shap(  Titan_Inputmatrix, model = xgboost.out2, top_n=100)

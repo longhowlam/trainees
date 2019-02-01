@@ -905,9 +905,11 @@ testdata
 
 ***
 
-### **OEFENING **
+### **OEFENING 5**
 
-doe iets
+1. Hoeveel dagen zitten er tussen 1991-02-15 en 3 mei 2004? 
+2. Bekijk de restaurants data set nogmaals, de kolom keuken bevat teveel keukens
+maak een nieuwe variabele die alleen de top 10 keuken neemt op aantal en de rest in "Overige" zet.
 
 ***
 
@@ -1082,9 +1084,10 @@ ggplotly(p)
 
 ***
 
-### **OEFENING **
+### **OEFENING 6**
 
-doe iets
+1. Maak een plotly bar chart, x as is keuken, en elke bar is de gemiddelde prijs in een keuken
+2. Er zijn te veel keukens pak alleen de top 25 restaurants (op basis van gemiddelde prijs)
 
 ***
 
@@ -1301,11 +1304,6 @@ Zie het script osm_test.R en leaflet_icons.R
 
 ---
 
-### **OEFENING **
-
-doe iets
-
----
 
 <br>
 
