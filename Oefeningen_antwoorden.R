@@ -37,7 +37,51 @@ Restaurants %>%
     str_detect(restNamen, "Q")
   )
            
-           
+
+## Oefening 5 #################################################################
+
+library(lubridate)
+library(anytime)
+
+x = anydate("1991-02-15")
+y = anydate("2004-05-03")
+y-x
+
+as.integer(y-x) %/% 7
+interval(x,y) %/% weeks()
+
+library(tidyverse)
+Restaurants <- read_csv("data/Restaurants.csv")
+
+Restaurants = Restaurants %>% 
+  mutate(
+    keuken = fct_lump(keuken, n = 10)
+  )
+
+table(Restaurants$keuken)  
+
+
+## oefening 6 #################################################################
+
+library(plotly)
+
+Restaurants <- read_csv("data/Restaurants.csv")
+Restaurants %>% 
+  group_by(keuken) %>% 
+  summarise(gem_prijs = mean(prijs, na.rm = TRUE)) %>% 
+  plot_ly(x = ~keuken, y = ~gem_prijs)
+
+Restaurants %>% 
+  group_by(keuken) %>% 
+  summarise(gem_prijs = mean(prijs, na.rm = TRUE)) %>% 
+  arrange(desc(gem_prijs)) %>% 
+  slice(1:25) %>% 
+  mutate(
+    keuken = fct_reorder(keuken, gem_prijs, mean)
+  ) %>% 
+  plot_ly(x = ~keuken, y = ~gem_prijs)
+
+
 
 #### Sessie 2 #####################################################################################
 

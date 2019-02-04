@@ -907,7 +907,7 @@ testdata
 
 ### **OEFENING 5**
 
-1. Hoeveel dagen zitten er tussen 1991-02-15 en 3 mei 2004? 
+1. Hoeveel dagen zitten er tussen 1991-02-15 en 3 mei 2004? en hoeveel weken?
 2. Bekijk de restaurants data set nogmaals, de kolom keuken bevat teveel keukens
 maak een nieuwe variabele die alleen de top 10 keuken neemt op aantal en de rest in "Overige" zet.
 
@@ -1086,7 +1086,7 @@ ggplotly(p)
 
 ### **OEFENING 6**
 
-1. Maak een plotly bar chart, x as is keuken, en elke bar is de gemiddelde prijs in een keuken
+1. Maak een plotly bar chart, x as is keuken, en elke bar is de gemiddelde prijs in een keuken. Pas op missende prijzen.
 2. Er zijn te veel keukens pak alleen de top 25 restaurants (op basis van gemiddelde prijs)
 
 ***
