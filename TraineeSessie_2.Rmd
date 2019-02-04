@@ -180,7 +180,7 @@ summary(m6)
 
 1. Importeer de AllCarsGasPedaal.Rds auto data set
 2. Maak een paar linear regressie modellen om de VraagPrijs te voorspellen,
-probeer wat verschillende variabelen al dan niet mee te nemen.
+probeer wat verschillende variabelen al dan niet mee te nemen. Als je Merk meeneemt als input dan zijn er eigenlijk te veel merken.
 
 ***
 

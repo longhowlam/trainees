@@ -88,9 +88,47 @@ Restaurants %>%
 
 ## * Oefening 1 ###############################################################
 
+AllCarsGasPedaal <- readRDS("data/AllCarsGasPedaal.Rds")
+
+outlm1 = lm(VraagPrijs ~ KMStand + OuderdomMaanden, data = AllCarsGasPedaal)
+outlm2 = lm(VraagPrijs ~ KMStand + OuderdomMaanden + Merk, data = AllCarsGasPedaal)
+
+AllCarsGasPedaal = AllCarsGasPedaal %>% mutate(
+  Merk = fct_lump(Merk, 32)
+)
+
+outlm2a = lm(VraagPrijs ~ KMStand + OuderdomMaanden + Merk, data = AllCarsGasPedaal)
+
+outlm3 = lm(VraagPrijs ~ KMStand + OuderdomMaanden + Merk + Merk*KMStand, data = AllCarsGasPedaal)
+outlm4 = lm(VraagPrijs ~ KMStand + OuderdomMaanden + Merk + Merk*KMStand + Motor + Transmissie, data = AllCarsGasPedaal)
+
+summary(outlm1)
+summary(outlm2)
+summary(outlm2a)
+summary(outlm3)
+summary(outlm4)
 
 
+## * Oefening 2 ###############################################################
 
+library(splines)
+linmod = lm(VraagPrijs ~ KMStand + OuderdomMaanden , data = AllCarsGasPedaal)
+splinemod = lm(VraagPrijs ~ ns(KMStand,6) + ns(OuderdomMaanden,6) , data = AllCarsGasPedaal)
+
+summary(linmod)
+summary(splinemod)
+
+
+## * Oefening 3 #################################################################
+
+library(rpart)
+library(visNetwork)
+
+tree.out = rpart(VraagPrijs ~ KMStand + Merk, data = AllCarsGasPedaal)
+visTree(tree.out, height = "800px", nodesPopSize = TRUE, minNodeSize = 10, maxNodeSize = 30)
+
+tree.out = rpart(VraagPrijs ~ KMStand + Merk, data = AllCarsGasPedaal, control = list(cp=0.001))
+visTree(tree.out, height = "800px", nodesPopSize = TRUE, minNodeSize = 10, maxNodeSize = 30)
 
 
 
