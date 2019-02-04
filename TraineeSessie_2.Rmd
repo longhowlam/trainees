@@ -510,19 +510,6 @@ TTest %>%
 
 
 
-
-<br>
-
-***
-
-### **OEFENING **
-
-doe iets
-
-***
-
-<br>
-
 <br>
 
 # The h2o package
@@ -668,16 +655,6 @@ Geef resources terug door h2o af te sluiten als je het niet meer nodig hebt.
 h2o.shutdown(prompt = FALSE)
 ```
 
-
-<br>
-
-***
-
-### **OEFENING **
-
-doe iets
-
-***
 
 <br>
 
@@ -831,16 +808,6 @@ visHclust(iris, cutree = 3, colorEdges = "red")
 
 Zie voor een kort overzicht ook deze [blog](https://www.r-bloggers.com/how-to-perform-hierarchical-clustering-using-r/)
 
-
-<br>
-
-***
-
-### **OEFENING **
-
-doe iets
-
-***
 
 <br>
 
