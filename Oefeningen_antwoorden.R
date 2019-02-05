@@ -131,4 +131,35 @@ tree.out = rpart(VraagPrijs ~ KMStand + Merk, data = AllCarsGasPedaal, control =
 visTree(tree.out, height = "800px", nodesPopSize = TRUE, minNodeSize = 10, maxNodeSize = 30)
 
 
+## * Oefening 4 ##################################################################
+
+library(h2o)
+library(dplyr)
+
+Jaap <- readRDS("data/Jaap.RDs")
+
+Jaap = Jaap %>% 
+  mutate(
+    Duur = if_else(prijs > 800000, "Y", "N") %>% as.factor
+  ) %>% 
+  mutate_if(is.character, as.factor)
+
+h2o.init()
+
+jaap.h2o = as.h2o(Jaap)
+
+JaapTT = h2o.splitFrame(jaap.h2o, ratios = 0.8)
+
+
+RFmodel = h2o.randomForest(
+  x = c(2,4,5,6,7),
+  y = "Duur",
+  training_frame  = JaapTT[[1]],
+  validation_frame = JaapTT[[2]]
+)
+RFmodel
+
+h2o.varimp_plot(RFmodel)
+
+h2o.gainsLift(RFmodel, JaapTT[[2]])
 

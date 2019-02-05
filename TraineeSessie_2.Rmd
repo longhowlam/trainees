@@ -658,6 +658,23 @@ h2o.shutdown(prompt = FALSE)
 
 <br>
 
+
+***
+
+### **OEFENING 4**
+
+1. Gebruik de jaap.RDs data set, lees hem in en maak een binaire target 'Duur': Y als prijs > 800.000 en N als prijs <= 800.000
+
+2. train een h2o randomforest, splits in 80/20 train test set
+
+3. Laat een variable importance plot zien
+
+4. Op de test set: Wat voor AUROC zie je? Wat is de top10% lift?
+
+***
+
+<br>
+
 <br>
 
 
