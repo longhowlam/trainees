@@ -980,11 +980,13 @@ dbDisconnect(con_sql)
 ```
 
 
+<br>
+
 # Interactive grafieken
 
 ---
 
-Naast de statistische grafieken die we hierboven hebben gemaakt kan je in R ook interactieve grafieken maken. We geven in deze sectie een aantal voorbeelden.
+Naast de statistische grafieken die je in R kan maken met ggplot of traditionele plot functies, kan je in R ook interactieve grafieken maken. We geven in deze sectie een aantal voorbeelden.
 
 ## Het plotly package
 
@@ -1531,7 +1533,11 @@ chorddiag(m, groupColors = groupColors, groupnamePadding = 20)
 ```
 
 
+
+<br>
+
 # Web Scraping met rvest
+---
 
 ## Een mini uitstapje naar purrr en furrr eerst
 
@@ -1573,7 +1579,7 @@ out = map_df(1:10, myf)
 
 Volgende voorbeeld leest alle files in die in een directory staan
 
-```{r, eval= FALSE}
+```{r, eval = FALSE}
 ## De dir functie zit in nase R maar geeft niet pad mee
 impfiles = dir("testimport/")
 
@@ -1584,7 +1590,7 @@ out = map_df(impfiles, readr::read_csv)
 
 Met het package `furrr` kan je min of meer het zelfde doen als `purrr`. Het verschil is dat op de achtergrond gebruik wordt gemaakt van het future package. Die stelt je in staat om berekeningen naar de achtergond te duwen en processen in parallele uit te voeren.
 
-```{r}
+```{r, eval = FALSE}
 library(furrr)
 library(future)
 
