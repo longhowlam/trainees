@@ -1,6 +1,6 @@
 ############### maps and openstreetmaps in R ################################################
 
-library(tidyverse)
+library(dplyr)
 library(osmdata)
 library(sf)
 library(ggmap)
@@ -10,18 +10,27 @@ library(leaflet)
 
 ######  restaurant data ####################################################
 
-restaurants <- readr::read_csv("data/Restaurants.csv")
+restaurants <- readr::read_csv("data/Restaurants.csv")  %>% 
+  filter(
+    !is.na(aantalreviews),
+    aantalreviews <100,
+    !is.na(LONGs),
+    !is.na(LATs)
+  )
 
 ## restaurants in amsterdam
 amsterdam = restaurants %>% 
   filter(
     plaats == "Amsterdam",
-    !is.na(aantalreviews),
-    !is.na(LONGs),
-    !is.na(LATs)
+    keuken %in% c("Frans" ,  "Hollands" ,   "Italiaans",  "Internationaal")
   )
+  
 
-## transform data to a sf object (Simple Features object: open standard in data format for GIS 
+
+##### transform data to a sf object (Simple Features object: open standard in data format for GIS)
+
+# projectie, data en long lat coordinaten
+
 projcrs <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
 amsterdam <- st_as_sf(
   x = amsterdam,                         
@@ -39,13 +48,12 @@ amsterdam_map <- get_map(
 ggmap(amsterdam_map) +
   geom_sf(
     data = amsterdam,
-    inherit.aes =FALSE,
-    aes(colour = aantalreviews, fill = aantalreviews),
-    alpha = .65,
-    size = 1,
-    shape = 21
-  )+
-  labs(title = "restaurants in Amsterdam", x="",y="")
+    inherit.aes = FALSE,
+    aes(colour = aantalreviews, shape = keuken),
+    size = 1.5
+  ) +
+  labs(title = "restaurants in Amsterdam", x="",y="")+ 
+  scale_color_gradient(low="blue", high="red")
 
 
 ######## Heel nederland ###################################################
@@ -65,14 +73,17 @@ df <- st_as_sf(
 
 # duurt erg lang
 ggmap(mad_map) +
-  geom_sf(data = df,
-          inherit.aes =FALSE,
-          aes(colour = aantalreviews),
-          fill="#004529",
-          alpha = .65,
-          size = 2,
-          shape = 21)+
-  labs(title = "restaurants in Amsterdam", x="",y="")
+  geom_sf(
+    data = df,
+    inherit.aes =FALSE,
+    aes(colour = aantalreviews),
+    alpha = .65,
+    size = 1.2
+  ) +
+  labs(title = "restaurants in Amsterdam", x="",y="") +
+  scale_color_gradient(low="blue", high="red")
+
+
 
 ########### POI ####################################################
 
