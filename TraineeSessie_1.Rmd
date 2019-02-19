@@ -218,16 +218,17 @@ test2 = mtcars %>%
 my.cars = mtcars %>% .[2:6]
 ```
 
-## kolom maken of wijzigen met mutate
 
-We zagen al dat je kolommen in een data frame kon maken of wijzigen met `$` 
+## kolom maken of wijzigen met `mutate`
+
+De traditionele manier in 'Base-R' om kolommen te wijzigen is om de `$` operator te gebruiken. 
 
 ```{r, eval=FALSE}
 my.cars$kolom2  = rnorm(32)
 my.cars$kolom3  = my.cars$kolom2 + 9
 ```
 
-Maar met `mutate` kan je dit veel eleganter doen
+Maar met `mutate` uit het dplyr package kan je dit veel eleganter doen
 
 ```{r, eval=FALSE}
 mycars = mtcars %>%
@@ -332,7 +333,7 @@ ABT3
 
 ## distinct rows
 
-Soms wil je data ontdubbelen, dit kan je in R doen met de functie `distinct`
+Soms wil je data ontdubbelen, dit kan je in R doen met de functie `distinct`. je kan distinct op alle kolommen toepassen of alleen op een bepaald aantal kolommen
 
 ```{r, eval=FALSE}
 distinct( select(mtcars, carb, gear))
@@ -388,7 +389,6 @@ Aggregeren met de functie `group_by` en `summarise` deze gaan vaak hand in hand 
 ```{r, eval=FALSE}
 ## apart aanroep van group_by en summarise... zo kan je zien wat group_by oplevert
 by_cyl = group_by(mtcars, cyl) 
-
 
 class(by_cyl)
 
@@ -535,7 +535,7 @@ stocks <- data.frame(
 stocks
 ```
 
-Soms is het handig om data waarden in 1 kolom te hebben en een aparte variabele die de variabele weergeeft
+Soms is het handig om data waarden in 1 kolom te hebben en een aparte variabele die de variabele weergeeft.
 
 ```{r, eval=FALSE}
 stocksm <- stocks %>% gather(stock, price, -time)
@@ -544,7 +544,7 @@ stocksm <- stocks %>% gather(stock, price, -time)
 stocksm %>% group_by(stock) %>%  summarise(m = mean(price))
 ```
 
-en spread is het omgekeerde proces
+Het omgekeerde van gather is spread.
 
 ```{r, eval=FALSE}
 stock2 = stocksm %>% spread(stock, price)
@@ -683,7 +683,7 @@ str_locate(testset$Name, "Mr")
 
 ---
 
-In R kun je factor variabelen bewerken met functies uit het `forcats` package. We geven een aantal voorbeelden op random gegenereerde data
+In R kun je factor variabelen (categorische variabelen) bewerken met functies uit het `forcats` package. We geven een aantal voorbeelden op random gegenereerde data.
 
 ```{r, eval=FALSE}
 library(forcats)
@@ -695,7 +695,7 @@ test = tibble(gewicht = x, type = y)
 table(test$type)
 ```
 
-Samenvoegen van levels: Op aantallen (Weinig voorkomende levels) of handmatig
+Analyzes op categorische variabelen met heel veel levels is soms niet handig. Misschien wil je bepaalde levels samenvegen.Dit smenvoegen van levels kan op aantallen (weinig voorkomende levels) of handmatig.
 
 ```{r, eval=FALSE}
 test = test %>% 
@@ -980,11 +980,13 @@ dbDisconnect(con_sql)
 ```
 
 
+<br>
+
 # Interactive grafieken
 
 ---
 
-Naast de statistische grafieken die we hierboven hebben gemaakt kan je in R ook interactieve grafieken maken. We geven in deze sectie een aantal voorbeelden.
+Naast de statistische grafieken die je in R kan maken met ggplot of traditionele plot functies, kan je in R ook interactieve grafieken maken. We geven in deze sectie een aantal voorbeelden.
 
 ## Het plotly package
 
@@ -1531,7 +1533,11 @@ chorddiag(m, groupColors = groupColors, groupnamePadding = 20)
 ```
 
 
+
+<br>
+
 # Web Scraping met rvest
+---
 
 ## Een mini uitstapje naar purrr en furrr eerst
 
@@ -1573,7 +1579,7 @@ out = map_df(1:10, myf)
 
 Volgende voorbeeld leest alle files in die in een directory staan
 
-```{r, eval= FALSE}
+```{r, eval = FALSE}
 ## De dir functie zit in nase R maar geeft niet pad mee
 impfiles = dir("testimport/")
 
@@ -1584,7 +1590,7 @@ out = map_df(impfiles, readr::read_csv)
 
 Met het package `furrr` kan je min of meer het zelfde doen als `purrr`. Het verschil is dat op de achtergrond gebruik wordt gemaakt van het future package. Die stelt je in staat om berekeningen naar de achtergond te duwen en processen in parallele uit te voeren.
 
-```{r}
+```{r, eval = FALSE}
 library(furrr)
 library(future)
 
