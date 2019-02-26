@@ -63,7 +63,6 @@ We beginnen met simpele lineaire regressie, bruikbaar voor voorspel modellen waa
 ```{r, eval = FALSE}
 jaap = readRDS("data/Jaap.RDs")
 
-library(ggplot2)
 ggplot(jaap, aes(kamers, prijs)) + geom_point()
 ggplot(jaap, aes(Oppervlakte, prijs)) + geom_point()
 
@@ -113,7 +112,7 @@ modelout2 = lm( prijs ~ kamers + Oppervlakte , data = jaap)
 summary(modelout2)
 ```
 
-We nemen ook Type mee maar er zitten daar ook wat data fouten
+We nemen ook het type huis mee in de kolom `Type`, maar er zitten daar ook wat data fouten in, we nemen alleen de records mee vam de twaalf grootste types.
 
 ```{r}
 sort(table(jaap$Type), decreasing = TRUE)
@@ -146,7 +145,7 @@ m3 = lm(f3, data = jaap)
 summary(m3)
 
 ## interactie termen
-f4 = prijs ~ Oppervlakte + kamers + PC1Positie +  Type + Oppervlakte:PC1Positie
+f4 = prijs ~ Oppervlakte + kamers + PC1Positie + Type + Oppervlakte:PC1Positie
 m4 = lm(f4, data = jaap)
 summary(m4)
 
@@ -242,9 +241,9 @@ summary(m3)
 
 ```
 
-###  predicties
+###  model predicties  (of ook wel model scores)
 
-Met de functie `predict` kunnen we nieuwe huizen scoren, dat wil zeggen de prijs van andere huizen die niet in de training data set zaten voorspellen.
+Met de functie `predict` kunnen we andere huizen scoren. Dat wil zeggen, met een voorspelmodel de prijs van huizen uitrekenen die niet in de training data set zaten.
 
 
 ```{r, eval=FALSE}
