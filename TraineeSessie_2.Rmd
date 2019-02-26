@@ -179,8 +179,8 @@ summary(m6)
 ### **OEFENING 1**
 
 1. Importeer de AllCarsGasPedaal.Rds auto data set
-2. Maak een paar linear regressie modellen om de VraagPrijs te voorspellen,
-probeer wat verschillende variabelen al dan niet mee te nemen. Als je Merk meeneemt als input dan zijn er eigenlijk te veel merken.
+2. Maak een paar linear regressie modellen om de VraagPrijs te voorspellen, probeer wat verschillende variabelen al dan niet mee te nemen.
+3. Als je Merk meeneemt als input dan zijn er eigenlijk te veel merken. Kan je alleen de top 32 merken meenemen.
 
 ***
 
@@ -387,7 +387,7 @@ xgboost.out2 = xgboost(
 
 ### **OEFENING 3**
 
-1. Gebruik de autos weer, train nu ook een decision tree en maak een interactieve tree plot 
+1. Gebruik de auto uit de AllCarsGasPedaal data set weer, train nu ook een decision tree en maak een interactieve tree plot 
 
 ***
 
@@ -450,7 +450,7 @@ xgb.plot.importance(imp)
 
 SHAP (SHapley Additive exPlanation values) per feature
 
-```{r}
+```{r, eval = FALSE}
 xgb.plot.shap(  Titan_Inputmatrix, model = xgboost.out2, top_n=100)
 ```
 
@@ -752,7 +752,7 @@ x1 = runif(100,0,pi)
 y1 = sin(x1) + rnorm(100,0,0.1)
 
 x2 = runif(100,-pi/2,pi/2)
-y2 = 0.4+ sin(x2-pi/2) + rnorm(100,0,0.1)
+y2 = 0.4 + sin(x2-pi/2) + rnorm(100,0,0.1)
 
 plot(c(x1,x2),c(y1,y2))
 ```

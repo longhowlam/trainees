@@ -82,7 +82,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li><a href="#logistic-regression"><span class="toc-section-number">1.3</span> logistic regression</a></li>
 <li><a href="#decision-tree"><span class="toc-section-number">1.4</span> decision tree</a></li>
 <li><a href="#random-forest-met-ranger"><span class="toc-section-number">1.5</span> random forest met ranger</a></li>
-<li><a href="#xgboost"><span class="toc-section-number">1.6</span> xgboost</a></li>
+<li><a href="#xgboost"><span class="toc-section-number">1.6</span> XGboost</a></li>
 <li><a href="#predictie-en-validatie"><span class="toc-section-number">1.7</span> predictie en validatie</a></li>
 </ul></li>
 <li><a href="#the-h2o-package"><span class="toc-section-number">2</span> The h2o package</a><ul>
@@ -203,9 +203,13 @@ m6 =<span class="st"> </span><span class="kw">lm</span>(f6, <span class="dt">dat
 <p><br></p>
 <hr />
 </div>
-<div id="oefening" class="section level3">
-<h3><span class="header-section-number">1.1.2</span> <strong>OEFENING </strong></h3>
-<p>doe iets</p>
+<div id="oefening-1" class="section level3">
+<h3><span class="header-section-number">1.1.2</span> <strong>OEFENING 1</strong></h3>
+<ol style="list-style-type: decimal">
+<li>Importeer de AllCarsGasPedaal.Rds auto data set</li>
+<li>Maak een paar linear regressie modellen om de VraagPrijs te voorspellen, probeer wat verschillende variabelen al dan niet mee te nemen.</li>
+<li>Als je Merk meeneemt als input dan zijn er eigenlijk te veel merken. Kan je alleen de top 32 merken meenemen.</li>
+</ol>
 <hr />
 <p><br></p>
 </div>
@@ -259,9 +263,11 @@ NieuweHuizen<span class="op">$</span>prijs3 =<span class="st"> </span>prijs3
 <p><br></p>
 <hr />
 </div>
-<div id="oefening-1" class="section level3">
-<h3><span class="header-section-number">1.1.5</span> <strong>OEFENING </strong></h3>
-<p>doe iets</p>
+<div id="oefening-2" class="section level3">
+<h3><span class="header-section-number">1.1.5</span> <strong>OEFENING 2</strong></h3>
+<ol style="list-style-type: decimal">
+<li>Als je een spline model voor KMStand gebruikt, maakt dat veel verschil vergeleken met gewoon KMStand?</li>
+</ol>
 <hr />
 <p><br></p>
 </div>
@@ -329,7 +335,7 @@ tree.out2 =<span class="st"> </span><span class="kw">rpart</span>(Survived <span
 ranger.out</code></pre></div>
 </div>
 <div id="xgboost" class="section level2">
-<h2><span class="header-section-number">1.6</span> xgboost</h2>
+<h2><span class="header-section-number">1.6</span> XGboost</h2>
 <p>Extreme gradient boosting wordt de laatste tijd ook veel gebruikt in Kaggle competities. Zoals bij random forests is een xgboost model ook een ensemble van decision trees, maar de trees zijn nu niet onafhankelijk van elkaar. Eerst wordt een tree gefit, daarna een andere op basis van de eerste, etc.</p>
 <p>Met de library <code>xgboost</code> kan je in R extreme gradient boosting modellen fitten. De aanroep is anders dan wat we tot nu toe gezien hebben. De <code>xgboost</code> functie moet een matrix met input variabelen worden meegegeven.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(Matrix)
@@ -339,7 +345,7 @@ Titan_Inputmatrix =<span class="st"> </span><span class="kw">sparse.model.matrix
 Titan_Inputmatrix[<span class="dv">1</span><span class="op">:</span><span class="dv">15</span>,]
 
 ## nu kan je de xgboost aanroepen met input matrix en label
-xgboost.out =<span class="st"> </span><span class="kw">xgboost</span>(Titan_Inputmatrix, <span class="dt">label =</span> TTrain<span class="op">$</span>Survived, <span class="dt">nrounds =</span> <span class="dv">25</span>)</code></pre></div>
+xgboost.out =<span class="st"> </span><span class="kw">xgboost</span>(<span class="dt">data =</span> Titan_Inputmatrix, <span class="dt">label =</span> TTrain<span class="op">$</span>Survived, <span class="dt">nrounds =</span> <span class="dv">25</span>)</code></pre></div>
 <p>Bovenstaande aanroep fit een regression tree, dat is niet wat we willen we willen een binairy classificatie, label moet dan wel numeriek 0 / 1 zijn.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">param =<span class="st"> </span><span class="kw">list</span>(
   <span class="dt">objective =</span> <span class="st">'binary:logistic'</span>,
@@ -350,6 +356,16 @@ xgboost.out2 =<span class="st"> </span><span class="kw">xgboost</span>(
   <span class="dt">params=</span>param,
   Titan_Inputmatrix,
   <span class="dt">label =</span> <span class="kw">as.integer</span>(TTrain<span class="op">$</span>Survived) <span class="op">-</span><span class="dv">1</span> , <span class="dt">nrounds =</span> <span class="dv">25</span>)</code></pre></div>
+<p><br></p>
+<hr />
+<div id="oefening-3" class="section level3">
+<h3><span class="header-section-number">1.6.1</span> <strong>OEFENING 3</strong></h3>
+<ol style="list-style-type: decimal">
+<li>Gebruik de auto uit de AllCarsGasPedaal data set weer, train nu ook een decision tree en maak een interactieve tree plot</li>
+</ol>
+<hr />
+<p><br></p>
+</div>
 </div>
 <div id="predictie-en-validatie" class="section level2">
 <h2><span class="header-section-number">1.7</span> predictie en validatie</h2>
@@ -386,7 +402,11 @@ tree.out<span class="op">$</span>variable.importance
 ranger.out<span class="op">$</span>predict
 
 <span class="co"># xgboost</span>
-<span class="kw">xgb.importance</span>( <span class="kw">colnames</span>(Titan_Inputmatrix), <span class="dt">model =</span>xgboost.out2)</code></pre></div>
+imp =<span class="st"> </span><span class="kw">xgb.importance</span>( <span class="kw">colnames</span>(Titan_Inputmatrix), <span class="dt">model =</span> xgboost.out2)
+imp
+<span class="kw">xgb.plot.importance</span>(imp)</code></pre></div>
+<p>SHAP (SHapley Additive exPlanation values) per feature</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">xgb.plot.shap</span>(  Titan_Inputmatrix, <span class="dt">model =</span> xgboost.out2, <span class="dt">top_n=</span><span class="dv">100</span>)</code></pre></div>
 </div>
 <div id="lift-percentages" class="section level3">
 <h3><span class="header-section-number">1.7.3</span> Lift percentages</h3>
@@ -544,6 +564,19 @@ WINNER</code></pre></div>
 <p>Geef resources terug door h2o af te sluiten als je het niet meer nodig hebt.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">h2o.shutdown</span>(<span class="dt">prompt =</span> <span class="ot">FALSE</span>)</code></pre></div>
 <p><br></p>
+<hr />
+<div id="oefening-4" class="section level3">
+<h3><span class="header-section-number">2.1.1</span> <strong>OEFENING 4</strong></h3>
+<ol style="list-style-type: decimal">
+<li><p>Gebruik de jaap.RDs data set, lees hem in en maak een binaire target ‘Duur’: Y als prijs &gt; 800.000 en N als prijs &lt;= 800.000</p></li>
+<li><p>train een h2o randomforest, splits in 80/20 train test set</p></li>
+<li><p>Laat een variable importance plot zien</p></li>
+<li><p>Op de test set: Wat voor AUROC zie je? Wat is de top10% lift?</p></li>
+</ol>
+<hr />
+<p><br></p>
+<p><br></p>
+</div>
 </div>
 </div>
 <div id="unsupervised-learning" class="section level1">
@@ -596,7 +629,7 @@ x1 =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">100<
 y1 =<span class="st"> </span><span class="kw">sin</span>(x1) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>,<span class="dv">0</span>,<span class="fl">0.1</span>)
 
 x2 =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">100</span>,<span class="op">-</span>pi<span class="op">/</span><span class="dv">2</span>,pi<span class="op">/</span><span class="dv">2</span>)
-y2 =<span class="st"> </span><span class="fl">0.4</span><span class="op">+</span><span class="st"> </span><span class="kw">sin</span>(x2<span class="op">-</span>pi<span class="op">/</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>,<span class="dv">0</span>,<span class="fl">0.1</span>)
+y2 =<span class="st"> </span><span class="fl">0.4</span> <span class="op">+</span><span class="st"> </span><span class="kw">sin</span>(x2<span class="op">-</span>pi<span class="op">/</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>,<span class="dv">0</span>,<span class="fl">0.1</span>)
 
 <span class="kw">plot</span>(<span class="kw">c</span>(x1,x2),<span class="kw">c</span>(y1,y2))</code></pre></div>
 <p>k-means werkt niet echt hier….</p>
@@ -646,6 +679,7 @@ hc1 =<span class="st"> </span><span class="kw">dist</span>(
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(visNetwork)
 <span class="kw">visHclust</span>(iris, <span class="dt">cutree =</span> <span class="dv">3</span>, <span class="dt">colorEdges =</span> <span class="st">&quot;red&quot;</span>)</code></pre></div>
 <p>Zie voor een kort overzicht ook deze <a href="https://www.r-bloggers.com/how-to-perform-hierarchical-clustering-using-r/">blog</a></p>
+<p><br></p>
 </div>
 </div>
 <div id="market-basket-analyse" class="section level1">

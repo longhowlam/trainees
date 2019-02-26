@@ -94,7 +94,7 @@ outlm1 = lm(VraagPrijs ~ KMStand + OuderdomMaanden, data = AllCarsGasPedaal)
 outlm2 = lm(VraagPrijs ~ KMStand + OuderdomMaanden + Merk, data = AllCarsGasPedaal)
 
 AllCarsGasPedaal = AllCarsGasPedaal %>% mutate(
-  Merk = fct_lump(Merk, 32)
+  Merk = forcats::fct_lump(Merk, 32)
 )
 
 outlm2a = lm(VraagPrijs ~ KMStand + OuderdomMaanden + Merk, data = AllCarsGasPedaal)
