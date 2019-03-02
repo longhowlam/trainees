@@ -1,0 +1,41 @@
+---
+title: "Demo Python in R"
+author: "longhow"
+date: "1/9/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(reticulate)
+use_condaenv(condaenv = "my_py36")
+```
+
+## Reticulate voorbeeld
+
+This is an R markdown with R and Python code chunks. Data generated in a python chunck can be accessed in an R chunck and vice versa.
+
+```{python}
+import pandas as pd
+
+## import data sets
+huis = pd.read_csv("huizen.csv")
+huis2 = huis.query('kamers < 10')
+print(huis2.head())
+```
+
+Also matplotlib plots can be displayed
+
+```{python}
+import matplotlib.pyplot as plt
+
+## scatterplot
+plt.scatter(huis.Oppervlakte, huis.prijs)
+plt.show()
+```
+
+In an R code chunck we can now access the python objects
+```{r}
+py$huis2 %>% ggplot(aes(kamers)) + geom_histogram()
+```
+
