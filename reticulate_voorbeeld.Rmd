@@ -39,3 +39,15 @@ In an R code chunck we can now access the python objects
 py$huis2 %>% ggplot(aes(kamers)) + geom_histogram()
 ```
 
+In Python chuncks we can access r data frames
+
+```{r}
+test = mtcars
+```
+
+```{python}
+print(r.test.head())
+
+print(r.test.query("hp < 99"))
+```
+
