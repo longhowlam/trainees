@@ -370,7 +370,11 @@ visTree(tree.out, height = "800px", nodesPopSize = TRUE, minNodeSize = 10, maxNo
 Een random forest is een zogenaamde ensemble model. Het is de combinatie van (veel) verschillende decision trees. In R kan je met verschillende packages random forests fitten. Het package `ranger` is hier een van.
 
 ```{r, eval = FALSE}
-ranger.out = ranger( Survived ~ Sex + Age + Pclass, data = TTrain , probability = TRUE)
+ranger.out = ranger(
+  Survived ~ Sex + Age + Pclass, 
+  data = TTrain , 
+  probability = TRUE,
+  importance = 'impurity')
 ranger.out
 ```
 
@@ -466,7 +470,7 @@ Als je een tree of ensemble van trees hebt getrained kan je een idee krijgen wel
 tree.out$variable.importance
 
 # ranger random forest
-ranger.out$predict
+ranger.out$variable.importance
 
 # xgboost
 imp = xgb.importance( colnames(Titan_Inputmatrix), model = xgboost.out2)
@@ -477,7 +481,7 @@ xgb.plot.importance(imp)
 SHAP (SHapley Additive exPlanation values) per feature
 
 ```{r, eval = FALSE}
-xgb.plot.shap(  Titan_Inputmatrix, model = xgboost.out2, top_n=100)
+xgb.plot.shap(  Titan_Inputmatrix, model = xgboost.out2, top_n=3)
 ```
 
 
