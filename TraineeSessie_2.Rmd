@@ -862,6 +862,8 @@ Zie voor een kort overzicht ook deze [blog](https://www.r-bloggers.com/how-to-pe
 
 Met market basket analyse (ook wel association rules mining genoemd) kan je uit "transacties van klanten" vaak voorkomende combinaties of juiste hele "sterke combinaties" van producten bepalen. Hieronder volgt een voorbeeldje op een fictief grocery (boodschappen transacties) data setje.
 
+
+
 ```{r, eval = FALSE}
 library(arules)
 
@@ -883,7 +885,7 @@ Groceries
 itemFrequencyPlot(Groceries, topN = 35, cex.names = 0.75)
 ```
 
-Nu je de boodschappen als transaction object hebt kan je er market basket rules op los laten met behulp van het a-priori algoritme.
+Om de transacties die we net hebben ingelezen te genruiken in het `arules` package moeten we dus deze eerst in een `transaction` object zetten zoals in  bovenstaande code chunck is gebeurd. Nu je de boodschappen als transaction object hebt kan je er market basket rules op los laten met behulp van het a-priori algoritme.
 
 ```{r, eval= FALSE}
 rules <- apriori(Groceries, parameter = list(supp = 0.001, conf = 0.8))
@@ -988,7 +990,122 @@ visNetwork(nodes, rulesDF) %>%
    visEdges(smooth = FALSE) 
 ```
 
+
+
+# Tiijdreeks modellen met prophet
+
+---
+
+Prophet is een facebook package voor tijdreeks data, die zij zelf ook intern gebruiken. In plaats van de traditionale manier van tijdreeks modellen maken met ARIMA, worden zogenaamde additieve regressie modellen gefit. Zie hier de [paper](https://peerj.com/preprints/3190.pdf).
+
+Hier een voorbeeld op gescrapte Billy verkopen van de Ikea website
+
+```{r eval=FALSE}
+library(prophet)
+
+## dagelijke ikea billy verkoop data
+DailyBilly = readRDS("data/DailyBilly.RDs")
+ggplot(DailyBilly, aes(x=ds, y = y)) +  
+  geom_point() +
+  geom_line(col="grey", alpha = 0.85) + 
+  scale_x_date(breaks = "1 month")
+
+## billy forcast, fit eerst het model
+BillyF = prophet(DailyBilly)
+
+## dan aantal dagen vooruit maken waarop je gaat forecastem
+future = make_future_dataframe(BillyF, periods = 90)
+forecast = predict(BillyF, future)
+
+plot(BillyF, forecast)
+```
+
+Bovenstaande werkt nog niet echt..... We zetten seasonality aan.
+
+```{r eval = FALSE}
+## billy forcast, fit eerst het model
+BillyF = prophet(
+  DailyBilly,
+  weekly.seasonality = TRUE ,
+  yearly.seasonality = TRUE, 
+  daily.seasonality = FALSE
+)
+
+## dan aantal dagen vooruit maken waarop je gaat forecastem
+future = make_future_dataframe(BillyF, periods = 90)
+forecast = predict(BillyF, future)
+
+plot(BillyF, forecast)
+prophet_plot_components(BillyF, forecast)
+```
+
+Met prohet kan je ook externe regressors toevoegen aan het model. Laten we eens wat KNMI data bekijken (Wind, temperatauur, zonnestraling en neerslag)
+
+```{r eval = FALSE}
+library(readr)
+library(ggplot2)
+
+KNMI_20180101 = read_csv(
+   "data/KNMI_20180101.txt", 
+   col_types = cols(YYYYMMDD = col_date(format = "%Y%m%d"))
+)
+
+DailyBilly2 = DailyBilly %>%
+  left_join(
+    KNMI_20180101, 
+    by = c("ds" = "YYYYMMDD")
+  )
+
+```
+
+Check eerst even of er wat correlatie is tussen y (de billy verkopen) en KNMI variabelen.
+
+```{r eval = FALSE}
+library(corrplot)
+M = cor(
+  DailyBilly2 %>% 
+    select(y, FHVEC, FHX, TG, TN, Q, RH)
+  )
+
+corrplot(
+  M, 
+  method = "ellipse",
+  diag = FALSE,
+  addCoef.col = "black"
+)
+```
+
+
+```{r eval = FALSE}
+## het model moet nog niet gefit worden voordat je de regressor er aan toevoegt.
+BillyF = prophet(
+  weekly.seasonality = TRUE ,
+  yearly.seasonality = TRUE, 
+  daily.seasonality = TRUE,
+  fit = FALSE
+)  %>%
+  add_regressor("TG") %>% 
+  fit.prophet(df = DailyBilly2)
+
+## voorspel Billy Verkopen voor 10 graden C en 25 graden C.
+future = make_future_dataframe(BillyF, periods = 30)
+future$TG = 100
+future = future %>%  filter(ds > "2017-10-01")
+forecast1 = predict(BillyF, future)
+future$TG = 250
+forecast2 = predict(BillyF, future)
+
+### zet de twee voorspellingen uit.
+ggplot(forecast1, aes(ds,yhat)) + 
+  geom_line() + 
+  geom_line(data = forecast2, aes(ds,yhat), col=2)
+```
+
+<br>
+
 # Deeplearning 
+
+---
 
 In R kan je deeplearning modellen trainen met Keras met een Tensorflow back-end, we geven hier een simpel voorbeeld. Je kan vanuit het `keras` package tensorflow installeren. Zie ook mijn slides op [slideshare](https://www.slideshare.net/LonghowLam/keras-on-tensorflow-in-r-python) voor wat verdere uitleg en bekijk dit 'fantastische' boek: [deep learning in R](https://www.manning.com/books/deep-learning-with-r)
 
@@ -1325,114 +1442,6 @@ cat('Test accuracy:', scores[[2]], '\n')
 
 <br>
 
-# Tiijdreeks modellen met prophet
-
----
-
-Prophet is een facebook package voor tijdreeks data, die zij zelf ook intern gebruiken. In plaats van de traditionale manier van tijdreeks modellen maken met ARIMA, worden zogenaamde additieve regressie modellen gefit. Zie hier de [paper](https://peerj.com/preprints/3190.pdf).
-
-Hier een voorbeeld op gescrapte Billy verkopen van de Ikea website
-
-```{r eval=FALSE}
-library(prophet)
-
-## dagelijke ikea billy verkoop data
-DailyBilly = readRDS("data/DailyBilly.RDs")
-ggplot(DailyBilly, aes(x=ds, y = y)) +  
-  geom_point() +
-  geom_line(col="grey", alpha = 0.85) + 
-  scale_x_date(breaks = "1 month")
-
-## billy forcast, fit eerst het model
-BillyF = prophet(DailyBilly)
-
-## dan aantal dagen vooruit maken waarop je gaat forecastem
-future = make_future_dataframe(BillyF, periods = 90)
-forecast = predict(BillyF, future)
-
-plot(BillyF, forecast)
-```
-
-Bovenstaande werkt nog niet echt..... We zetten seasonality aan.
-
-```{r eval = FALSE}
-## billy forcast, fit eerst het model
-BillyF = prophet(
-  DailyBilly,
-  weekly.seasonality = TRUE ,
-  yearly.seasonality = TRUE, 
-  daily.seasonality = FALSE
-)
-
-## dan aantal dagen vooruit maken waarop je gaat forecastem
-future = make_future_dataframe(BillyF, periods = 90)
-forecast = predict(BillyF, future)
-
-plot(BillyF, forecast)
-prophet_plot_components(BillyF, forecast)
-```
-
-Met prohet kan je ook externe regressors toevoegen aan het model. Laten we eens wat KNMI data bekijken (Wind, temperatauur, zonnestraling en neerslag)
-
-```{r eval = FALSE}
-library(readr)
-library(ggplot2)
-
-KNMI_20180101 = read_csv(
-   "data/KNMI_20180101.txt", 
-   col_types = cols(YYYYMMDD = col_date(format = "%Y%m%d"))
-)
-
-DailyBilly2 = DailyBilly %>%
-  left_join(
-    KNMI_20180101, 
-    by = c("ds" = "YYYYMMDD")
-  )
-
-```
-
-Check eerst even of er wat correlatie is tussen y (de billy verkopen) en KNMI variabelen.
-
-```{r eval = FALSE}
-library(corrplot)
-M = cor(
-  DailyBilly2 %>% 
-    select(y, FHVEC, FHX, TG, TN, Q, RH)
-  )
-
-corrplot(
-  M, 
-  method = "ellipse",
-  diag = FALSE,
-  addCoef.col = "black"
-)
-```
-
-
-```{r eval = FALSE}
-## het model moet nog niet gefit worden voordat je de regressor er aan toevoegt.
-BillyF = prophet(
-  weekly.seasonality = TRUE ,
-  yearly.seasonality = TRUE, 
-  daily.seasonality = TRUE,
-  fit = FALSE
-)  %>%
-  add_regressor("TG") %>% 
-  fit.prophet(df = DailyBilly2)
-
-## voorspel Billy Verkopen voor 10 graden C en 25 graden C.
-future = make_future_dataframe(BillyF, periods = 30)
-future$TG = 100
-future = future %>%  filter(ds > "2017-10-01")
-forecast1 = predict(BillyF, future)
-future$TG = 250
-forecast2 = predict(BillyF, future)
-
-### zet de twee voorspellingen uit.
-ggplot(forecast1, aes(ds,yhat)) + 
-  geom_line() + 
-  geom_line(data = forecast2, aes(ds,yhat), col=2)
-```
 
 # The mlr package
 
