@@ -478,7 +478,7 @@ hist(pred_ranger$predictions[,2])
 En voor xgboost moet je ook de test set als matrix veranderen
 
 ```{r, eval = FALSE}
-Titan_Testmatrix = sparse.model.matrix( Survived ~ Sex + Age +Pclass, data = TTest)
+Titan_Testmatrix = sparse.model.matrix( Survived ~ Sex + Age + Pclass + Fare, data = TTest)
 pred_xgboost = predict(xgboost.out2, newdata = Titan_Testmatrix)
 
 ## hier zitten de predicties een vector
@@ -614,7 +614,7 @@ Er zijn diverse modellen die je kan trainen, we zullen hier een aantal laten zie
 ```{r, eval = FALSE}
 ## model op titanic
 NNmodel = h2o.deeplearning(
-  x = c(3,5:6),
+  x = c(3,5,6,10),
   y = "Survived",
   training_frame  = ttrain.h2o,
   validation_frame = ttest.h2o,
@@ -630,7 +630,7 @@ h2o.varimp(NNmodel)
 
 ```{r, eval = FALSE}
 GBMmodel = h2o.gbm(
-  x = c(3,5:6),
+  x = c(3,5,6,10),
   y = "Survived",
   training_frame  = ttrain.h2o,
   validation_frame = ttest.h2o
@@ -638,7 +638,7 @@ GBMmodel = h2o.gbm(
 GBMmodel
 
 RFmodel = h2o.randomForest(
-  x = c(3,5:6),
+  x = c(3,5,6,10),
   y = "Survived",
   training_frame  = ttrain.h2o,
   validation_frame = ttest.h2o
@@ -653,7 +653,7 @@ Grid search in h2o. Je kan makkelijk modellen fine-tunen, in een grid kan je ver
 ```{r, eval = FALSE}
 RFmodelGrid = h2o.grid(
   "randomForest",
-  x = c(3,5:6),
+  x = c(3,5,6,10),
   y = "Survived",
   training_frame  = ttrain.h2o,
   validation_frame = ttest.h2o,
@@ -674,7 +674,7 @@ De `automl` functionaliteit in h2o maakt het je helemaal makkelijk als je op zoe
 ```{r, eval=FALSE}
 ## Geef het maximaal 30 seconden tijd
 out = h2o.automl(
-    x = c(3,5:6),
+    x = c(3,5,6,10),
   y = "Survived",
   training_frame  = ttrain.h2o,
   validation_frame = ttest.h2o,
