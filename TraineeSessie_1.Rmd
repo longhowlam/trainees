@@ -37,9 +37,13 @@ Begin met powerpoint slides over R gevolgd door intro in RStudio:
 
 ![](RStudio.png)
 
+## De R Console
+
+De R Console is een plek waar je snel even een kort stukje code, 1 functie of zo, wilt runnen. Type daar een R expressie in en Enter om te runnen. Output van scripts verschijnt ook in de R Console. Om langere stukken code te beheren is de console niet een handige omgeving, gebruik script windows of notebooks.
+
 ## R Projecten
 
-Organiseer je R werk in projecten. Een project kan bestaan uit verschillende scripts, notebooks, data en output, deze wil je handig in 1 folder hebben. In RStudio kan je heel handig met verschillende R projecten werken. Via de GUI kun je nieuwe projecten aanmaken en beheren: File > New Project...
+Organiseer altijd je werk R in projecten. Een project kan bestaan uit verschillende scripts, notebooks, data en output, deze wil je handig in 1 folder hebben. In RStudio kan je heel handig met verschillende R projecten werken. Via de GUI kun je nieuwe projecten aanmaken en beheren: File > New Project...
 
 
 
@@ -52,7 +56,7 @@ In een script type je R code en als je met de cursor op een regel staat kan je d
 
 ## R Notebooks / Markdown files
 
-R notebooks bevatten meer dan alleen R code, het is een 'compleet' document met R code, output en een beschrijvende verhaallijn. In een R project kun je ook meerdere van deze notebooks en scripts beheren. Notebooks maak je met Rmarkdown, een soort light weight markup language waarin je bijvoorbeeld headers, figuren en vet gedrukt kan specificeren. Deze R cursus werkt met R notebooks. Een notebook bevat **R code chunks** die je kan runnen.
+R notebooks bevatten meer dan alleen R code, het is een 'compleet' document met R code (en ook andere code chuncks, zoals Python of SQL), output en een beschrijvende verhaallijn. In een R project kun je ook meerdere van deze notebooks en scripts beheren. Notebooks maak je met Rmarkdown, een soort light weight markup language waarin je bijvoorbeeld headers, figuren en vet gedrukt kan specificeren. Deze R cursus werkt met R notebooks. Een notebook bevat **R code chunks** die je kan runnen.
 
 Als je op de 'Preview' knop drukt boven het R notebook krijg je een apart window te zien met het **resultaat van het R notebook**. Er wordt dan ook door RStudio een aparte file gemaakt die de naam <file_naam>.nb.html heeft. Dit is een html file die je kan delen met anderen.
  
@@ -62,10 +66,6 @@ Latex formules in markdown, geen probleem....
 
 $$ \lim_{x \to \infty} \exp(-x) = 0 $$
 
-
-## De R Console
-
-De R Console is een plek waar je snel even een kort stukje code wilt runnen. Type daar een R expressie in en Enter om te runnen. Output van scripts verschijnt ook in de R Console.
 
 ## Git version controle
 
@@ -221,7 +221,7 @@ my.cars = mtcars %>% .[2:6]
 
 ## kolom maken of wijzigen met `mutate`
 
-De traditionele manier in 'Base-R' om kolommen te wijzigen is om de `$` operator te gebruiken. 
+In de tijd voor dplyr kon je in R kolommen in een data frame kon maken of wijzigen met de `$` operator.
 
 ```{r, eval=FALSE}
 my.cars$kolom2  = rnorm(32)
