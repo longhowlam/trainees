@@ -435,6 +435,35 @@ xgboost.out2 = xgboost(
 ```
 
 
+## monotonic contraints in XGboost
+
+XGboost modellen zijn populair, niet-lineaire verbanden en interacties kunnen makkelijk worden meegenomen. Door de aard van het model kunnen voorspellingen nogal 'wiebelig' zijn.  Dit ziet er niet alleen wiebelig uit, de mensen vanuit de business kunnen je model in twijfel trekken. "Oooh als ik drie vierkante meter meer woon oppervlakte heb, dan voorspelt jouw huisprijs model 15.000 Euro minder huiswaarde, wel raar ...."
+
+Het is eenvoudig om in XGboost, monotonic constraints aan te zetten voor sommige variabelen. Het algoritme zorgt er dan voor dat je voorspellingen altijd monotoon stijgend of dalend zijn. Meer over XGboost monotonic contraints: https://xgboost.readthedocs.io/en/latest/tutorials/monotonic.html
+
+Laten we onze huizen voorbeeld er weer bij pakken
+
+```{r, eval = FALSE}
+jaap = jaap %>% filter(Oppervlakte > 10, Oppervlakte < 250, prijs > 30000)
+woonoppervlak =  sparse.model.matrix(  ~ Oppervlakte, data = jaap)
+
+xgboost.huis = xgboost(
+  data =  woonoppervlak,
+  label = jaap$prijs,
+  nrounds = 30
+)
+
+## er zijn twee features hier, de intercept en de oppervlakte, en de oppervlakte willen we stijgend hebben
+xgboost.huis2 = xgboost(
+  params = list(monotone_constraints = c(0,1)),
+  data =  woonoppervlak,
+  label = jaap$prijs,
+  nrounds = 30
+)
+
+```
+
+
 <br>
 
 ***
@@ -484,6 +513,30 @@ pred_xgboost = predict(xgboost.out2, newdata = Titan_Testmatrix)
 ## hier zitten de predicties een vector
 hist(pred_xgboost)
 ```
+
+En ons huis voorbeeld met monotonic constraint, maak een nieuwe data frame met huis oppervlaktes en voorspel prijs met beide modellen, zonder en met monotonic constraint.
+
+```{r eval = FALSE}
+newhuis = data.frame(
+  Oppervlakte = 10:250
+)
+huism = sparse.model.matrix(  ~ Oppervlakte, data = newhuis)
+newhuis = newhuis %>%
+  mutate(
+    huisp = predict(xgboost.huis, huism),
+    huisp2 = predict(xgboost.huis2, huism)
+  )
+
+
+ggplot(jaap, aes(Oppervlakte, prijs)) + 
+  geom_point(alpha = 0.01) +
+  geom_line(data = newhuis, aes(Oppervlakte, huisp), col = 2, size = 1.2) +
+  geom_line(data = newhuis, aes(Oppervlakte, huisp2), col= 3, size = 1.2) +
+  scale_y_continuous(limits = c(0,1000000))
+
+```
+
+
 
 ### Variable importance in trees
 
