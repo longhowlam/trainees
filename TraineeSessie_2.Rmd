@@ -537,7 +537,6 @@ ggplot(jaap, aes(Oppervlakte, prijs)) +
 ```
 
 
-
 ### Variable importance in trees
 
 Als je een tree of ensemble van trees hebt getrained kan je een idee krijgen welke variabelen in het model belangrijk zijn geweest in het trainings proces. Laten we voor de tree modellen die we hierboven getraind hebben de variable importance zien. De absolute waarden van een variable importance zijn minder belangrijk dan de relatieve waarden (vergelijking tussen de variabelen).
