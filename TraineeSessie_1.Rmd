@@ -71,6 +71,12 @@ $$ \lim_{x \to \infty} \exp(-x) = 0 $$
 
 Git is een version control systeem. In RStudio kan je makkelijk git gebruiken. Je zult het wel eerst moeten installeren. Op windows kan je git installeren via [de git site](https://git-scm.com/download/win). We gaan hier in deze cursus verder niet op in.
 
+
+## Shortcuts
+
+Er zijn ontzettend veel keyboard shortcuts in RStudio, zie bijvoorbeeld <Shift><Alt>K en ook een [handig blogje](https://appsilon.com/r-studio-shortcuts-and-tips/) geschreven door Krzysztof Sprycha.
+
+
 <br>
 
 ***
